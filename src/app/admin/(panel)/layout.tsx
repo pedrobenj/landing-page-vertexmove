@@ -4,7 +4,7 @@ import { VertexLogo } from "@/components/brand"
 
 import { LogoutButton } from "./components"
 
-// Acesso protegido pelo proxy.ts. Server actions de admin DEVEM checar a sessão com auth().
+// Acesso protegido pelo proxy.ts. Server actions de admin DEVEM checar a sessão com getAdminSession().
 export default function AdminPanelLayout({ children }: LayoutProps<"/admin">) {
   return (
     <>
@@ -15,7 +15,7 @@ export default function AdminPanelLayout({ children }: LayoutProps<"/admin">) {
           </Link>
           <nav aria-label="Admin" className="flex items-center gap-4 text-sm">
             <Link href="/admin/eventos" className="hover:text-brand-green">Eventos</Link>
-            <Link href="/admin/medalhas" className="hover:text-brand-green">Medalhas</Link>
+            <Link href="/admin/loja/produtos" className="hover:text-brand-green">Loja</Link>
             <LogoutButton />
           </nav>
         </div>
