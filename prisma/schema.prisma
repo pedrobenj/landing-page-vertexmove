@@ -1,0 +1,233 @@
+// Schema do Vertex Grupo de Corrida — ver CLAUDE.md §6.
+// Valores monetários SEMPRE em centavos (Int).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum EventStatus {
+  DRAFT
+  OPEN
+  CLOSED
+  FINISHED
+}
+
+enum RegistrationStatus {
+  PENDING
+  PAID
+  CANCELLED
+  EXPIRED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  PIX
+  CARD
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+  REFUNDED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum CouponType {
+  PERCENT
+  FIXED
+}
+
+enum AdminRole {
+  OWNER
+  STAFF
+}
+
+model Event {
+  id                   String      @id @default(cuid())
+  slug                 String      @unique
+  name                 String
+  description          String
+  date                 DateTime    @db.Date
+  startTime            String // "05:30" — horário de largada (America/Fortaleza)
+  location             String
+  address              String
+  mapUrl               String?
+  bannerUrl            String?
+  status               EventStatus @default(DRAFT)
+  registrationOpensAt  DateTime
+  registrationClosesAt DateTime
+  regulation           String?
+  kitPickupInfo        String?
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+
+  modalities    Modality[]
+  kits          Kit[]
+  coupons       Coupon[]
+  registrations Registration[]
+
+  @@index([status, date])
+}
+
+model Modality {
+  id         String  @id @default(cuid())
+  eventId    String
+  name       String // "5 km", "10 km", "Caminhada"
+  distanceKm Decimal @db.Decimal(5, 2)
+  capacity   Int
+  minAge     Int     @default(0)
+
+  event         Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  priceTiers    PriceTier[]
+  registrations Registration[]
+
+  @@index([eventId])
+}
+
+model PriceTier {
+  id         String   @id @default(cuid())
+  modalityId String
+  name       String // "1º lote"
+  price      Int // centavos
+  startsAt   DateTime
+  endsAt     DateTime
+  maxSlots   Int?
+
+  modality      Modality       @relation(fields: [modalityId], references: [id], onDelete: Cascade)
+  registrations Registration[]
+
+  @@index([modalityId, startsAt])
+}
+
+model Kit {
+  id         String   @id @default(cuid())
+  eventId    String
+  name       String // "Kit Básico", "Kit Premium"
+  extraPrice Int      @default(0) // centavos
+  items      String[]
+  imageUrl   String?
+  shirtSizes String[]
+
+  event         Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  registrations Registration[]
+
+  @@index([eventId])
+}
+
+model Participant {
+  id                    String   @id @default(cuid())
+  name                  String
+  cpf                   String   @unique // somente dígitos
+  birthDate             DateTime @db.Date
+  gender                Gender
+  whatsapp              String // somente dígitos, com DDD
+  email                 String
+  emergencyContactName  String
+  emergencyContactPhone String
+  team                  String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  registrations Registration[]
+
+  @@index([whatsapp])
+}
+
+model Registration {
+  id              String             @id @default(cuid())
+  code            String             @unique // ex: VTX-7K3P
+  eventId         String
+  modalityId      String
+  kitId           String
+  participantId   String
+  priceTierId     String
+  couponId        String?
+  shirtSize       String
+  amount          Int // centavos — total cobrado
+  discount        Int                @default(0) // centavos
+  status          RegistrationStatus @default(PENDING)
+  bibNumber       Int?
+  termsAcceptedAt DateTime
+  expiresAt       DateTime? // reserva PENDING (30 min no Pix)
+  kitPickedUpAt   DateTime?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  event       Event       @relation(fields: [eventId], references: [id])
+  modality    Modality    @relation(fields: [modalityId], references: [id])
+  kit         Kit         @relation(fields: [kitId], references: [id])
+  participant Participant @relation(fields: [participantId], references: [id])
+  priceTier   PriceTier   @relation(fields: [priceTierId], references: [id])
+  coupon      Coupon?     @relation(fields: [couponId], references: [id])
+  payments    Payment[]
+
+  @@unique([modalityId, bibNumber])
+  @@index([eventId, status])
+  @@index([modalityId, status])
+  @@index([participantId])
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  registrationId    String
+  provider          String // "mercadopago"
+  providerPaymentId String        @unique // chave de idempotência do webhook
+  method            PaymentMethod
+  status            PaymentStatus @default(PENDING)
+  amount            Int // centavos
+  pixQrCode         String?
+  pixCopyPaste      String?
+  paidAt            DateTime?
+  rawPayload        Json?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  registration Registration @relation(fields: [registrationId], references: [id])
+
+  @@index([registrationId])
+}
+
+model Coupon {
+  id        String     @id @default(cuid())
+  eventId   String?
+  code      String     @unique
+  type      CouponType
+  value     Int // PERCENT: 0–100 | FIXED: centavos
+  maxUses   Int
+  usedCount Int        @default(0)
+  expiresAt DateTime?
+
+  event         Event?         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  registrations Registration[]
+}
+
+// Fase 2
+model Medal {
+  id       String @id @default(cuid())
+  edition  String
+  name     String
+  imageUrl String
+  price    Int // centavos
+  stock    Int
+}
+
+model AdminUser {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         AdminRole @default(STAFF)
+  createdAt    DateTime  @default(now())
+}

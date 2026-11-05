@@ -1,0 +1,6 @@
+export enum REGISTRATION_STEP {
+  MODALITY_AND_KIT = 1,
+  PARTICIPANT = 2,
+  TERMS = 3,
+  PAYMENT = 4,
+}
