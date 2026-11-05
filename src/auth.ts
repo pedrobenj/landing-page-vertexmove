@@ -6,7 +6,6 @@ import { authConfig } from "@/auth.config"
 import { env } from "@/lib/env"
 import { adminLoginSchema } from "@/lib/validations/admin-login.schema"
 import { db } from "@/server/db"
-import { MOCK_ADMIN } from "@/server/mocks/admin-user.mock"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -18,6 +17,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!parsed.success) return null
 
         if (env.USE_MOCK_DATA) {
+          // Import dinâmico: as credenciais mockadas só são carregadas em modo mock.
+          const { MOCK_ADMIN } = await import("@/server/mocks/admin-user.mock")
           const isMockAdmin = parsed.data.email === MOCK_ADMIN.email && parsed.data.password === MOCK_ADMIN.password
           return isMockAdmin ? { id: MOCK_ADMIN.id, name: MOCK_ADMIN.name, email: MOCK_ADMIN.email, role: MOCK_ADMIN.role } : null
         }

@@ -3,7 +3,13 @@ import { randomUUID } from "node:crypto"
 import { generateOrderCode } from "@/lib/utils/generate-code"
 import { getFirstName } from "@/lib/utils/get-first-name"
 import type { ProductFormData } from "@/lib/validations/product.schema"
-import { DuplicateSlugError, DuplicateVariantLabelError, StockChangedError, VariantNotOwnedError } from "@/server/errors"
+import {
+  DuplicateSlugError,
+  DuplicateVariantLabelError,
+  ProductNotFoundError,
+  StockChangedError,
+  VariantNotOwnedError,
+} from "@/server/errors"
 import type { NewOrderData, OrderSummary } from "@/types/order.interface"
 import type { StoreProduct } from "@/types/store-product.interface"
 
@@ -95,10 +101,12 @@ export function createMockStoreRepository(seed: StoreProduct[]): StoreRepository
     },
 
     async saveProduct(data: ProductFormData, id?: string) {
+      // Id desconhecido nunca vira um produto novo (igual ao Prisma).
+      const existing = id ? products.find((p) => p.id === id) : undefined
+      if (id && !existing) throw new ProductNotFoundError()
       if (products.some((p) => p.slug === data.slug && p.id !== id)) throw new DuplicateSlugError()
 
       const { variants, ...fields } = data
-      const existing = id ? products.find((p) => p.id === id) : undefined
 
       if (existing) {
         // Valida tudo antes de alterar qualquer coisa (equivale à transação no Prisma).

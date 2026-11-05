@@ -27,18 +27,31 @@ describe("productFormSchema", () => {
     ])
   })
 
-  it("rejeita slug inválido, preço zerado e tamanhos repetidos", () => {
+  it("rejeita slug inválido e preço zerado", () => {
     expect(productFormSchema.safeParse({ ...valid, slug: "Camisa Oficial" }).success).toBe(false)
     expect(productFormSchema.safeParse({ ...valid, price: "0" }).success).toBe(false)
-    expect(
-      productFormSchema.safeParse({
-        ...valid,
-        variants: [
-          { label: "P", stock: "1" },
-          { label: "p", stock: "1" },
-        ],
-      }).success,
-    ).toBe(false)
+  })
+
+  it("marca cada tamanho repetido na própria linha", () => {
+    const result = productFormSchema.safeParse({
+      ...valid,
+      variants: [
+        { label: "P", stock: "1" },
+        { label: "M", stock: "1" },
+        { label: "p", stock: "1" },
+      ],
+    })
+    expect(result.success).toBe(false)
+    const issues = result.error?.issues.map(({ path, message }) => ({ path, message }))
+    expect(issues).toEqual([
+      { path: ["variants", 0, "label"], message: "Tamanho repetido" },
+      { path: ["variants", 2, "label"], message: "Tamanho repetido" },
+    ])
+  })
+
+  it("exige pelo menos um tamanho", () => {
+    const result = productFormSchema.safeParse({ ...valid, variants: [] })
+    expect(result.error?.issues).toEqual([expect.objectContaining({ path: ["variants"], message: "Adicione pelo menos um tamanho" })])
   })
 
   it("normaliza o tamanho para maiúsculas", () => {

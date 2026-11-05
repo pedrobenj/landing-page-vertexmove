@@ -7,7 +7,13 @@ import { getFirstName } from "@/lib/utils/get-first-name"
 import { isUniqueViolationOn } from "@/lib/utils/unique-violation-target"
 import type { ProductFormData } from "@/lib/validations/product.schema"
 import { db } from "@/server/db"
-import { DuplicateSlugError, DuplicateVariantLabelError, StockChangedError, VariantNotOwnedError } from "@/server/errors"
+import {
+  DuplicateSlugError,
+  DuplicateVariantLabelError,
+  ProductNotFoundError,
+  StockChangedError,
+  VariantNotOwnedError,
+} from "@/server/errors"
 import type { StoreProduct } from "@/types/store-product.interface"
 
 import type { StoreRepository } from "./store-repository.interface"
@@ -38,9 +44,14 @@ function isUniqueViolation(error: unknown): boolean {
   return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002"
 }
 
-/** P2002 no slug vira DuplicateSlugError; nos tamanhos (productId + label), DuplicateVariantLabelError. */
+/**
+ * P2002 no slug vira DuplicateSlugError; nos tamanhos (productId + label), DuplicateVariantLabelError.
+ * P2025 (registro sumiu durante a edição) vira ProductNotFoundError.
+ */
 function toSaveProductError(error: unknown): unknown {
-  if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== "P2002") return error
+  if (!(error instanceof Prisma.PrismaClientKnownRequestError)) return error
+  if (error.code === "P2025") return new ProductNotFoundError()
+  if (error.code !== "P2002") return error
   return isUniqueViolationOn(error.meta, "slug") ? new DuplicateSlugError() : new DuplicateVariantLabelError()
 }
 
@@ -177,6 +188,8 @@ export const prismaStoreRepository: StoreRepository = {
       }
 
       const updated = await db.$transaction(async (tx) => {
+        const current = await tx.product.findUnique({ where: { id }, select: { id: true } })
+        if (!current) throw new ProductNotFoundError()
         await tx.product.update({ where: { id }, data: fields })
 
         const existingVariants = variants.flatMap((variant, position) => (variant.id ? [{ ...variant, id: variant.id, position }] : []))

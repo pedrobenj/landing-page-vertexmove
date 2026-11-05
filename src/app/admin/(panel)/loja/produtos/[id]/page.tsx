@@ -25,7 +25,12 @@ export default async function EditProductPage({ params }: PageProps<"/admin/loja
     product = await getStoreRepository().getProductById(id)
   } catch (error) {
     console.error("[EditProductPage]", error)
-    return <ServerError title="Não foi possível carregar o produto" />
+    return (
+      <section className="flex flex-col gap-6">
+        <h1 className="text-2xl font-extrabold text-brand-navy">Editar produto</h1>
+        <ServerError title="Não foi possível carregar o produto" />
+      </section>
+    )
   }
 
   if (!product) notFound()

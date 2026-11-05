@@ -51,10 +51,16 @@ export const productFormSchema = z.object({
   variants: z
     .array(variantSchema)
     .min(1, "Adicione pelo menos um tamanho")
-    .refine(
-      (variants) => new Set(variants.map((v) => v.label)).size === variants.length,
-      "Há tamanhos repetidos",
-    ),
+    // Erro em cada linha repetida (não no array), para aparecer ao lado do campo certo.
+    .superRefine((variants, ctx) => {
+      const counts = new Map<string, number>()
+      for (const variant of variants) counts.set(variant.label, (counts.get(variant.label) ?? 0) + 1)
+      variants.forEach((variant, index) => {
+        if ((counts.get(variant.label) ?? 0) > 1) {
+          ctx.addIssue({ code: "custom", message: "Tamanho repetido", path: [index, "label"] })
+        }
+      })
+    }),
 })
 
 export type ProductFormInput = z.input<typeof productFormSchema>

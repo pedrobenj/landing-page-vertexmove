@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest"
 
 import type { ProductFormData } from "@/lib/validations/product.schema"
-import { DuplicateSlugError, DuplicateVariantLabelError, StockChangedError, VariantNotOwnedError } from "@/server/errors"
+import {
+  DuplicateSlugError,
+  DuplicateVariantLabelError,
+  ProductNotFoundError,
+  StockChangedError,
+  VariantNotOwnedError,
+} from "@/server/errors"
 import { buildProduct } from "@/test/factories"
 
 import { createMockStoreRepository } from "./mock-store.repository"
@@ -143,5 +149,17 @@ describe("mock store repository", () => {
     const data = productData({ variants: [{ label: "M", stock: 1 }] })
     await expect(repo.saveProduct(data, "p1")).rejects.toBeInstanceOf(DuplicateVariantLabelError)
     expect((await repo.getProductById("p1"))?.variants).toHaveLength(2)
+  })
+
+  it("recusa editar produto inexistente sem criar um novo", async () => {
+    const repo = createMockStoreRepository([buildProduct()])
+    await expect(repo.saveProduct(productData({ slug: "nova" }), "nao-existe")).rejects.toBeInstanceOf(ProductNotFoundError)
+    expect(await repo.listAllProducts()).toHaveLength(1)
+    expect(await repo.getProductById("nao-existe")).toBeNull()
+  })
+
+  it("id desconhecido tem prioridade sobre slug duplicado", async () => {
+    const repo = createMockStoreRepository([buildProduct()])
+    await expect(repo.saveProduct(productData(), "nao-existe")).rejects.toBeInstanceOf(ProductNotFoundError)
   })
 })
