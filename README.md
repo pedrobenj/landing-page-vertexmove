@@ -44,7 +44,8 @@ Com `USE_MOCK_DATA=true`, a loja usa um catálogo em memória (`src/server/mocks
 e pedidos ficam guardados até o servidor reiniciar. Admin: `admin@vertex.dev` / `vertex-admin-123`.
 
 Os testes e2e do admin cadastram produtos nesse catálogo em memória (nomes "Camisa E2E …"); eles
-somem ao reiniciar o dev server.
+somem ao reiniciar o dev server. Como o Playwright reaproveita um servidor que já esteja rodando
+(com o estado que ele tiver), reinicie o `npm run dev` antes de uma rodada limpa de e2e.
 
 Logos oficiais vão em `public/brand/` (`vertex-logo.png`, `vertex-logo-white.png`, `vertex-symbol.png`).
 

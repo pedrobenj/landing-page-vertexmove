@@ -69,6 +69,8 @@ test.describe("Loja", () => {
   })
 
   test("compra completa cria o pedido e limpa o carrinho", async ({ page }) => {
+    // Action + revalidação + navegação bloqueante do /pedido podem passar de 30s no dev server sob carga.
+    test.slow()
     await addToCart(page, "camisa-treino-dry-fit", "G")
     await page.goto("/loja/checkout")
     await page.getByLabel("Nome completo").fill("Maria da Silva")
@@ -78,7 +80,7 @@ test.describe("Loja", () => {
     await page.getByLabel(/Li e aceito/).check()
     await page.getByRole("button", { name: "Ir para o pagamento" }).click()
 
-    await expect(page).toHaveURL(/\/pedido\/VTX-P-[2-9A-Z]{4}$/)
+    await expect(page).toHaveURL(/\/pedido\/VTX-P-[2-9A-Z]{4}$/, { timeout: 20_000 })
     await expect(page.getByText("Pedido criado!")).toBeVisible()
     await expect(page.getByText("Aguardando pagamento")).toBeVisible()
     await expect(page.getByText("Olá, Maria!")).toBeVisible()

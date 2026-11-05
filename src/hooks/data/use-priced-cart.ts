@@ -23,6 +23,7 @@ export function usePricedCart() {
       return response.data
     },
     enabled: hydrated && items.length > 0,
+    // Exceção à regra de 5 min do CLAUDE.md: preço e estoque precisam estar sempre atuais no carrinho.
     staleTime: 0,
     // Mantém o carrinho anterior na tela enquanto recalcula (sem skeleton nem perda de foco a cada +/−).
     placeholderData: keepPreviousData,
