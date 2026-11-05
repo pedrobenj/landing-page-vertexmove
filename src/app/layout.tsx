@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next"
 import { Inter, Montserrat } from "next/font/google"
 
+import { CartHydrator } from "@/components/providers/cart-hydrator"
 import { QueryProvider } from "@/components/providers/query-provider"
 import { Toaster } from "@/components/ui/sonner"
 import { publicEnv } from "@/lib/public-env"
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="pt-BR" className={`${inter.variable} ${montserrat.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         <QueryProvider>{children}</QueryProvider>
+        <CartHydrator />
         <Toaster richColors position="top-center" />
       </body>
     </html>

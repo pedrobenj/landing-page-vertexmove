@@ -12,5 +12,7 @@ export default defineConfig({
   test: {
     include: ["src/**/*.test.ts"],
     environment: "node",
+    // Node 25+ expõe um localStorage global (Web Storage experimental) que sobrepõe o do jsdom.
+    execArgv: ["--no-experimental-webstorage"],
   },
 })
