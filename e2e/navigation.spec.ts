@@ -8,16 +8,16 @@ test.describe("Navegação pública", () => {
     await expect(page.getByRole("heading", { level: 1, name: "Consultar inscrição" })).toBeVisible()
   })
 
-  test("rodapé leva para medalhas", async ({ page }) => {
+  test("rodapé leva para a loja", async ({ page }) => {
     await page.goto("/")
-    await page.getByRole("contentinfo").getByRole("link", { name: "Medalhas" }).click()
-    await expect(page).toHaveURL("/medalhas")
-    await expect(page).toHaveTitle(/Medalhas \| Vertex Grupo de Corrida/)
+    await page.getByRole("contentinfo").getByRole("link", { name: "Loja" }).click()
+    await expect(page).toHaveURL("/loja")
+    await expect(page).toHaveTitle(/Loja \| Vertex Grupo de Corrida/)
   })
 
   const publicRoutes = [
     { path: "/consulta", title: "Consultar inscrição" },
-    { path: "/medalhas", title: "Complete sua coleção" },
+    { path: "/loja", title: "Camisas e medalhas" },
     { path: "/privacidade", title: "Política de privacidade" },
     { path: "/corridas/corrida-vertex-beira-mar-2026", title: "Página da corrida" },
     { path: "/regulamento/corrida-vertex-beira-mar-2026", title: "Regulamento" },
