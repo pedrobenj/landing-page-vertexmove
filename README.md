@@ -22,6 +22,19 @@ npm run dev
 | `npm run build` | Build de produção |
 | `npm run db:migrate` | `prisma migrate dev` |
 | `npm run db:studio` | Prisma Studio |
+| `npm run test:e2e` | Testes end-to-end (Playwright, desktop + mobile 360px) |
+| `npm run test:e2e:ui` | Playwright em modo interativo |
+| `npm run test:e2e:report` | Abre o relatório HTML da última execução |
+
+## Testes end-to-end
+
+Ficam em `e2e/` e rodam contra o `next dev` com `USE_MOCK_DATA=true`, então **não precisam de banco**.
+Se já houver um servidor em `localhost:3000`, ele é reaproveitado; senão o Playwright sobe um.
+
+```bash
+npx playwright install chromium   # primeira vez
+npm run test:e2e
+```
 
 Logos oficiais vão em `public/brand/` (`vertex-logo.png`, `vertex-logo-white.png`, `vertex-symbol.png`).
 
