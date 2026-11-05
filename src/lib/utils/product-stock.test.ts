@@ -10,6 +10,10 @@ describe("product-stock", () => {
     expect(isProductSoldOut({ variants: variants(0, 3) })).toBe(false)
   })
 
+  it("esgotado quando não há variantes", () => {
+    expect(isProductSoldOut({ variants: [] })).toBe(true)
+  })
+
   it("soma o estoque", () => {
     expect(getTotalStock({ variants: variants(2, 5, 0) })).toBe(7)
   })

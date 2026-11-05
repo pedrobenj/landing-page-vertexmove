@@ -16,7 +16,7 @@ export const participantSchema = z.object({
   birthDate: z.string().regex(/^\d{2}\/\d{2}\/\d{4}$/, "Use o formato DD/MM/AAAA"),
   gender: z.enum(Gender, { error: REQUIRED_MESSAGE }),
   whatsapp: phoneSchema,
-  email: z.email("E-mail inválido"),
+  email: z.string().trim().toLowerCase().pipe(z.email("E-mail inválido")),
   team: z.string().trim().optional(),
   emergencyContactName: z.string().trim().min(3, "Informe o nome do contato de emergência"),
   emergencyContactPhone: phoneSchema,

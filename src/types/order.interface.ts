@@ -10,6 +10,7 @@ export interface Buyer {
 export interface NewOrderLine {
   variantId: string
   quantity: number
+  /** centavos */
   unitPrice: number
   productName: string
   variantLabel: string
@@ -17,6 +18,7 @@ export interface NewOrderLine {
 
 export interface NewOrderData {
   buyer: Buyer
+  /** centavos */
   amount: number
   expiresAt: Date
   privacyAcceptedAt: Date
@@ -31,6 +33,7 @@ export interface OrderSummaryLine {
   productName: string
   variantLabel: string
   quantity: number
+  /** centavos */
   unitPrice: number
 }
 
@@ -38,6 +41,7 @@ export interface OrderSummaryLine {
 export interface OrderSummary {
   code: string
   status: OrderStatus
+  /** centavos */
   amount: number
   buyerFirstName: string
   createdAt: Date

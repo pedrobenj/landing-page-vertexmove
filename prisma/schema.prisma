@@ -255,8 +255,12 @@ model Product {
   variants ProductVariant[]
 
   @@index([isActive, type])
+  @@index([eventId])
 }
 
+// Ao criar a primeira migration, acrescentar ao SQL gerado:
+//   ALTER TABLE "ProductVariant" ADD CONSTRAINT "variant_stock_nonnegative"
+//   CHECK (stock >= 0);
 model ProductVariant {
   id        String @id @default(cuid())
   productId String
@@ -304,6 +308,7 @@ model OrderItem {
   variantLabel String // cópia no momento da compra
 
   order   Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  // Restrict: produtos com pedidos são desativados, nunca apagados.
   variant ProductVariant @relation(fields: [variantId], references: [id])
 
   @@index([orderId])

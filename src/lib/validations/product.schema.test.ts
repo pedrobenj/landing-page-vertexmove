@@ -40,4 +40,40 @@ describe("productFormSchema", () => {
       }).success,
     ).toBe(false)
   })
+
+  it("normaliza o tamanho para maiúsculas", () => {
+    const result = productFormSchema.parse({
+      ...valid,
+      variants: [
+        { label: " gg ", stock: "1" },
+        { label: "Única", stock: "1" },
+      ],
+    })
+    expect(result.variants.map((variant) => variant.label)).toEqual(["GG", "ÚNICA"])
+  })
+
+  it("rejeita tamanho com mais de 10 caracteres", () => {
+    const result = productFormSchema.safeParse({
+      ...valid,
+      variants: [{ label: "Extra grande", stock: "1" }],
+    })
+    expect(result.success).toBe(false)
+    expect(result.error?.issues[0]?.message).toBe("Tamanho com no máximo 10 caracteres")
+  })
+
+  it("limita estoque a 100.000 unidades", () => {
+    expect(productFormSchema.safeParse({ ...valid, variants: [{ label: "P", stock: "100000" }] }).success).toBe(
+      true,
+    )
+    const result = productFormSchema.safeParse({ ...valid, variants: [{ label: "P", stock: "100001" }] })
+    expect(result.success).toBe(false)
+    expect(result.error?.issues[0]?.message).toBe("Estoque máximo de 100.000 unidades")
+  })
+
+  it("limita preço a R$ 10.000,00", () => {
+    expect(productFormSchema.parse({ ...valid, price: "10.000,00" }).price).toBe(1_000_000)
+    const result = productFormSchema.safeParse({ ...valid, price: "10.000,01" })
+    expect(result.success).toBe(false)
+    expect(result.error?.issues[0]?.message).toBe("Preço máximo de R$ 10.000,00")
+  })
 })

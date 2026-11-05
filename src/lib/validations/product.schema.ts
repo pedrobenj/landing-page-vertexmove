@@ -1,15 +1,22 @@
 import { z } from "zod"
 
 import { ProductType } from "@/generated/prisma/enums"
+import { MAX_PRODUCT_PRICE_CENTS, MAX_VARIANT_LABEL_LENGTH, MAX_VARIANT_STOCK } from "@/lib/utils/constants"
 import { parseCurrencyInput } from "@/lib/utils/currency-input"
 
 const variantSchema = z.object({
   id: z.string().optional(),
-  label: z.string().trim().min(1, "Informe o tamanho"),
+  label: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .min(1, "Informe o tamanho")
+    .max(MAX_VARIANT_LABEL_LENGTH, `Tamanho com no máximo ${MAX_VARIANT_LABEL_LENGTH} caracteres`),
   stock: z
     .string()
     .regex(/^\d+$/, "Estoque deve ser um número inteiro")
-    .transform(Number),
+    .transform(Number)
+    .pipe(z.number().max(MAX_VARIANT_STOCK, "Estoque máximo de 100.000 unidades")),
 })
 
 export const productFormSchema = z.object({
@@ -28,6 +35,10 @@ export const productFormSchema = z.object({
         ctx.addIssue({ code: "custom", message: "Informe um preço válido, ex: 89,90" })
         return z.NEVER
       }
+      if (cents > MAX_PRODUCT_PRICE_CENTS) {
+        ctx.addIssue({ code: "custom", message: "Preço máximo de R$ 10.000,00" })
+        return z.NEVER
+      }
       return cents
     }),
   pickupInfo: z.string().trim().min(5, "Informe local e horário de retirada"),
@@ -37,7 +48,7 @@ export const productFormSchema = z.object({
     .array(variantSchema)
     .min(1, "Adicione pelo menos um tamanho")
     .refine(
-      (variants) => new Set(variants.map((v) => v.label.trim().toUpperCase())).size === variants.length,
+      (variants) => new Set(variants.map((v) => v.label)).size === variants.length,
       "Há tamanhos repetidos",
     ),
 })
