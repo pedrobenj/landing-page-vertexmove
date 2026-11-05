@@ -54,6 +54,21 @@ enum AdminRole {
   STAFF
 }
 
+enum ProductType {
+  SHIRT
+  MEDAL
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  READY_FOR_PICKUP
+  PICKED_UP
+  CANCELLED
+  EXPIRED
+  REFUNDED
+}
+
 model Event {
   id                   String      @id @default(cuid())
   slug                 String      @unique
@@ -77,6 +92,7 @@ model Event {
   kits          Kit[]
   coupons       Coupon[]
   registrations Registration[]
+  products      Product[]
 
   @@index([status, date])
 }
@@ -179,9 +195,14 @@ model Registration {
   @@index([participantId])
 }
 
+// Um pagamento pertence a exatamente uma inscrição OU um pedido.
+// Ao criar a primeira migration, acrescentar ao SQL gerado:
+//   ALTER TABLE "Payment" ADD CONSTRAINT "payment_owner_check"
+//   CHECK (num_nonnulls("registrationId", "orderId") = 1);
 model Payment {
   id                String        @id @default(cuid())
-  registrationId    String
+  registrationId    String?
+  orderId           String?
   provider          String // "mercadopago"
   providerPaymentId String        @unique // chave de idempotência do webhook
   method            PaymentMethod
@@ -194,9 +215,11 @@ model Payment {
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
-  registration Registration @relation(fields: [registrationId], references: [id])
+  registration Registration? @relation(fields: [registrationId], references: [id])
+  order        Order?        @relation(fields: [orderId], references: [id])
 
   @@index([registrationId])
+  @@index([orderId])
 }
 
 model Coupon {
@@ -213,14 +236,77 @@ model Coupon {
   registrations Registration[]
 }
 
-// Fase 2
-model Medal {
-  id       String @id @default(cuid())
-  edition  String
-  name     String
-  imageUrl String
-  price    Int // centavos
-  stock    Int
+model Product {
+  id          String      @id @default(cuid())
+  slug        String      @unique
+  name        String
+  description String
+  type        ProductType
+  eventId     String? // corrida de origem (ex.: medalha da edição 2025)
+  imageUrls   String[]
+  price       Int // centavos
+  pickupInfo  String // local e horário de retirada
+  isActive    Boolean     @default(true)
+  isFeatured  Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  event    Event?           @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  variants ProductVariant[]
+
+  @@index([isActive, type])
+}
+
+model ProductVariant {
+  id        String @id @default(cuid())
+  productId String
+  label     String // "P", "M", "G", "GG", "Única"
+  stock     Int    @default(0)
+  position  Int    @default(0)
+
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+
+  @@unique([productId, label])
+}
+
+model Order {
+  id                String      @id @default(cuid())
+  code              String      @unique // ex: VTX-P-7K3P
+  buyerName         String
+  buyerCpf          String // somente dígitos
+  buyerWhatsapp     String // somente dígitos
+  buyerEmail        String
+  amount            Int // centavos
+  status            OrderStatus @default(PENDING)
+  expiresAt         DateTime?
+  privacyAcceptedAt DateTime
+  readyAt           DateTime?
+  pickedUpAt        DateTime?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  items    OrderItem[]
+  payments Payment[]
+
+  @@index([buyerCpf])
+  @@index([buyerWhatsapp])
+  @@index([status, expiresAt])
+}
+
+model OrderItem {
+  id           String @id @default(cuid())
+  orderId      String
+  variantId    String
+  quantity     Int
+  unitPrice    Int // centavos, no momento da compra
+  productName  String // cópia no momento da compra
+  variantLabel String // cópia no momento da compra
+
+  order   Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variant ProductVariant @relation(fields: [variantId], references: [id])
+
+  @@index([orderId])
 }
 
 model AdminUser {
