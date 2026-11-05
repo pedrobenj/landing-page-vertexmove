@@ -3,8 +3,10 @@ import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 
 import { authConfig } from "@/auth.config"
+import { env } from "@/lib/env"
 import { adminLoginSchema } from "@/lib/validations/admin-login.schema"
 import { db } from "@/server/db"
+import { MOCK_ADMIN } from "@/server/mocks/admin-user.mock"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -14,6 +16,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       async authorize(credentials) {
         const parsed = adminLoginSchema.safeParse(credentials)
         if (!parsed.success) return null
+
+        if (env.USE_MOCK_DATA) {
+          const isMockAdmin = parsed.data.email === MOCK_ADMIN.email && parsed.data.password === MOCK_ADMIN.password
+          return isMockAdmin ? { id: MOCK_ADMIN.id, name: MOCK_ADMIN.name, email: MOCK_ADMIN.email, role: MOCK_ADMIN.role } : null
+        }
 
         const admin = await db.adminUser.findUnique({ where: { email: parsed.data.email } })
         if (!admin) return null
