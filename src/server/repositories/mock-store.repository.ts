@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto"
 import { generateOrderCode } from "@/lib/utils/generate-code"
 import { getFirstName } from "@/lib/utils/get-first-name"
 import type { ProductFormData } from "@/lib/validations/product.schema"
-import { DuplicateSlugError } from "@/server/errors"
+import { DuplicateSlugError, DuplicateVariantLabelError, StockChangedError, VariantNotOwnedError } from "@/server/errors"
 import type { NewOrderData, OrderSummary } from "@/types/order.interface"
 import type { StoreProduct } from "@/types/store-product.interface"
 
@@ -101,18 +101,27 @@ export function createMockStoreRepository(seed: StoreProduct[]): StoreRepository
       const existing = id ? products.find((p) => p.id === id) : undefined
 
       if (existing) {
-        // Igual ao Prisma: um id de tamanho só vale se pertencer a ESTE produto. Valida antes de alterar.
-        const ownIds = new Set(existing.variants.map((v) => v.id))
-        if (variants.some((variant) => variant.id && !ownIds.has(variant.id))) {
-          throw new Error("Tamanho não pertence a este produto")
-        }
+        // Valida tudo antes de alterar qualquer coisa (equivale à transação no Prisma).
+        const savedById = new Map(existing.variants.map((v) => [v.id, v]))
+        const incomingIds = new Set(variants.flatMap((variant) => (variant.id ? [variant.id] : [])))
+        if ([...incomingIds].some((variantId) => !savedById.has(variantId))) throw new VariantNotOwnedError()
+
+        // Tamanhos salvos que não vieram no formulário continuam existindo (igual ao Prisma).
+        const omitted = existing.variants.filter((v) => !incomingIds.has(v.id))
+        const omittedLabels = new Set(omitted.map((v) => v.label))
+        if (variants.some((variant) => omittedLabels.has(variant.label))) throw new DuplicateVariantLabelError()
+
+        // Estoque editado vira diferença sobre o estoque ATUAL: não apaga reservas feitas durante a edição.
+        const nextVariants = variants.map((variant) => {
+          const saved = variant.id ? savedById.get(variant.id) : undefined
+          if (!saved) return { id: `mock-var-${randomUUID()}`, label: variant.label, stock: variant.stock }
+          const stock = saved.stock + variant.stock - (variant.originalStock ?? variant.stock)
+          if (stock < 0) throw new StockChangedError()
+          return { id: saved.id, label: variant.label, stock }
+        })
 
         Object.assign(existing, fields)
-        existing.variants = variants.map((variant) => ({
-          id: variant.id ?? `mock-var-${randomUUID()}`,
-          label: variant.label,
-          stock: variant.stock,
-        }))
+        existing.variants = [...nextVariants, ...omitted]
         return clone(existing)
       }
 

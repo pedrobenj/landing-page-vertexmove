@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import type { ProductFormData } from "@/lib/validations/product.schema"
-import { DuplicateSlugError } from "@/server/errors"
+import { DuplicateSlugError, DuplicateVariantLabelError, StockChangedError, VariantNotOwnedError } from "@/server/errors"
 import { buildProduct } from "@/test/factories"
 
 import { createMockStoreRepository } from "./mock-store.repository"
@@ -69,7 +69,7 @@ describe("mock store repository", () => {
     ])
     const data = productData({ slug: "camisa-teste", name: "Renomeada", variants: [{ id: "p2-g", label: "G", stock: 99 }] })
 
-    await expect(repo.saveProduct(data, "p1")).rejects.toThrow("Tamanho não pertence a este produto")
+    await expect(repo.saveProduct(data, "p1")).rejects.toBeInstanceOf(VariantNotOwnedError)
 
     expect((await repo.getProductById("p1"))?.name).toBe("Camisa Teste")
     expect((await repo.getProductById("p2"))?.variants).toEqual([{ id: "p2-g", label: "G", stock: 7 }])
@@ -80,8 +80,8 @@ describe("mock store repository", () => {
     const saved = await repo.saveProduct(
       productData({
         variants: [
-          { id: "p1-p", label: "M", stock: 2 },
-          { id: "p1-m", label: "P", stock: 4 },
+          { id: "p1-p", label: "M", stock: 2, originalStock: 5 },
+          { id: "p1-m", label: "P", stock: 4, originalStock: 0 },
           { label: "G", stock: 1 },
         ],
       }),
@@ -92,5 +92,56 @@ describe("mock store repository", () => {
       { id: "p1-m", label: "P", stock: 4 },
     ])
     expect(saved.variants[2]).toMatchObject({ label: "G", stock: 1 })
+  })
+
+  describe("estoque editado pelo admin é aplicado como diferença", () => {
+    const tenInStock = () =>
+      createMockStoreRepository([buildProduct({ variants: [{ id: "p1-p", label: "P", stock: 10 }] })])
+
+    it("soma a diferença ao estoque atual, preservando a reserva feita no meio da edição", async () => {
+      const repo = tenInStock()
+      // Admin abriu o formulário com 10; um pedido reserva 3 antes de ele salvar.
+      await repo.createPendingOrder(order("p1-p", 3))
+
+      const saved = await repo.saveProduct(
+        productData({ variants: [{ id: "p1-p", label: "P", stock: 12, originalStock: 10 }] }),
+        "p1",
+      )
+      expect(saved.variants[0]?.stock).toBe(9)
+    })
+
+    it("recusa quando a diferença deixaria o estoque negativo, sem alterar nada", async () => {
+      const repo = tenInStock()
+      await repo.createPendingOrder(order("p1-p", 3))
+
+      const data = productData({
+        name: "Renomeada",
+        variants: [
+          { id: "p1-p", label: "P", stock: 0, originalStock: 10 },
+          { label: "G", stock: 4 },
+        ],
+      })
+      await expect(repo.saveProduct(data, "p1")).rejects.toBeInstanceOf(StockChangedError)
+
+      const product = await repo.getProductById("p1")
+      expect(product?.name).toBe("Camisa Teste")
+      expect(product?.variants).toEqual([{ id: "p1-p", label: "P", stock: 7 }])
+    })
+  })
+
+  it("mantém tamanhos salvos que não vieram no formulário", async () => {
+    const repo = createMockStoreRepository([buildProduct()])
+    const saved = await repo.saveProduct(productData({ variants: [{ id: "p1-p", label: "P", stock: 5, originalStock: 5 }] }), "p1")
+    expect(saved.variants).toEqual([
+      { id: "p1-p", label: "P", stock: 5 },
+      { id: "p1-m", label: "M", stock: 0 },
+    ])
+  })
+
+  it("recusa tamanho novo com o mesmo nome de um tamanho salvo omitido", async () => {
+    const repo = createMockStoreRepository([buildProduct()])
+    const data = productData({ variants: [{ label: "M", stock: 1 }] })
+    await expect(repo.saveProduct(data, "p1")).rejects.toBeInstanceOf(DuplicateVariantLabelError)
+    expect((await repo.getProductById("p1"))?.variants).toHaveLength(2)
   })
 })

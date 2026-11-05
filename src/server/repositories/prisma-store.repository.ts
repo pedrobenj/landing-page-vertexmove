@@ -4,9 +4,10 @@ import { Prisma } from "@/generated/prisma/client"
 import { OrderStatus } from "@/generated/prisma/enums"
 import { generateOrderCode } from "@/lib/utils/generate-code"
 import { getFirstName } from "@/lib/utils/get-first-name"
+import { isUniqueViolationOn } from "@/lib/utils/unique-violation-target"
 import type { ProductFormData } from "@/lib/validations/product.schema"
 import { db } from "@/server/db"
-import { DuplicateSlugError } from "@/server/errors"
+import { DuplicateSlugError, DuplicateVariantLabelError, StockChangedError, VariantNotOwnedError } from "@/server/errors"
 import type { StoreProduct } from "@/types/store-product.interface"
 
 import type { StoreRepository } from "./store-repository.interface"
@@ -35,6 +36,12 @@ function toStoreProduct(product: ProductWithVariants): StoreProduct {
 
 function isUniqueViolation(error: unknown): boolean {
   return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002"
+}
+
+/** P2002 no slug vira DuplicateSlugError; nos tamanhos (productId + label), DuplicateVariantLabelError. */
+function toSaveProductError(error: unknown): unknown {
+  if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== "P2002") return error
+  return isUniqueViolationOn(error.meta, "slug") ? new DuplicateSlugError() : new DuplicateVariantLabelError()
 }
 
 class OutOfStockError extends Error {
@@ -88,7 +95,9 @@ export const prismaStoreRepository: StoreRepository = {
       try {
         return await db.$transaction(async (tx) => {
           const outOfStock: string[] = []
-          for (const line of data.lines) {
+          // Ordem fixa por variantId: duas transações travam as linhas na mesma ordem e não entram em deadlock.
+          const sortedLines = [...data.lines].sort((a, b) => (a.variantId < b.variantId ? -1 : a.variantId > b.variantId ? 1 : 0))
+          for (const line of sortedLines) {
             // Update condicional: só baixa se ainda houver estoque. Evita vender além do que existe.
             const { count } = await tx.productVariant.updateMany({
               where: { id: line.variantId, stock: { gte: line.quantity } },
@@ -178,15 +187,19 @@ export const prismaStoreRepository: StoreRepository = {
             where: { id: variant.id, productId: id },
             data: { label: temporaryLabel(variant.id) },
           })
-          if (count === 0) throw new Error("Tamanho não pertence a este produto")
+          if (count === 0) throw new VariantNotOwnedError()
         }
 
-        // Fase 2: aplica rótulo, estoque e posição finais.
+        // Fase 2: rótulo e posição finais; o estoque editado vira diferença sobre o estoque ATUAL,
+        // para não apagar reservas de pedidos feitas enquanto o admin editava.
         for (const variant of existingVariants) {
-          await tx.productVariant.updateMany({
-            where: { id: variant.id, productId: id },
-            data: { label: variant.label, stock: variant.stock, position: variant.position },
+          const delta = variant.stock - (variant.originalStock ?? variant.stock)
+          const { count } = await tx.productVariant.updateMany({
+            where: { id: variant.id, productId: id, ...(delta < 0 ? { stock: { gte: -delta } } : {}) },
+            data: { label: variant.label, stock: { increment: delta }, position: variant.position },
           })
+          // A fase 1 já provou a posse: count 0 aqui só pode ser estoque que ficaria negativo.
+          if (count === 0) throw new StockChangedError()
         }
 
         for (const [position, variant] of variants.entries()) {
@@ -199,8 +212,7 @@ export const prismaStoreRepository: StoreRepository = {
       })
       return toStoreProduct(updated)
     } catch (error) {
-      if (isUniqueViolation(error)) throw new DuplicateSlugError()
-      throw error
+      throw toSaveProductError(error)
     }
   },
 }

@@ -49,7 +49,9 @@ export async function createOrderAction(input: CheckoutInput): Promise<HttpRespo
     const result = await createOrder(parsed.data, getStoreRepository())
 
     if (result.ok) {
-      revalidatePath("/loja")
+      // Estoque mudou: catálogo, páginas de produto e destaques da home.
+      revalidatePath("/loja", "layout")
+      revalidatePath("/")
       return { status: 201, data: { code: result.code }, title: "Pedido criado!" }
     }
     if (result.reason === "EMPTY_CART") {

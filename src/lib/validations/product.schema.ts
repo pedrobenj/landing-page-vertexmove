@@ -4,6 +4,12 @@ import { ProductType } from "@/generated/prisma/enums"
 import { MAX_PRODUCT_PRICE_CENTS, MAX_VARIANT_LABEL_LENGTH, MAX_VARIANT_STOCK } from "@/lib/utils/constants"
 import { parseCurrencyInput } from "@/lib/utils/currency-input"
 
+const stockSchema = z
+  .string()
+  .regex(/^\d+$/, "Estoque deve ser um número inteiro")
+  .transform(Number)
+  .pipe(z.number().max(MAX_VARIANT_STOCK, "Estoque máximo de 100.000 unidades"))
+
 const variantSchema = z.object({
   id: z.string().optional(),
   label: z
@@ -12,11 +18,9 @@ const variantSchema = z.object({
     .toUpperCase()
     .min(1, "Informe o tamanho")
     .max(MAX_VARIANT_LABEL_LENGTH, `Tamanho com no máximo ${MAX_VARIANT_LABEL_LENGTH} caracteres`),
-  stock: z
-    .string()
-    .regex(/^\d+$/, "Estoque deve ser um número inteiro")
-    .transform(Number)
-    .pipe(z.number().max(MAX_VARIANT_STOCK, "Estoque máximo de 100.000 unidades")),
+  stock: stockSchema,
+  /** Estoque quando o formulário foi aberto (só tamanhos já salvos). O servidor aplica a diferença. */
+  originalStock: stockSchema.optional(),
 })
 
 export const productFormSchema = z.object({

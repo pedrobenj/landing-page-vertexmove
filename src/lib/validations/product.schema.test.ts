@@ -76,4 +76,22 @@ describe("productFormSchema", () => {
     expect(result.success).toBe(false)
     expect(result.error?.issues[0]?.message).toBe("Preço máximo de R$ 10.000,00")
   })
+
+  it("converte o estoque original dos tamanhos já salvos", () => {
+    const result = productFormSchema.parse({
+      ...valid,
+      variants: [
+        { id: "v1", label: "P", stock: "12", originalStock: "10" },
+        { label: "M", stock: "3" },
+      ],
+    })
+    expect(result.variants).toEqual([
+      { id: "v1", label: "P", stock: 12, originalStock: 10 },
+      { label: "M", stock: 3 },
+    ])
+    expect(
+      productFormSchema.safeParse({ ...valid, variants: [{ id: "v1", label: "P", stock: "1", originalStock: "x" }] })
+        .success,
+    ).toBe(false)
+  })
 })

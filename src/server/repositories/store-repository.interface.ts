@@ -15,6 +15,10 @@ export interface StoreRepository {
   // Admin
   listAllProducts(): Promise<StoreProduct[]>
   getProductById(id: string): Promise<StoreProduct | null>
-  /** Cria (sem id) ou atualiza. Lança DuplicateSlugError. */
+  /**
+   * Cria (sem id) ou atualiza. Na edição, o estoque de tamanhos salvos é aplicado como diferença
+   * (`stock - originalStock`) sobre o estoque atual, e tamanhos omitidos são mantidos.
+   * Lança DuplicateSlugError, DuplicateVariantLabelError, VariantNotOwnedError ou StockChangedError.
+   */
   saveProduct(data: ProductFormData, id?: string): Promise<StoreProduct>
 }
