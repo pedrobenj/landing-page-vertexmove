@@ -1,4 +1,4 @@
-import { Camera, Medal, MessageCircle } from "lucide-react"
+import { Camera, MessageCircle, ShoppingBag } from "lucide-react"
 import Link from "next/link"
 
 import { VertexLogo } from "@/components/brand"
@@ -29,8 +29,8 @@ export function SiteFooter() {
             </li>
           )}
           <li>
-            <Link href="/medalhas" className="inline-flex items-center gap-2 hover:text-brand-green">
-              <Medal className="size-4" aria-hidden="true" /> Medalhas
+            <Link href="/loja" className="inline-flex items-center gap-2 hover:text-brand-green">
+              <ShoppingBag className="size-4" aria-hidden="true" /> Loja
             </Link>
           </li>
           <li>

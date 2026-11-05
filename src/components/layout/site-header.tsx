@@ -3,6 +3,8 @@ import Link from "next/link"
 import { VertexLogo } from "@/components/brand"
 import { Button } from "@/components/ui/button"
 
+import { CartButton } from "./cart-button"
+
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -13,6 +15,10 @@ export function SiteHeader() {
         </Link>
 
         <nav aria-label="Principal" className="flex items-center gap-2">
+          <Button asChild variant="ghost" size="sm" className="font-semibold text-brand-navy">
+            <Link href="/loja">Loja</Link>
+          </Button>
+          <CartButton />
           <Button asChild variant="ghost" size="sm" className="hidden text-muted-foreground sm:inline-flex">
             <Link href="/admin">Área do admin</Link>
           </Button>
