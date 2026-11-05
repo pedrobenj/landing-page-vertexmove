@@ -13,11 +13,13 @@ Plataforma web onde o atleta:
 1. Vê as corridas abertas do Vertex;
 2. Escolhe a prova, a distância/modalidade e o kit;
 3. Preenche os dados e paga a inscrição (Pix e cartão);
-4. Consulta sua inscrição **sem login e sem senha**, informando WhatsApp ou CPF.
+4. Compra camisas e medalhas na **loja** (carrinho, Pix, retirada presencial);
+5. Consulta suas inscrições e pedidos **sem login e sem senha**, informando WhatsApp ou CPF.
 
 E onde o organizador (admin), numa área protegida:
 
 - Cria e edita eventos, modalidades, lotes de preço, kits e cupons;
+- Cadastra produtos da loja (fotos, tamanhos, estoque) e gerencia pedidos e retiradas;
 - Acompanha inscrições e pagamentos em tempo real;
 - Exporta a lista de inscritos (CSV/Excel) para entrega de kits e cronometragem.
 
@@ -36,8 +38,8 @@ O que **aproveitar** da referência:
 - Home de página única e direta: hero com dois CTAs ("Quero me inscrever" e "Consultar minha inscrição"), seção de consulta, lista de eventos, seção "Como funciona" em passos numerados e CTA final.
 - **Consulta sem login**: o atleta digita o WhatsApp cadastrado e vê suas inscrições/status.
 - Seção "Como funciona" com passos curtos (escolha a prova → escolha a distância → pague → retire o kit → corra → receba a medalha).
-- Página separada de **medalhas de edições anteriores** ("Complete sua coleção"), com aviso claro de que a compra é só da medalha física e não gera inscrição.
-- Rodapé enxuto: logo, WhatsApp (link `wa.me`), Instagram e link para medalhas.
+- Venda de **medalhas de edições anteriores** ("Complete sua coleção"), com aviso claro de que a compra é só da medalha física e não gera inscrição — aqui ampliada para uma **loja de camisas e medalhas** (ver §7 e `docs/plans/2026-11-04-loja-design.md`).
+- Rodapé enxuto: logo, WhatsApp (link `wa.me`), Instagram e link para a loja.
 - Link discreto para "Área do admin" no header.
 - Estado vazio amigável quando não há eventos abertos ("Nenhuma corrida aberta no momento. Volte em breve!").
 
@@ -105,8 +107,13 @@ Mapear no tema do shadcn/ui (CSS variables em `globals.css`):
 | `/corridas/[slug]` | Página do evento: banner, data/horário, local (mapa), modalidades e preços do lote atual, kit (com fotos e tamanhos de camisa), percurso, retirada de kit, regulamento, FAQ, CTA fixo "Inscrever-se" no mobile |
 | `/corridas/[slug]/inscricao` | Formulário de inscrição em etapas (ver §7) |
 | `/inscricao/[code]` | Status da inscrição/pagamento (QR Pix, copia-e-cola, comprovante, dados da prova) |
-| `/consulta` | Consulta por WhatsApp ou CPF → lista de inscrições do atleta |
-| `/medalhas` | Medalhas de edições anteriores à venda (fase 2) |
+| `/consulta` | Consulta por WhatsApp ou CPF → inscrições e pedidos da loja |
+| `/loja` | Catálogo de camisas e medalhas (filtro por tipo, selo "Esgotado") |
+| `/loja/[slug]` | Produto: fotos, descrição, tamanho, quantidade, "Adicionar ao carrinho" |
+| `/loja/carrinho` | Carrinho |
+| `/loja/checkout` | Dados do comprador, aceite de privacidade, resumo e Pix |
+| `/pedido/[code]` | Status do pedido (QR Pix, copia-e-cola, local/horário de retirada) |
+| `/medalhas` | Redireciona para `/loja?tipo=medalhas` |
 | `/regulamento/[slug]` | Regulamento completo do evento (também exportável em PDF) |
 | `/privacidade` | Política de privacidade (LGPD) |
 
@@ -117,9 +124,10 @@ Mapear no tema do shadcn/ui (CSS variables em `globals.css`):
 | `/admin` | Dashboard: inscritos por evento/modalidade, receita, pagamentos pendentes |
 | `/admin/eventos` | CRUD de eventos, modalidades, lotes, kits, cupons |
 | `/admin/eventos/[id]/inscricoes` | Tabela com filtro/busca/paginação server-side, exportação CSV, marcar kit como retirado |
-| `/admin/medalhas` | CRUD de medalhas avulsas (fase 2) |
+| `/admin/loja/produtos` | CRUD de produtos, variantes (tamanhos) e estoque, ativo/destaque |
+| `/admin/loja/pedidos` | Pedidos com filtros, busca por CPF/código, exportação CSV, "Pronto para retirada" e "Retirado" |
 
-Proteger `/admin/*` (exceto `/admin/login`) no `middleware.ts`.
+Proteger `/admin/*` (exceto `/admin/login`) no `proxy.ts` (no Next 16 o `middleware.ts` foi renomeado para `proxy.ts`).
 
 ### API — `src/app/api/`
 - `api/webhooks/payments` — webhook do gateway (validar assinatura, idempotente)
@@ -135,9 +143,12 @@ Proteger `/admin/*` (exceto `/admin/login`) no `middleware.ts`.
 - **Kit**: `id, eventId, name ("Kit Básico", "Kit Premium"), extraPrice, items[], imageUrl, shirtSizes[]`
 - **Participant**: `id, name, cpf, birthDate, gender, whatsapp, email, emergencyContactName, emergencyContactPhone, team?`
 - **Registration**: `id, code (curto, legível, ex: VTX-7K3P), eventId, modalityId, kitId, participantId, shirtSize, priceTierId, amount, discount, couponId?, status (PENDING | PAID | CANCELLED | EXPIRED | REFUNDED), bibNumber?, kitPickedUpAt?, createdAt`
-- **Payment**: `id, registrationId, provider, providerPaymentId, method (PIX | CARD), status, amount, pixQrCode?, pixCopyPaste?, paidAt?, rawPayload`
+- **Payment**: `id, registrationId?, orderId?, provider, providerPaymentId, method (PIX | CARD), status, amount, pixQrCode?, pixCopyPaste?, paidAt?, rawPayload`
 - **Coupon**: `id, eventId?, code, type (PERCENT | FIXED), value, maxUses, usedCount, expiresAt`
-- **Medal** (fase 2): `id, edition, name, imageUrl, price, stock`
+- **Product**: `id, slug, name, description, type (SHIRT | MEDAL), eventId?, imageUrls[], price, pickupInfo, isActive, isFeatured`
+- **ProductVariant**: `id, productId, label ("P", "M", "G", "Única"), stock`
+- **Order**: `id, code (ex: VTX-P-7K3P), buyerName, buyerCpf, buyerWhatsapp, buyerEmail, amount, status (PENDING | PAID | READY_FOR_PICKUP | PICKED_UP | CANCELLED | EXPIRED | REFUNDED), expiresAt?, privacyAcceptedAt, readyAt?, pickedUpAt?`
+- **OrderItem**: `id, orderId, variantId, quantity, unitPrice, productName, variantLabel` (nome e tamanho copiados no momento da compra)
 - **AdminUser**: `id, name, email, passwordHash, role`
 
 Valores monetários **sempre em centavos (integer)**. Formatar só na UI com `formatCurrency`.
@@ -155,6 +166,15 @@ Valores monetários **sempre em centavos (integer)**. Formatar só na UI com `fo
 - **Webhook**: idempotente (chave `providerPaymentId`), atualiza `Payment` e `Registration` em transação, dispara e-mail/WhatsApp de confirmação.
 - **Número de peito** (`bibNumber`): atribuído pelo admin ou automaticamente por modalidade após pagamento (definir com o cliente).
 - **Consulta sem login**: busca por WhatsApp ou CPF retorna apenas dados mínimos (evento, modalidade, status, código). Mascarar CPF/e-mail. Aplicar rate limit na action de consulta.
+
+### Loja (camisas e medalhas)
+- **Somente retirada** presencial — sem frete nem endereço. Local/horário em `Product.pickupInfo`.
+- **Carrinho** em Zustand persistido em `localStorage`, guardando só `variantId` + `quantity` (nunca preço).
+- **Checkout** revalida no servidor produto ativo, estoque e preço; cria `Order` `PENDING` e reserva estoque por **30 min**.
+- **Estoque:** decremento em transação com update condicional (`stock >= quantity`); expiração/cancelamento devolvem; o webhook nunca altera estoque.
+- **Payment** pertence a exatamente uma inscrição **ou** um pedido.
+- Limites: até 10 unidades por item e 20 itens por pedido; rate limit no checkout.
+- Medalhas exibem aviso: compra apenas da medalha física, não gera inscrição.
 
 ### Fluxo do formulário de inscrição (multi-etapas, estado em Zustand)
 1. **Modalidade e kit** — distância, kit, tamanho da camisa
@@ -178,7 +198,8 @@ src/
 │   │   │   └── inscricao/
 │   │   ├── consulta/
 │   │   ├── inscricao/[code]/
-│   │   └── medalhas/
+│   │   ├── loja/               # Catálogo, produto, carrinho, checkout
+│   │   └── pedido/[code]/
 │   ├── admin/                  # Área protegida
 │   ├── actions/                # Server actions por domínio (events, registrations, payments, coupons, admin)
 │   └── api/                    # Webhooks e NextAuth
@@ -321,7 +342,7 @@ Antes de cada commit: `lint`, `typecheck` e `build` passando. Commits no padrão
 ## 14. Fases de entrega
 
 1. **MVP** — Home, página do evento, inscrição com Pix, consulta por WhatsApp/CPF, e-mail de confirmação, admin com CRUD de eventos e lista/exportação de inscritos.
-2. **Fase 2** — Cartão de crédito, cupons, medalhas de edições anteriores, check-in de retirada de kit (busca rápida por CPF/código no admin).
+2. **Fase 2** — Cartão de crédito, cupons, **loja de camisas e medalhas** (retirada presencial), check-in de retirada de kit e de pedidos (busca rápida por CPF/código no admin).
 3. **Fase 3** — Resultados/classificação por evento, galeria de fotos, notificações por WhatsApp.
 
 ---
@@ -337,3 +358,4 @@ Antes de cada commit: `lint`, `typecheck` e `build` passando. Commits no padrão
 - [ ] Número de peito: automático ou manual
 - [ ] Haverá eventos virtuais (como na referência) além das corridas presenciais?
 - [ ] Fotos oficiais e textos institucionais do Vertex
+- [ ] Loja: catálogo inicial (camisas, tamanhos, medalhas de quais edições), preços, estoque e locais/horários de retirada
