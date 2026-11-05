@@ -1,5 +1,6 @@
 export * from "./product-image"
 export * from "./product-card"
+export * from "./product-card-pending-indicator"
 export * from "./product-card-skeleton"
 export * from "./product-grid"
 export * from "./product-grid-item"

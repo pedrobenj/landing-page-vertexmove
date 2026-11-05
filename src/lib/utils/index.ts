@@ -14,3 +14,4 @@ export * from "./get-first-name"
 export * from "./product-stock"
 // generate-code usa node:crypto — importar direto do arquivo, somente no servidor.
 export * from "./unique-violation-target"
+export * from "./truncate-text"

@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from "vitest"
 
 import { CART_ISSUE_REASON } from "@/enums/cart-issue-reason.enum"
 
-import { selectCartCount, useCartStore } from "./cart-store"
+import { selectCartCount, selectItemQuantity, useCartStore } from "./cart-store"
 
 const store = () => useCartStore.getState()
 
@@ -40,5 +40,11 @@ describe("cart store", () => {
     store().addItem("b", 1)
     expect(selectCartCount(store())).toBe(3)
     expect(localStorage.getItem("vertex-cart")).toContain('"variantId":"a"')
+  })
+
+  it("informa a quantidade de uma variante no carrinho", () => {
+    store().addItem("a", 4)
+    expect(selectItemQuantity(store(), "a")).toBe(4)
+    expect(selectItemQuantity(store(), "b")).toBe(0)
   })
 })

@@ -13,7 +13,7 @@ export function CartButton() {
   const visibleCount = hydrated ? count : 0
 
   return (
-    <Button asChild variant="ghost" size="icon-lg" className="relative">
+    <Button asChild variant="ghost" size="icon-lg" className="relative size-11 sm:size-9">
       <Link href="/loja/carrinho" aria-label={`Carrinho, ${visibleCount} ${visibleCount === 1 ? "item" : "itens"}`}>
         <ShoppingBag className="size-5" aria-hidden="true" />
         {visibleCount > 0 && (

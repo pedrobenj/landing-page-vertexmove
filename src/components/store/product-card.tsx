@@ -3,6 +3,7 @@ import Link from "next/link"
 import { formatCurrency, isProductSoldOut } from "@/lib/utils"
 import type { StoreProduct } from "@/types/store-product.interface"
 
+import { ProductCardPendingIndicator } from "./product-card-pending-indicator"
 import { ProductImage } from "./product-image"
 import { SoldOutBadge } from "./sold-out-badge"
 
@@ -24,6 +25,7 @@ export function ProductCard({ product }: ProductCardProps) {
             <SoldOutBadge />
           </div>
         )}
+        <ProductCardPendingIndicator />
       </div>
       <div className="flex flex-col gap-1">
         <h3 className="font-heading font-bold text-brand-navy group-hover:underline">{product.name}</h3>

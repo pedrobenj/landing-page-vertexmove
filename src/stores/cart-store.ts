@@ -60,6 +60,7 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: "vertex-cart",
+      version: 1,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ items: state.items }),
       skipHydration: true,
@@ -69,3 +70,6 @@ export const useCartStore = create<CartState>()(
 
 export const selectCartCount = (state: CartState): number =>
   state.items.reduce((total, item) => total + item.quantity, 0)
+
+export const selectItemQuantity = (state: CartState, variantId: string): number =>
+  state.items.find((item) => item.variantId === variantId)?.quantity ?? 0

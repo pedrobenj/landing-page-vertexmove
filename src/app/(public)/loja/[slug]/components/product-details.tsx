@@ -1,6 +1,7 @@
 import { MapPin } from "lucide-react"
 
 import { ProductImage, SoldOutBadge } from "@/components/store"
+import { ProductType } from "@/enums/product-type.enum"
 import { formatCurrency, isProductSoldOut } from "@/lib/utils"
 import type { StoreProduct } from "@/types/store-product.interface"
 
@@ -23,7 +24,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
           <p className="text-2xl font-bold">{formatCurrency(product.price)}</p>
         </div>
         <p className="text-muted-foreground">{product.description}</p>
-        {product.type === "MEDAL" && (
+        {product.type === ProductType.MEDAL && (
           <p role="note" className="rounded-lg border border-brand-green/40 bg-brand-green/10 p-3 text-sm font-medium text-brand-navy">
             {MEDAL_NOTICE}
           </p>

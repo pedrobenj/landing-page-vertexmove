@@ -1,14 +1,14 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useId, useState } from "react"
 import { toast } from "sonner"
 
 import { QuantityStepper } from "@/components/store"
 import { Button } from "@/components/ui/button"
 import { RadioGroup } from "@/components/ui/radio-group"
 import { MAX_QUANTITY_PER_ITEM } from "@/lib/utils/constants"
-import { useCartStore } from "@/stores/cart-store"
+import { selectItemQuantity, useCartStore } from "@/stores/cart-store"
 import type { StoreVariant } from "@/types/store-product.interface"
 
 import { SizeOption } from "./size-option"
@@ -20,6 +20,8 @@ interface ProductPurchaseFormProps {
 export function ProductPurchaseForm({ variants }: ProductPurchaseFormProps) {
   const router = useRouter()
   const addItem = useCartStore((state) => state.addItem)
+  const sizeLabelId = useId()
+  const quantityLabelId = useId()
   const firstAvailable = variants.find((variant) => variant.stock > 0)
   const [variantId, setVariantId] = useState(firstAvailable?.id ?? "")
   const [quantity, setQuantity] = useState(1)
@@ -38,9 +40,14 @@ export function ProductPurchaseForm({ variants }: ProductPurchaseFormProps) {
 
   function handleAdd() {
     if (!selected) return
+    const before = selectItemQuantity(useCartStore.getState(), selected.id)
     const added = addItem(selected.id, quantity)
     if (!added) {
       toast.error("Seu carrinho já tem o máximo de itens diferentes")
+      return
+    }
+    if (selectItemQuantity(useCartStore.getState(), selected.id) < before + quantity) {
+      toast.info(`Limite de ${MAX_QUANTITY_PER_ITEM} unidades por item`)
       return
     }
     toast.success("Adicionado ao carrinho", {
@@ -52,8 +59,11 @@ export function ProductPurchaseForm({ variants }: ProductPurchaseFormProps) {
     <div className="flex flex-col gap-6">
       {hasSizeChoice && (
         <fieldset className="flex flex-col gap-2">
-          <legend className="mb-2 text-sm font-semibold">Tamanho</legend>
+          <legend id={sizeLabelId} className="mb-2 text-sm font-semibold">
+            Tamanho
+          </legend>
           <RadioGroup
+            aria-labelledby={sizeLabelId}
             value={variantId}
             onValueChange={(value) => {
               setVariantId(value)
@@ -69,8 +79,10 @@ export function ProductPurchaseForm({ variants }: ProductPurchaseFormProps) {
       )}
 
       <div className="flex flex-col gap-2">
-        <span className="text-sm font-semibold">Quantidade</span>
-        <QuantityStepper value={quantity} max={maxQuantity} onChange={setQuantity} label="Quantidade" />
+        <span id={quantityLabelId} className="text-sm font-semibold">
+          Quantidade
+        </span>
+        <QuantityStepper value={quantity} max={maxQuantity} onChange={setQuantity} labelledBy={quantityLabelId} />
       </div>
 
       <Button variant="cta" size="xl" className="w-full sm:w-auto" onClick={handleAdd}>
