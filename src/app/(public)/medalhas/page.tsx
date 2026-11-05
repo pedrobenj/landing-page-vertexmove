@@ -1,9 +1,6 @@
-import type { Metadata } from "next"
+import { redirect } from "next/navigation"
 
-import { PagePlaceholder } from "@/components/layout"
-
-export const metadata: Metadata = { title: "Medalhas" }
-
+/** Página antiga de medalhas: agora faz parte da loja. */
 export default function MedalsPage() {
-  return <PagePlaceholder title="Complete sua coleção" description="Medalhas de edições anteriores. A compra é somente da medalha física e não gera inscrição." />
+  redirect("/loja#medalhas")
 }

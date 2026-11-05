@@ -1,4 +1,5 @@
 import {
+  FeaturedProductsSection,
   FinalCtaSection,
   HeroSection,
   HowItWorksSection,
@@ -14,6 +15,7 @@ export default function HomePage() {
       <LookupSection />
       <OpenEventsSection />
       <HowItWorksSection />
+      <FeaturedProductsSection />
       <FinalCtaSection />
     </>
   )
