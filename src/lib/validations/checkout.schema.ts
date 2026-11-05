@@ -12,5 +12,8 @@ export const checkoutFormSchema = participantSchema
 export const checkoutSchema = checkoutFormSchema.extend({ items: cartItemsSchema })
 
 export type CheckoutFormInput = z.input<typeof checkoutFormSchema>
+/** Valores do formulário: o checkbox começa desmarcado (`false`); o schema só aceita `true`. */
+export type CheckoutFormValues = Omit<CheckoutFormInput, "acceptPrivacy"> & { acceptPrivacy: boolean }
+export type CheckoutFormData = z.output<typeof checkoutFormSchema>
 export type CheckoutInput = z.input<typeof checkoutSchema>
 export type CheckoutData = z.output<typeof checkoutSchema>
