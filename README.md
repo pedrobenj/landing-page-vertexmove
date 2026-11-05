@@ -22,6 +22,8 @@ npm run dev
 | `npm run build` | Build de produção |
 | `npm run db:migrate` | `prisma migrate dev` |
 | `npm run db:studio` | Prisma Studio |
+| `npm run test` | Testes unitários das regras puras (Vitest) |
+| `npm run test:watch` | Vitest em modo watch |
 | `npm run test:e2e` | Testes end-to-end (Playwright, desktop + mobile 360px) |
 | `npm run test:e2e:ui` | Playwright em modo interativo |
 | `npm run test:e2e:report` | Abre o relatório HTML da última execução |
@@ -35,6 +37,14 @@ Se já houver um servidor em `localhost:3000`, ele é reaproveitado; senão o Pl
 npx playwright install chromium   # primeira vez
 npm run test:e2e
 ```
+
+## Loja (modo mock)
+
+Com `USE_MOCK_DATA=true`, a loja usa um catálogo em memória (`src/server/mocks/store-products.mock.ts`)
+e pedidos ficam guardados até o servidor reiniciar. Admin: `admin@vertex.dev` / `vertex-admin-123`.
+
+Os testes e2e do admin cadastram produtos nesse catálogo em memória (nomes "Camisa E2E …"); eles
+somem ao reiniciar o dev server.
 
 Logos oficiais vão em `public/brand/` (`vertex-logo.png`, `vertex-logo-white.png`, `vertex-symbol.png`).
 
