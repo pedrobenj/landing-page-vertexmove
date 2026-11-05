@@ -12,7 +12,7 @@ import { CheckoutForm } from "./checkout-form"
 import { CheckoutOrderLine } from "./checkout-order-line"
 
 export function CheckoutView() {
-  const { data, isPending, isError, isEmpty, hydrated } = usePricedCart()
+  const { data, isPending, isError, isEmpty, hydrated, isPlaceholderData } = usePricedCart()
 
   if (isEmpty) {
     return (
@@ -27,13 +27,13 @@ export function CheckoutView() {
       />
     )
   }
-  if (!hydrated || isPending) return <CartSkeleton />
+  if (!hydrated || (isPending && !data)) return <CartSkeleton />
   if (isError || !data) return <ServerError title="Não foi possível carregar o resumo do pedido" />
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_22rem] lg:items-start">
       <CheckoutForm />
-      <CartSummary itemCount={data.itemCount} total={data.total}>
+      <CartSummary itemCount={data.itemCount} total={data.total} isUpdating={isPlaceholderData}>
         <ul className="flex flex-col gap-2 border-t pt-4">
           {data.lines.map((line) => (
             <CheckoutOrderLine key={line.variantId} line={line} />

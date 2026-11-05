@@ -7,7 +7,7 @@ import { ProductImage, QuantityStepper } from "@/components/store"
 import { Button } from "@/components/ui/button"
 import { formatCurrency } from "@/lib/utils"
 import { MAX_QUANTITY_PER_ITEM } from "@/lib/utils/constants"
-import { useCartStore } from "@/stores/cart-store"
+import { selectItemQuantity, useCartStore } from "@/stores/cart-store"
 import type { PricedCartLine } from "@/types/cart.interface"
 
 interface CartLineItemProps {
@@ -17,6 +17,11 @@ interface CartLineItemProps {
 export function CartLineItem({ line }: CartLineItemProps) {
   const setQuantity = useCartStore((state) => state.setQuantity)
   const removeItem = useCartStore((state) => state.removeItem)
+  // Quantidade atual do carrinho (não a da última resposta do servidor), para cliques rápidos somarem certo.
+  const quantity = useCartStore((state) => selectItemQuantity(state, line.variantId))
+
+  // Removido do carrinho: some na hora, sem esperar o servidor recalcular.
+  if (quantity === 0) return null
 
   return (
     <li className="flex gap-4 py-4">
@@ -43,7 +48,7 @@ export function CartLineItem({ line }: CartLineItemProps) {
         </div>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <QuantityStepper
-            value={line.quantity}
+            value={quantity}
             max={MAX_QUANTITY_PER_ITEM}
             onChange={(quantity) => setQuantity(line.variantId, quantity)}
             label={`Quantidade de ${line.productName} (${line.variantLabel})`}

@@ -5,7 +5,7 @@ import { ServerError } from "@/components/feedback"
 import { getStoreRepository } from "@/server/repositories/store.repository"
 import type { OrderSummary } from "@/types/order.interface"
 
-import { OrderDetails } from "./components"
+import { ClearCartOnMount, OrderDetails } from "./components"
 
 export const metadata: Metadata = { title: "Meu pedido", robots: { index: false } }
 
@@ -15,7 +15,7 @@ export const instant = false
 const ORDER_CODE_PATTERN = /^VTX-P-[2-9A-Z]{4}$/
 
 export default async function OrderPage({ params }: PageProps<"/pedido/[code]">) {
-  const code = decodeURIComponent((await params).code).toUpperCase()
+  const code = (await params).code.toUpperCase()
   if (!ORDER_CODE_PATTERN.test(code)) notFound()
 
   let order: OrderSummary | null
@@ -33,6 +33,7 @@ export default async function OrderPage({ params }: PageProps<"/pedido/[code]">)
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
+      <ClearCartOnMount code={order.code} />
       <OrderDetails order={order} />
     </div>
   )

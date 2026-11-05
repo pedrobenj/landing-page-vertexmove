@@ -12,7 +12,7 @@ import { CartSkeleton } from "./cart-skeleton"
 import { CartSummary } from "./cart-summary"
 
 export function CartView() {
-  const { data, isPending, isError, isEmpty, hydrated } = usePricedCart()
+  const { data, isPending, isError, isEmpty, hydrated, isPlaceholderData } = usePricedCart()
 
   if (isEmpty) {
     return (
@@ -28,13 +28,13 @@ export function CartView() {
       />
     )
   }
-  if (!hydrated || isPending) return <CartSkeleton />
+  if (!hydrated || (isPending && !data)) return <CartSkeleton />
   if (isError || !data) return <ServerError title="Não foi possível carregar o carrinho" />
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_22rem] lg:items-start">
       <CartLineList lines={data.lines} />
-      <CartSummary itemCount={data.itemCount} total={data.total}>
+      <CartSummary itemCount={data.itemCount} total={data.total} isUpdating={isPlaceholderData}>
         <Button asChild variant="cta" size="xl" className="w-full">
           <Link href="/loja/checkout">Finalizar compra</Link>
         </Button>

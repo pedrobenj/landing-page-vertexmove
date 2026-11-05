@@ -1,6 +1,6 @@
 "use client"
 
-import { useQuery } from "@tanstack/react-query"
+import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { useEffect } from "react"
 import { toast } from "sonner"
 
@@ -24,6 +24,8 @@ export function usePricedCart() {
     },
     enabled: hydrated && items.length > 0,
     staleTime: 0,
+    // Mantém o carrinho anterior na tela enquanto recalcula (sem skeleton nem perda de foco a cada +/−).
+    placeholderData: keepPreviousData,
   })
 
   const issues = query.data?.issues

@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useTransition } from "react"
+import { useRef, useState, useTransition } from "react"
 import { Controller, type Resolver, useForm } from "react-hook-form"
 import { toast } from "sonner"
 
@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Field, FieldContent, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { formatCpfInput, formatPhoneInput } from "@/lib/utils"
+import { formatCpfInput, formatPhoneInput, markLastOrder } from "@/lib/utils"
 import {
   checkoutFormSchema,
   type CheckoutFormData,
@@ -26,8 +26,10 @@ const checkoutResolver = zodResolver(checkoutFormSchema) as Resolver<CheckoutFor
 export function CheckoutForm() {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
+  const [isRedirecting, setIsRedirecting] = useState(false)
+  // Trava síncrona contra duplo envio (o estado do React só atualiza no próximo render).
+  const submittingRef = useRef(false)
   const items = useCartStore((state) => state.items)
-  const clear = useCartStore((state) => state.clear)
   const applyIssues = useCartStore((state) => state.applyIssues)
 
   const form = useForm<CheckoutFormValues, unknown, CheckoutFormData>({
@@ -36,14 +38,29 @@ export function CheckoutForm() {
   })
 
   function onSubmit(values: CheckoutFormData) {
+    if (submittingRef.current) return
+    submittingRef.current = true
+
     startTransition(async () => {
-      const response = await createOrderAction({ ...values, items })
+      let response: Awaited<ReturnType<typeof createOrderAction>>
+      try {
+        response = await createOrderAction({ ...values, items })
+      } catch {
+        submittingRef.current = false
+        toast.error("Não foi possível finalizar a compra. Verifique sua conexão e tente de novo.")
+        return
+      }
 
       if (response.status === 201 && response.data?.code) {
-        clear()
+        // O carrinho é esvaziado na página do pedido (ClearCartOnMount), depois da navegação.
+        setIsRedirecting(true)
+        markLastOrder(response.data.code)
+        toast.success(response.title ?? "Pedido criado!")
         router.push(`/pedido/${response.data.code}`)
         return
       }
+
+      submittingRef.current = false
       if (response.status === 409 && response.data?.issues) {
         applyIssues(response.data.issues)
         toast.error(response.title ?? "Seu carrinho mudou")
@@ -54,8 +71,10 @@ export function CheckoutForm() {
     })
   }
 
+  const isBusy = form.formState.isSubmitting || isPending || isRedirecting
+
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} noValidate aria-label="Dados do comprador">
+    <form onSubmit={(event) => form.handleSubmit(onSubmit)(event)} noValidate aria-label="Dados do comprador">
       <FieldGroup>
         <Controller
           name="name"
@@ -63,8 +82,8 @@ export function CheckoutForm() {
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="buyer-name">Nome completo</FieldLabel>
-              <Input {...field} id="buyer-name" autoComplete="name" aria-invalid={fieldState.invalid} />
-              <FieldError errors={[fieldState.error]} />
+              <Input {...field} id="buyer-name" aria-describedby={fieldState.invalid ? "buyer-name-error" : undefined} autoComplete="name" aria-invalid={fieldState.invalid} />
+              <FieldError id="buyer-name-error" errors={[fieldState.error]} />
             </Field>
           )}
         />
@@ -77,12 +96,13 @@ export function CheckoutForm() {
               <Input
                 {...field}
                 id="buyer-cpf"
+                aria-describedby={fieldState.invalid ? "buyer-cpf-error" : undefined}
                 inputMode="numeric"
                 placeholder="000.000.000-00"
                 aria-invalid={fieldState.invalid}
                 onChange={(event) => field.onChange(formatCpfInput(event.target.value))}
               />
-              <FieldError errors={[fieldState.error]} />
+              <FieldError id="buyer-cpf-error" errors={[fieldState.error]} />
             </Field>
           )}
         />
@@ -95,6 +115,7 @@ export function CheckoutForm() {
               <Input
                 {...field}
                 id="buyer-whatsapp"
+                aria-describedby={fieldState.invalid ? "buyer-whatsapp-error" : undefined}
                 type="tel"
                 inputMode="tel"
                 autoComplete="tel-national"
@@ -102,7 +123,7 @@ export function CheckoutForm() {
                 aria-invalid={fieldState.invalid}
                 onChange={(event) => field.onChange(formatPhoneInput(event.target.value))}
               />
-              <FieldError errors={[fieldState.error]} />
+              <FieldError id="buyer-whatsapp-error" errors={[fieldState.error]} />
             </Field>
           )}
         />
@@ -112,8 +133,8 @@ export function CheckoutForm() {
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="buyer-email">E-mail</FieldLabel>
-              <Input {...field} id="buyer-email" type="email" autoComplete="email" aria-invalid={fieldState.invalid} />
-              <FieldError errors={[fieldState.error]} />
+              <Input {...field} id="buyer-email" aria-describedby={fieldState.invalid ? "buyer-email-error" : undefined} type="email" autoComplete="email" aria-invalid={fieldState.invalid} />
+              <FieldError id="buyer-email-error" errors={[fieldState.error]} />
             </Field>
           )}
         />
@@ -124,6 +145,7 @@ export function CheckoutForm() {
             <Field data-invalid={fieldState.invalid} orientation="horizontal">
               <Checkbox
                 id="buyer-privacy"
+                aria-describedby={fieldState.invalid ? "buyer-privacy-error" : undefined}
                 ref={field.ref}
                 name={field.name}
                 checked={field.value}
@@ -140,13 +162,13 @@ export function CheckoutForm() {
                     </Link>
                   </span>
                 </FieldLabel>
-                <FieldError errors={[fieldState.error]} />
+                <FieldError id="buyer-privacy-error" errors={[fieldState.error]} />
               </FieldContent>
             </Field>
           )}
         />
-        <Button type="submit" variant="cta" size="xl" disabled={isPending || items.length === 0}>
-          {isPending ? "Criando pedido..." : "Ir para o pagamento"}
+        <Button type="submit" variant="cta" size="xl" disabled={isBusy || items.length === 0}>
+          {isBusy ? "Criando pedido..." : "Ir para o pagamento"}
         </Button>
       </FieldGroup>
     </form>
