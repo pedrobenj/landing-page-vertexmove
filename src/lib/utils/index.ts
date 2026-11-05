@@ -8,4 +8,8 @@ export * from "./is-valid-cpf"
 export * from "./masks"
 export * from "./whatsapp-link"
 export * from "./query-keys"
-// generate-registration-code usa node:crypto — importar direto do arquivo, somente no servidor.
+export * from "./currency-input"
+export * from "./slugify"
+export * from "./get-first-name"
+export * from "./product-stock"
+// generate-code usa node:crypto — importar direto do arquivo, somente no servidor.
