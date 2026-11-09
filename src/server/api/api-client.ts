@@ -36,12 +36,15 @@ function isTimeout(error: unknown): boolean {
   return error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError")
 }
 
-function parseBody<T>(text: string, status: number): T {
+/** Status usado quando a API responde 2xx com um corpo que não é JSON (gateway devolveu HTML, etc.). */
+const INVALID_BODY_STATUS = 502
+
+function parseBody<T>(text: string): T {
   if (!text) return undefined as T
   try {
     return JSON.parse(text) as T
   } catch {
-    throw new ApiError(status, API_ERROR_CODE.UNKNOWN, "Resposta inválida da API.")
+    throw new ApiError(INVALID_BODY_STATUS, API_ERROR_CODE.UNKNOWN, "Resposta inválida da API.")
   }
 }
 
@@ -86,7 +89,7 @@ export async function apiFetchRaw<T>(path: string, options: ApiFetchOptions = {}
 
     // A leitura do corpo também pode estourar o timeout ou cair a conexão: fica dentro do try.
     const text = res.status === 204 ? "" : await res.text()
-    return { data: parseBody<T>(text, res.status), headers: res.headers, status: res.status }
+    return { data: parseBody<T>(text), headers: res.headers, status: res.status }
   } catch (error) {
     if (isApiError(error)) throw error
     if (isTimeout(error)) {

@@ -1,4 +1,4 @@
-import { isValidBrPhone } from "./is-valid-br-phone"
+import { isValidBrPhone, stripCountryCode } from "./is-valid-br-phone"
 import { onlyDigits } from "./only-digits"
 
 /**
@@ -6,8 +6,7 @@ import { onlyDigits } from "./only-digits"
  * Lança erro se o número não for um telefone brasileiro válido (ver `isValidBrPhone`).
  */
 export function toE164Phone(value: string): string {
-  const digits = onlyDigits(value)
-  const national = (digits.length === 12 || digits.length === 13) && digits.startsWith("55") ? digits.slice(2) : digits
+  const national = stripCountryCode(onlyDigits(value))
   if (!isValidBrPhone(national)) {
     throw new Error("Telefone deve ter DDD válido e 8 ou 9 dígitos (celular começando com 9).")
   }

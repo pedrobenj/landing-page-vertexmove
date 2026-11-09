@@ -139,13 +139,13 @@ describe("apiFetch", () => {
     expect(error).toMatchObject({ status: 503, codigo: "INDISPONIVEL" })
   })
 
-  it("converte JSON inválido em 2xx em ApiError DESCONHECIDO", async () => {
+  it("converte JSON inválido em 2xx em ApiError 502 DESCONHECIDO", async () => {
     transport.mockResolvedValue(new Response("<html>ok</html>", { status: 200 }))
 
     const error = await catchError(apiFetch("/eventos"))
 
     expect(isApiError(error)).toBe(true)
-    expect(error).toMatchObject({ status: 200, codigo: "DESCONHECIDO", mensagem: "Resposta inválida da API." })
+    expect(error).toMatchObject({ status: 502, codigo: "DESCONHECIDO", mensagem: "Resposta inválida da API." })
   })
 
   it("converte falha de rede em ApiError INDISPONIVEL", async () => {

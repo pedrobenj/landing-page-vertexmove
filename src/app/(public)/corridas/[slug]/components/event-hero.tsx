@@ -30,7 +30,11 @@ export function EventHero({ event, lowestPrice, registrationHref }: EventHeroPro
         <div className="grid items-center gap-8 lg:grid-cols-[1.1fr_1fr] lg:gap-12">
           <div className="relative aspect-video overflow-hidden rounded-2xl bg-brand-navy-deep shadow-sm lg:order-last lg:aspect-[4/3]">
             <CoverImage src={event.imagemCapaUrl} alt={event.nome} sizes="(min-width: 1024px) 520px, 100vw" />
-            <PillBadge className="absolute top-4 left-4">Inscrições abertas</PillBadge>
+            {lowestPrice !== null ? (
+              <PillBadge className="absolute top-4 left-4">Inscrições abertas</PillBadge>
+            ) : (
+              <PillBadge className="absolute top-4 left-4 bg-white">Esgotado</PillBadge>
+            )}
           </div>
 
           <div className="flex flex-col gap-6">
@@ -48,19 +52,23 @@ export function EventHero({ event, lowestPrice, registrationHref }: EventHeroPro
             <EventInfoList event={event} />
 
             <div className="hidden items-center gap-6 border-t pt-6 md:flex">
-              <Button asChild variant="cta" size="xl" className="normal-case tracking-normal">
-                <Link href={registrationHref}>
-                  Inscrever-se
-                  <ArrowRight aria-hidden="true" />
-                </Link>
-              </Button>
-              {lowestPrice !== null && (
-                <p className="flex flex-col">
-                  <span className="text-xs font-bold tracking-wider text-muted-foreground uppercase">A partir de</span>
-                  <span className="font-heading text-2xl font-black text-brand-navy-deep">
-                    {formatCurrency(lowestPrice)}
-                  </span>
-                </p>
+              {lowestPrice !== null ? (
+                <>
+                  <Button asChild variant="cta" size="xl" className="normal-case tracking-normal">
+                    <Link href={registrationHref}>
+                      Inscrever-se
+                      <ArrowRight aria-hidden="true" />
+                    </Link>
+                  </Button>
+                  <p className="flex flex-col">
+                    <span className="text-xs font-bold tracking-wider text-muted-foreground uppercase">A partir de</span>
+                    <span className="font-heading text-2xl font-black text-brand-navy-deep">
+                      {formatCurrency(lowestPrice)}
+                    </span>
+                  </p>
+                </>
+              ) : (
+                <p className="font-heading text-2xl font-black text-brand-navy-deep">Inscrições esgotadas</p>
               )}
             </div>
           </div>

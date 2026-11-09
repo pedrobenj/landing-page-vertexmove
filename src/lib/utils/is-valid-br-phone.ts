@@ -1,7 +1,7 @@
 import { onlyDigits } from "./only-digits"
 
 /** Remove o código do país (55) quando a entrada tem 12 ou 13 dígitos. */
-function stripCountryCode(digits: string): string {
+export function stripCountryCode(digits: string): string {
   return (digits.length === 12 || digits.length === 13) && digits.startsWith("55") ? digits.slice(2) : digits
 }
 

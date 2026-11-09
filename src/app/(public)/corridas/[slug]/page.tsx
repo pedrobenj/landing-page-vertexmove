@@ -123,7 +123,8 @@ export default async function EventPage({ params }: PageProps<"/corridas/[slug]"
         <EventFaq />
       </SectionBand>
 
-      <EventCtaBand eventName={event.nome} registrationHref={registrationHref} />
+      {/* Sem preço (tudo esgotado) não há para onde convidar: a faixa final some. */}
+      {lowestPrice !== null && <EventCtaBand eventName={event.nome} registrationHref={registrationHref} />}
 
       <MobileRegistrationBar lowestPrice={lowestPrice} registrationHref={registrationHref} />
     </>

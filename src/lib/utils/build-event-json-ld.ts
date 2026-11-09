@@ -2,6 +2,13 @@ import type { PublicEventDetail } from "@/types/api/public-event-detail.interfac
 
 /** Fuso de Fortaleza (sem horário de verão). */
 const FORTALEZA_OFFSET = "-03:00"
+/** `HH:mm`, aceitando segundos opcionais (`HH:mm:ss`), que são descartados. */
+const START_TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/
+
+/** Data/hora ISO da largada; sem horário válido, só a data (também aceita pelo schema.org). */
+function buildStartDate(date: string, startTime: string): string {
+  return START_TIME_PATTERN.test(startTime) ? `${date}T${startTime.slice(0, 5)}:00${FORTALEZA_OFFSET}` : date
+}
 
 interface BuildEventJsonLdOptions {
   siteUrl: string
@@ -21,7 +28,7 @@ export function buildEventJsonLd(event: PublicEventDetail, { siteUrl, lowestPric
     name: event.nome,
     description: event.descricao,
     url,
-    startDate: `${event.dataEvento}T${event.horarioLargada}:00${FORTALEZA_OFFSET}`,
+    startDate: buildStartDate(event.dataEvento, event.horarioLargada),
     eventStatus: "https://schema.org/EventScheduled",
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     sport: "Corrida de rua",

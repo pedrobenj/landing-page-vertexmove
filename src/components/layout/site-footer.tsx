@@ -67,6 +67,16 @@ export function SiteFooter() {
           </Link>
         </p>
       </div>
+
+      {/*
+        Páginas com barra fixa no rodapé do mobile (ex.: CTA de inscrição do evento, `data-sticky-cta`)
+        ganham este espaço no fim, para a barra não cobrir o crédito.
+      */}
+      <div
+        aria-hidden="true"
+        data-testid="sticky-cta-spacer"
+        className="hidden h-[calc(5rem+env(safe-area-inset-bottom))] max-md:in-[body:has([data-sticky-cta])]:block"
+      />
     </footer>
   )
 }

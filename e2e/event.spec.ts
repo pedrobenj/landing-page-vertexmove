@@ -75,4 +75,21 @@ test.describe("Página da corrida", () => {
       await expect(hero.getByRole("link", { name: "Inscrever-se" })).toHaveAttribute("href", `${EVENT_URL}/inscricao`)
     }
   })
+
+  test("em 360px, a barra fixa não cobre o crédito do rodapé", async ({ page, isMobile }) => {
+    test.skip(!isMobile, "a barra fixa só existe no mobile")
+    await page.setViewportSize({ width: 360, height: 780 })
+    await page.goto(EVENT_URL)
+
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
+    const credit = page.getByText("Desenvolvido por Pedro Benjamin")
+    const bar = page.getByTestId("mobile-registration-bar")
+    await expect(credit).toBeInViewport()
+    await expect(bar).toBeVisible()
+
+    const creditBox = await credit.boundingBox()
+    const barBox = await bar.boundingBox()
+    expect(creditBox && barBox).toBeTruthy()
+    expect(creditBox!.y + creditBox!.height).toBeLessThanOrEqual(barBox!.y)
+  })
 })
