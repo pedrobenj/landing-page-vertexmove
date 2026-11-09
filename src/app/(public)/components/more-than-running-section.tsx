@@ -2,6 +2,7 @@ import { ArrowRight } from "lucide-react"
 import Link from "next/link"
 
 import { SectionBand, SectionHeading } from "@/components/sections"
+import { StaggerGroup } from "@/components/motion"
 import { Button } from "@/components/ui/button"
 
 import { ValueBadge } from "./value-badge"
@@ -27,11 +28,11 @@ export function MoreThanRunningSection() {
             </Link>
           </Button>
         </div>
-        <ul className="grid grid-cols-2">
+        <StaggerGroup as="ul" className="grid grid-cols-2">
           {VALUE_BADGES.map((badge) => (
             <ValueBadge key={badge.label} badge={badge} />
           ))}
-        </ul>
+        </StaggerGroup>
       </div>
     </SectionBand>
   )

@@ -1,3 +1,4 @@
+import { StaggerItem } from "@/components/motion"
 import type { PublicEvent } from "@/types/api/event.interface"
 
 import { EventCard } from "./event-card"
@@ -8,8 +9,8 @@ interface EventListItemProps {
 
 export function EventListItem({ event }: EventListItemProps) {
   return (
-    <li>
+    <StaggerItem>
       <EventCard event={event} />
-    </li>
+    </StaggerItem>
   )
 }

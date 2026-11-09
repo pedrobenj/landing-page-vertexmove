@@ -20,6 +20,9 @@ export default defineConfig({
     baseURL: BASE_URL,
     locale: "pt-BR",
     timezoneId: "America/Fortaleza",
+    // Animações (motion) desligadas por padrão: estado final imediato, testes estáveis.
+    // `e2e/motion.spec.ts` liga de volta para conferir as animações.
+    contextOptions: { reducedMotion: "reduce" },
     trace: "on-first-retry",
     screenshot: "only-on-failure",
   },

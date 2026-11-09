@@ -2,6 +2,7 @@ import { Flag, Search, ShoppingBag, Ticket } from "lucide-react"
 import Link from "next/link"
 import { Suspense } from "react"
 
+import { StaggerGroup, StaggerItem } from "@/components/motion"
 import { PillBadge, SectionBand } from "@/components/sections"
 import { Button } from "@/components/ui/button"
 
@@ -14,19 +15,21 @@ export function HighlightCardsSection() {
       <h2 id="destaques-title" className="sr-only">
         Destaques
       </h2>
-      <div className="grid items-start gap-5 md:grid-cols-3">
-        <HighlightCard
-          title="Corridas"
-          description="Provas de rua em Fortaleza para todos os ritmos."
-          badge={
-            <Suspense fallback={<PillBadge icon={Flag}>Inscrições abertas</PillBadge>}>
-              <OpenEventsCountBadge />
-            </Suspense>
-          }
-          linkLabel="Garantir minha vaga"
-          href="#corridas"
-        />
-        <div className="flex flex-col gap-3">
+      <StaggerGroup className="grid items-start gap-5 md:grid-cols-3">
+        <StaggerItem as="div">
+          <HighlightCard
+            title="Corridas"
+            description="Provas de rua em Fortaleza para todos os ritmos."
+            badge={
+              <Suspense fallback={<PillBadge icon={Flag}>Inscrições abertas</PillBadge>}>
+                <OpenEventsCountBadge />
+              </Suspense>
+            }
+            linkLabel="Garantir minha vaga"
+            href="#corridas"
+          />
+        </StaggerItem>
+        <StaggerItem as="div" className="flex flex-col gap-3">
           <HighlightCard
             title="Inscrição"
             description="Sem login e sem senha: só o WhatsApp ou o CPF."
@@ -40,15 +43,17 @@ export function HighlightCardsSection() {
               Acompanhe sua inscrição
             </Link>
           </Button>
-        </div>
-        <HighlightCard
-          title="Loja"
-          description="Camisas e medalhas oficiais do Vertex."
-          badge={<PillBadge icon={ShoppingBag}>Produtos oficiais</PillBadge>}
-          linkLabel="Acessar a loja"
-          href="/loja"
-        />
-      </div>
+        </StaggerItem>
+        <StaggerItem as="div">
+          <HighlightCard
+            title="Loja"
+            description="Camisas e medalhas oficiais do Vertex."
+            badge={<PillBadge icon={ShoppingBag}>Produtos oficiais</PillBadge>}
+            linkLabel="Acessar a loja"
+            href="/loja"
+          />
+        </StaggerItem>
+      </StaggerGroup>
     </SectionBand>
   )
 }

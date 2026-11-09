@@ -118,3 +118,15 @@
     @apply font-heading;
   }
 }
+
+/*
+ * Animações (motion): com prefers-reduced-motion, os elementos animáveis (`data-motion`)
+ * aparecem já no estado final — sem deslocamento, desfoque ou fade (vale antes da hidratação também).
+ */
+@media (prefers-reduced-motion: reduce) {
+  [data-motion] {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}

@@ -1,3 +1,4 @@
+import { StaggerItem } from "@/components/motion"
 import type { StoreProduct } from "@/types/store-product.interface"
 
 import { ProductCard } from "./product-card"
@@ -8,8 +9,8 @@ interface ProductGridItemProps {
 
 export function ProductGridItem({ product }: ProductGridItemProps) {
   return (
-    <li>
+    <StaggerItem>
       <ProductCard product={product} />
-    </li>
+    </StaggerItem>
   )
 }

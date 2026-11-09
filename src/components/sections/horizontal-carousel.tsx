@@ -1,8 +1,11 @@
 "use client"
 
 import { ArrowLeft, ArrowRight } from "lucide-react"
+import { motion } from "motion/react"
 import { type KeyboardEvent, type ReactNode, useCallback, useEffect, useRef, useState } from "react"
 
+import { LIST_VIEWPORT } from "@/animations/motion-config"
+import { staggerContainer } from "@/animations/reveal"
 import { Button } from "@/components/ui/button"
 import { cn, getCarouselActivePage, getCarouselPageCount, getCarouselPageOffset } from "@/lib/utils"
 
@@ -123,8 +126,13 @@ export function HorizontalCarousel({ children, label, className }: HorizontalCar
         </div>
       )}
 
-      <ul
+      {/* Os `HorizontalCarouselItem`s entram em cascata quando o carrossel aparece na tela. */}
+      <motion.ul
         ref={trackRef}
+        variants={staggerContainer}
+        initial="hidden"
+        whileInView="visible"
+        viewport={LIST_VIEWPORT}
         // Focável só quando há o que rolar; sem overflow, o foco iria para um elemento inerte.
         tabIndex={hasOverflow ? 0 : undefined}
         aria-label={hasOverflow ? `${label} (use as setas do teclado para navegar)` : label}
@@ -133,7 +141,7 @@ export function HorizontalCarousel({ children, label, className }: HorizontalCar
         className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto overscroll-x-contain px-4 pb-1 [scrollbar-width:none] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-green md:mx-0 md:scroll-px-0 md:px-0 md:focus-visible:outline-offset-4 [&::-webkit-scrollbar]:hidden"
       >
         {children}
-      </ul>
+      </motion.ul>
 
       {hasOverflow && (
         <div className="flex justify-center gap-1.5">

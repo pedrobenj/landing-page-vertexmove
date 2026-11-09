@@ -129,7 +129,7 @@ Mapear no tema do shadcn/ui (CSS variables em `globals.css`):
 - **Formulários:** React Hook Form + Zod
 - **Datas:** date-fns com locale `ptBR`, fuso `America/Fortaleza`
 - **Toasts:** sonner
-- **Animações:** Framer Motion (sutil)
+- **Animações:** Motion (`motion/react`, sucessora do Framer Motion) — sutil, respeitando prefers-reduced-motion. Variants e constantes em `src/animations/`; componentes reutilizáveis (Reveal, StaggerGroup/StaggerItem, HeroTitle, ParallaxLayer, AnimatedCounter, ScrollProgressBar) em `src/components/motion/`. Só nas páginas públicas (nunca no admin).
 - **Imagens:** URLs vindas da API (`imagemCapaUrl`, `fotos[].url`); configurar `images.remotePatterns` para o CDN.
 - **Deploy:** Vercel
 
@@ -359,7 +359,8 @@ src/
 ├── components/
 │   ├── ui/                     # shadcn/ui
 │   ├── brand/                  # Logo, chevron, eyebrow
-│   └── layout/                 # Header, footer
+│   ├── layout/                 # Header, footer
+│   └── motion/                 # Animações client (motion/react) reutilizáveis
 ├── server/
 │   └── api/                    # Cliente HTTP, sessão e endpoints (ver §8)
 ├── lib/
@@ -373,7 +374,7 @@ src/
 ├── hooks/
 │   └── data/                   # Hooks de TanStack Query
 ├── stores/                     # Zustand (registration-form-store, admin-events-filters-store, cart-store...)
-└── animations/                 # Variants do Framer Motion
+└── animations/                 # Variants do Motion (motion/react)
 public/
 └── brand/
 ```

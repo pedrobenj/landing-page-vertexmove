@@ -1,3 +1,4 @@
+import { StaggerGroup } from "@/components/motion"
 import { SectionBand, SectionHeading } from "@/components/sections"
 
 import { HowItWorksItem } from "./how-it-works-item"
@@ -12,11 +13,11 @@ export function HowItWorksSection() {
         title="Como funciona"
         description="Da inscrição à medalha, em poucos passos."
       />
-      <ol className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <StaggerGroup as="ol" className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {HOW_IT_WORKS_STEPS.map((step, index) => (
           <HowItWorksItem key={step.title} step={step} position={index + 1} />
         ))}
-      </ol>
+      </StaggerGroup>
     </SectionBand>
   )
 }

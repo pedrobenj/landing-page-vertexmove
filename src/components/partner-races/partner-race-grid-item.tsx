@@ -1,3 +1,4 @@
+import { StaggerItem } from "@/components/motion"
 import type { PartnerRace } from "@/types/api/partner-race.interface"
 
 import { PartnerRaceCard } from "./partner-race-card"
@@ -8,8 +9,8 @@ interface PartnerRaceGridItemProps {
 
 export function PartnerRaceGridItem({ race }: PartnerRaceGridItemProps) {
   return (
-    <li>
+    <StaggerItem>
       <PartnerRaceCard race={race} />
-    </li>
+    </StaggerItem>
   )
 }

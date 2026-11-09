@@ -1,4 +1,5 @@
 import { PastEventCard } from "@/components/events"
+import { StaggerItem } from "@/components/motion"
 import type { PublicEvent } from "@/types/api/event.interface"
 
 interface PastEventGridItemProps {
@@ -7,8 +8,8 @@ interface PastEventGridItemProps {
 
 export function PastEventGridItem({ event }: PastEventGridItemProps) {
   return (
-    <li>
+    <StaggerItem>
       <PastEventCard event={event} />
-    </li>
+    </StaggerItem>
   )
 }
