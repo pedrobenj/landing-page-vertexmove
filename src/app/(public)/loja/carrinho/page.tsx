@@ -1,14 +1,22 @@
 import type { Metadata } from "next"
 
+import { SectionBand, SectionHeading } from "@/components/sections"
+
 import { CartView } from "./components"
 
 export const metadata: Metadata = { title: "Carrinho", robots: { index: false } }
 
 export default function CartPage() {
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10">
-      <h1 className="text-3xl font-extrabold text-brand-navy uppercase">Carrinho</h1>
+    <SectionBand aria-labelledby="carrinho-title" className="border-t-0" containerClassName="gap-8">
+      <SectionHeading
+        as="h1"
+        id="carrinho-title"
+        eyebrow="Loja Vertex"
+        title="Carrinho"
+        description="Confira os itens antes de finalizar. Pagamento via Pix e retirada presencial."
+      />
       <CartView />
-    </div>
+    </SectionBand>
   )
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { createMockStoreRepository } from "@/server/repositories/mock-store.repository"
+import { createMockStoreRepository } from "./mock-store.repository"
 import { buildProduct } from "@/test/factories"
 
 import { createOrder } from "./order.service"

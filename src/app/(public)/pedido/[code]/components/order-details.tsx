@@ -1,6 +1,6 @@
 import { QrCode } from "lucide-react"
 
-import { Badge } from "@/components/ui/badge"
+import { PillBadge } from "@/components/sections"
 import { ORDER_STATUS_LABEL } from "@/enums/order-status.enum"
 import { formatCurrency, formatDateTime } from "@/lib/utils"
 import type { OrderSummary } from "@/types/order.interface"
@@ -15,16 +15,17 @@ interface OrderDetailsProps {
 export function OrderDetails({ order }: OrderDetailsProps) {
   return (
     <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-2">
-        <p className="text-sm text-muted-foreground">Olá, {order.buyerFirstName}! Seu pedido:</p>
-        <h1 className="font-heading text-3xl font-extrabold text-brand-navy">{order.code}</h1>
-        <Badge className="w-fit">{ORDER_STATUS_LABEL[order.status]}</Badge>
+      <header className="flex flex-col gap-3">
+        <p className="text-xs font-bold tracking-[0.2em] text-brand-green-text uppercase">Pedido da loja</p>
+        <p className="text-muted-foreground">Olá, {order.buyerFirstName}! Seu pedido:</p>
+        <h1 className="font-heading text-4xl leading-[1.05] font-black tracking-tight text-brand-navy-deep sm:text-5xl">{order.code}</h1>
+        <PillBadge tone="soft">{ORDER_STATUS_LABEL[order.status]}</PillBadge>
       </header>
 
       {order.status === "PENDING" && (
-        <section aria-labelledby="pix-title" className="flex flex-col items-center gap-3 rounded-xl border border-dashed p-6 text-center">
+        <section aria-labelledby="pix-title" className="flex flex-col items-center gap-3 rounded-2xl border border-dashed bg-slate-50 p-6 text-center">
           <QrCode className="size-10 text-muted-foreground" aria-hidden="true" />
-          <h2 id="pix-title" className="font-bold">Pagamento via Pix</h2>
+          <h2 id="pix-title" className="font-heading font-black text-brand-navy-deep">Pagamento via Pix</h2>
           {/* TODO (Etapa 2): QR Code, copia-e-cola e polling do status. */}
           <p className="text-sm text-muted-foreground">O pagamento via Pix será liberado em breve.</p>
           {order.expiresAt && (
@@ -33,8 +34,8 @@ export function OrderDetails({ order }: OrderDetailsProps) {
         </section>
       )}
 
-      <section aria-labelledby="itens-title" className="flex flex-col gap-2">
-        <h2 id="itens-title" className="font-bold text-brand-navy">Itens</h2>
+      <section aria-labelledby="itens-title" className="flex flex-col gap-2 rounded-2xl border bg-card p-5 shadow-sm">
+        <h2 id="itens-title" className="font-heading font-black text-brand-navy-deep">Itens</h2>
         <ul className="divide-y">
           {order.items.map((item) => (
             <OrderItemRow key={`${item.productName}-${item.variantLabel}`} item={item} />
@@ -47,7 +48,7 @@ export function OrderDetails({ order }: OrderDetailsProps) {
       </section>
 
       <section aria-labelledby="retirada-title" className="flex flex-col gap-2">
-        <h2 id="retirada-title" className="font-bold text-brand-navy">Retirada</h2>
+        <h2 id="retirada-title" className="font-heading font-black text-brand-navy-deep">Retirada</h2>
         <ul className="flex flex-col gap-2">
           {order.pickupInfos.map((info) => (
             <PickupInfoItem key={info} info={info} />

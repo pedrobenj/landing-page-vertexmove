@@ -2,27 +2,24 @@
 
 import { revalidatePath } from "next/cache"
 
+import { API_ERROR_CODE } from "@/enums/api-error-code.enum"
+import { getApiErrorMessage } from "@/lib/utils/api-errors"
+import { invalidInputResponse } from "@/lib/utils/invalid-input-response"
 import { cartItemsSchema } from "@/lib/validations/cart.schema"
 import { checkoutSchema, type CheckoutInput } from "@/lib/validations/checkout.schema"
-import { getStoreRepository } from "@/server/repositories/store.repository"
-import { priceCart } from "@/server/services/cart.service"
-import { createOrder } from "@/server/services/order.service"
+import { createStoreOrder, priceCart } from "@/server/api/endpoints/store"
+import { toErrorResponse } from "@/server/api/to-error-response"
 import type { CartIssue, CartItem, PricedCart } from "@/types/cart.interface"
 import type { HttpResponse } from "@/types/http-response.interface"
 
 export async function validateCartAction(items: CartItem[]): Promise<HttpResponse<PricedCart>> {
   const parsed = cartItemsSchema.safeParse(items)
-  if (!parsed.success) {
-    return { status: 400, error: "INVALID_CART", title: parsed.error.issues[0]?.message ?? "Carrinho inválido" }
-  }
+  if (!parsed.success) return invalidInputResponse("Carrinho inválido", parsed.error.issues[0])
 
   try {
-    const repo = getStoreRepository()
-    const products = await repo.getProductsByVariantIds(parsed.data.map((item) => item.variantId))
-    return { status: 200, data: priceCart(parsed.data, products) }
+    return { status: 200, data: await priceCart(parsed.data) }
   } catch (error) {
-    console.error("[validateCartAction]", error)
-    return { status: 500, error: "INTERNAL", title: "Não foi possível carregar o carrinho" }
+    return toErrorResponse(error, { title: "Não foi possível carregar o carrinho", context: "validateCartAction" })
   }
 }
 
@@ -31,34 +28,27 @@ export interface CheckoutResponseData {
   issues?: CartIssue[]
 }
 
+/** Cria o pedido pendente. O rate limit fica com o backend da loja (hoje, o mock não limita). */
 export async function createOrderAction(input: CheckoutInput): Promise<HttpResponse<CheckoutResponseData>> {
-  // TODO(migracao): Task 20 — o rate limit em memória do Next saiu; a loja vira backend falso e o limite fica com ele.
-
   const parsed = checkoutSchema.safeParse(input)
-  if (!parsed.success) {
-    return { status: 400, error: "INVALID_INPUT", title: parsed.error.issues[0]?.message ?? "Verifique seus dados" }
-  }
+  if (!parsed.success) return invalidInputResponse("Verifique seus dados", parsed.error.issues[0])
 
   try {
-    const result = await createOrder(parsed.data, getStoreRepository())
+    const result = await createStoreOrder(parsed.data)
 
     if (result.ok) {
-      // Estoque mudou: catálogo, páginas de produto e destaques da home.
+      // Estoque mudou: catálogo e páginas de produto.
       revalidatePath("/loja", "layout")
-      revalidatePath("/")
       return { status: 201, data: { code: result.code }, title: "Pedido criado!" }
-    }
-    if (result.reason === "EMPTY_CART") {
-      return { status: 400, error: "EMPTY_CART", title: "Seu carrinho está vazio" }
     }
     return {
       status: 409,
-      error: "CART_CHANGED",
-      title: result.cart.issues[0]?.message ?? "Seu carrinho mudou. Confira os itens.",
+      code: API_ERROR_CODE.CART_CHANGED,
+      error: result.cart.issues[0]?.message ?? getApiErrorMessage(API_ERROR_CODE.CART_CHANGED),
+      title: "Seu carrinho mudou",
       data: { issues: result.cart.issues },
     }
   } catch (error) {
-    console.error("[createOrderAction]", error)
-    return { status: 500, error: "INTERNAL", title: "Não foi possível criar o pedido. Tente novamente." }
+    return toErrorResponse(error, { title: "Não foi possível finalizar a compra", context: "createOrderAction" })
   }
 }

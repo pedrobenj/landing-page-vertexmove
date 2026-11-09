@@ -1,21 +1,19 @@
 import { expect, test } from "@playwright/test"
 
+import { loginAsAdmin } from "./helpers/admin-login"
+
 test.describe("Admin da loja", () => {
   // Login + action + navegação somam mais que os 30s padrão no dev server (o beforeEach conta no limite).
   test.describe.configure({ timeout: 60_000 })
 
+  // Login no mock da API VertexMove (admin@example.com); a loja do admin usa o backend falso da loja.
   test.beforeEach(async ({ page }) => {
-    await page.goto("/admin/login")
-    await page.getByLabel("E-mail").fill("admin@example.com")
-    await page.getByLabel("Senha").fill("Vertex@Dev12345")
-    await page.getByRole("button", { name: "Entrar" }).click()
-    // O login vai ao mock da API VertexMove; o que demora é compilar o /admin e o redirect no dev server
-    // quando a suíte roda em paralelo. A loja do admin continua sobre o mock antigo até a Task 20.
-    await expect(page).toHaveURL("/admin", { timeout: 20_000 })
+    await loginAsAdmin(page)
   })
 
   test("lista os produtos, inclusive inativos", async ({ page }) => {
     await page.goto("/admin/loja/produtos")
+    await expect(page.getByRole("link", { name: "Novo produto" })).toBeVisible()
     await expect(page.getByRole("link", { name: "Camisa Edição Limitada 2024" })).toBeVisible()
     await expect(page.getByRole("row").filter({ hasText: "Camisa Edição Limitada 2024" })).toContainText("Inativo")
   })

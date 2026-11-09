@@ -1,28 +1,41 @@
+import { ShoppingCart } from "lucide-react"
 import type { Metadata } from "next"
+import Link from "next/link"
 import { Suspense } from "react"
 
-import { Eyebrow } from "@/components/brand"
-import { ProductGridSkeleton } from "@/components/store"
+import { SectionBand, SectionHeading } from "@/components/sections"
+import { Button } from "@/components/ui/button"
 
-import { StoreCatalog, StoreSectionNav } from "./components"
+import { StoreCatalog, StoreCatalogSkeleton } from "./components"
 
 export const metadata: Metadata = {
   title: "Loja",
   description: "Camisas e medalhas do Vertex Grupo de Corrida. Pague com Pix e retire presencialmente.",
+  alternates: { canonical: "/loja" },
 }
 
-export default function StorePage() {
+export default function StorePage({ searchParams }: PageProps<"/loja">) {
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-10">
-      <header className="flex flex-col items-start gap-3">
-        <Eyebrow className="justify-start">Loja Vertex</Eyebrow>
-        <h1 className="text-3xl font-extrabold text-brand-navy uppercase sm:text-4xl">Camisas e medalhas</h1>
-        <p className="text-muted-foreground">Pague com Pix e retire presencialmente — sem frete.</p>
-        <StoreSectionNav />
-      </header>
-      <Suspense fallback={<ProductGridSkeleton count={8} />}>
-        <StoreCatalog />
+    <SectionBand aria-labelledby="loja-title" className="border-t-0">
+      <SectionHeading
+        as="h1"
+        id="loja-title"
+        eyebrow="Loja Vertex"
+        title="Vista o movimento"
+        description="Camisas e medalhas do Vertex. Pague com Pix e retire presencialmente — sem frete."
+        actions={
+          <Button asChild variant="outline" size="lg" className="w-full rounded-xl sm:w-auto">
+            <Link href="/loja/carrinho">
+              <ShoppingCart aria-hidden="true" />
+              Ver carrinho
+            </Link>
+          </Button>
+        }
+      />
+      {/* `?tipo=` é dado da requisição: o catálogo (filtro + produtos) fica atrás do Suspense. */}
+      <Suspense fallback={<StoreCatalogSkeleton />}>
+        <StoreCatalog searchParams={searchParams} />
       </Suspense>
-    </div>
+    </SectionBand>
   )
 }

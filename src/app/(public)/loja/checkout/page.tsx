@@ -1,14 +1,22 @@
 import type { Metadata } from "next"
 
+import { SectionBand, SectionHeading } from "@/components/sections"
+
 import { CheckoutView } from "./components"
 
 export const metadata: Metadata = { title: "Finalizar compra", robots: { index: false } }
 
 export default function CheckoutPage() {
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10">
-      <h1 className="text-3xl font-extrabold text-brand-navy uppercase">Finalizar compra</h1>
+    <SectionBand aria-labelledby="checkout-title" className="border-t-0" containerClassName="gap-8">
+      <SectionHeading
+        as="h1"
+        id="checkout-title"
+        eyebrow="Loja Vertex"
+        title="Finalizar compra"
+        description="Informe seus dados para reservar os itens. O estoque fica reservado por 30 minutos."
+      />
       <CheckoutView />
-    </div>
+    </SectionBand>
   )
 }

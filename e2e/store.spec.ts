@@ -91,9 +91,28 @@ test.describe("Loja", () => {
     await expect(page.getByTestId("cart-count")).toHaveCount(0)
   })
 
-  test("/medalhas redireciona para a loja", async ({ page }) => {
+  test("/medalhas redireciona para a loja filtrada por medalhas", async ({ page }) => {
     await page.goto("/medalhas")
-    await expect(page).toHaveURL(/\/loja#medalhas$/)
+    await expect(page).toHaveURL(/\/loja\?tipo=medalhas$/)
+    await expect(page.getByRole("region", { name: "Medalhas" }).getByRole("listitem")).toHaveCount(2)
+    await expect(page.getByRole("region", { name: "Camisas" })).toHaveCount(0)
+    const filters = page.getByRole("navigation", { name: "Categorias da loja" })
+    await expect(filters.getByRole("link", { name: "Medalhas" })).toHaveAttribute("aria-current", "page")
+  })
+
+  test("filtro por categoria: Todos + tipos", async ({ page }) => {
+    await page.goto("/loja")
+    const filters = page.getByRole("navigation", { name: "Categorias da loja" })
+    await expect(filters.getByRole("link", { name: "Todos" })).toHaveAttribute("aria-current", "page")
+
+    await filters.getByRole("link", { name: "Camisas" }).click()
+    await expect(page).toHaveURL(/\/loja\?tipo=camisas$/)
+    await expect(page.getByRole("region", { name: "Medalhas" })).toHaveCount(0)
+    await expect(page.getByRole("region", { name: "Camisas" })).toBeVisible()
+
+    await filters.getByRole("link", { name: "Todos" }).click()
+    await expect(page).toHaveURL(/\/loja$/)
+    await expect(page.getByRole("region", { name: "Medalhas" })).toBeVisible()
   })
 
   test("pedido inexistente retorna 404", async ({ page }) => {

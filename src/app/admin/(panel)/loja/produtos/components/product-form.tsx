@@ -3,9 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Plus } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { useRef, useState, useTransition } from "react"
 import { Controller, useFieldArray, useForm } from "react-hook-form"
-import { toast } from "sonner"
 
 import { saveProductAction } from "@/app/actions/admin-products"
 import { Button } from "@/components/ui/button"
@@ -15,6 +13,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { PRODUCT_TYPE, PRODUCT_TYPE_LABEL } from "@/enums/product-type.enum"
+import { useAdminFormSubmit } from "@/hooks/use-admin-form-submit"
 import { slugify } from "@/lib/utils"
 import { productFormSchema, type ProductFormData, type ProductFormInput } from "@/lib/validations/product.schema"
 
@@ -23,16 +22,14 @@ import { VariantFieldRow } from "./variant-field-row"
 interface ProductFormProps {
   defaultValues: ProductFormInput
   productId?: string
+  /** `false` para papéis só de leitura: esconde o botão de salvar (a API também recusa com 403). */
+  canManage?: boolean
 }
 
 const PRODUCT_TYPES = Object.values(PRODUCT_TYPE)
 
-export function ProductForm({ defaultValues, productId }: ProductFormProps) {
+export function ProductForm({ defaultValues, productId, canManage = true }: ProductFormProps) {
   const router = useRouter()
-  const [isPending, startTransition] = useTransition()
-  const [isRedirecting, setIsRedirecting] = useState(false)
-  // Trava síncrona contra duplo envio (o estado do React só atualiza no próximo render).
-  const submittingRef = useRef(false)
 
   const form = useForm<ProductFormInput, unknown, ProductFormData>({
     resolver: zodResolver(productFormSchema),
@@ -41,39 +38,19 @@ export function ProductForm({ defaultValues, productId }: ProductFormProps) {
   const variants = useFieldArray({ control: form.control, name: "variants" })
   const variantsError = form.formState.errors.variants
 
-  function onSubmit() {
-    if (submittingRef.current) return
-    submittingRef.current = true
-
-    startTransition(async () => {
-      let response: Awaited<ReturnType<typeof saveProductAction>>
-      try {
-        // Envia os valores crus do formulário (com id e originalStock dos tamanhos salvos):
-        // o servidor valida e converte de novo.
-        response = await saveProductAction(form.getValues(), productId)
-      } catch {
-        submittingRef.current = false
-        toast.error("Não foi possível salvar o produto. Verifique sua conexão e tente de novo.")
-        return
-      }
-
-      if (response.error) {
-        submittingRef.current = false
-        toast.error(response.title ?? "Não foi possível salvar o produto")
-        return
-      }
-
-      setIsRedirecting(true)
-      toast.success(response.title ?? "Produto salvo")
-      router.push("/admin/loja/produtos")
-    })
-  }
-
-  const isBusy = form.formState.isSubmitting || isPending || isRedirecting
+  const { onSubmit, isBusy } = useAdminFormSubmit(form, {
+    // Envia os valores crus do formulário (com id e originalStock dos tamanhos salvos): o servidor valida e converte de novo.
+    submit: (values) => saveProductAction(values, productId),
+    defaults: defaultValues,
+    errorTitle: "Não foi possível salvar o produto",
+    // Volta para a lista (a transição segura o "Salvando..." até a nova página).
+    refreshOnSuccess: false,
+    onSuccess: () => router.push("/admin/loja/produtos"),
+  })
 
   return (
     <form
-      onSubmit={(event) => form.handleSubmit(onSubmit)(event)}
+      onSubmit={onSubmit}
       noValidate
       className="flex max-w-2xl flex-col gap-8"
       aria-label="Produto"
@@ -258,9 +235,11 @@ export function ProductForm({ defaultValues, productId }: ProductFormProps) {
         />
       </FieldGroup>
 
-      <Button type="submit" size="xl" disabled={isBusy} className="w-fit">
-        {isBusy ? "Salvando..." : "Salvar produto"}
-      </Button>
+      {canManage && (
+        <Button type="submit" size="xl" disabled={isBusy} className="w-fit">
+          {isBusy ? "Salvando..." : "Salvar produto"}
+        </Button>
+      )}
     </form>
   )
 }

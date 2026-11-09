@@ -1,5 +1,7 @@
 import type { ORDER_STATUS } from "@/enums/order-status.enum"
 
+import type { PricedCart } from "@/types/cart.interface"
+
 export interface Buyer {
   name: string
   cpf: string
@@ -49,3 +51,9 @@ export interface OrderSummary {
   items: OrderSummaryLine[]
   pickupInfos: string[]
 }
+
+/**
+ * Resultado do checkout da loja: pedido criado, ou carrinho alterado (preço/estoque mudou entre a
+ * revisão e o envio) com o carrinho recalculado para a UI mostrar os avisos.
+ */
+export type CreateStoreOrderResult = { ok: true; code: string } | { ok: false; cart: PricedCart }

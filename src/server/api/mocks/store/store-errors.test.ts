@@ -4,11 +4,12 @@ import {
   DuplicateSlugError,
   DuplicateVariantLabelError,
   ProductNotFoundError,
+  STORE_CONFLICT_ERROR_CODES,
   STORE_CONFLICT_ERROR_NAMES,
   StockChangedError,
   VariantNotOwnedError,
   isStoreConflictErrorName,
-} from "./errors"
+} from "./store-errors"
 
 // As actions mapeiam os erros pelo `name`: ele precisa bater com a lista exportada.
 describe("store errors", () => {
@@ -25,5 +26,11 @@ describe("store errors", () => {
     expect(error.name).toBe("ProductNotFoundError")
     expect(error.message).toBe("Produto não encontrado")
     expect(isStoreConflictErrorName(error.name)).toBe(false)
+  })
+
+  it("cada conflito tem um código de API próprio", () => {
+    const codes = STORE_CONFLICT_ERROR_NAMES.map((name) => STORE_CONFLICT_ERROR_CODES[name])
+    expect(new Set(codes).size).toBe(STORE_CONFLICT_ERROR_NAMES.length)
+    expect(STORE_CONFLICT_ERROR_CODES.DuplicateSlugError).toBe("PRODUTO_SLUG_DUPLICADO")
   })
 })

@@ -12,7 +12,7 @@ export function ProductCardPendingIndicator() {
     <span
       aria-hidden="true"
       className={cn(
-        "pointer-events-none absolute inset-0 flex items-center justify-center rounded-xl bg-white/40 opacity-0 transition-opacity duration-200",
+        "pointer-events-none absolute inset-0 flex items-center justify-center bg-white/40 opacity-0 transition-opacity duration-200",
         pending && "opacity-100",
       )}
     >

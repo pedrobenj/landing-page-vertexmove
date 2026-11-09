@@ -1,16 +1,22 @@
-import Link from "next/link"
+import type { PRODUCT_TYPE } from "@/enums/product-type.enum"
+import { STORE_FILTER_OPTIONS } from "@/lib/utils"
 
-import { PRODUCT_TYPE_SECTION } from "@/enums/product-type.enum"
+import { StoreSectionNavItem } from "./store-section-nav-item"
 
-export function StoreSectionNav() {
+interface StoreSectionNavProps {
+  /** `null` = "Todos". */
+  activeType: PRODUCT_TYPE | null
+}
+
+/** Filtro por categoria ("Todos" + tipos), via `?tipo=` (ex.: `/loja?tipo=medalhas`). */
+export function StoreSectionNav({ activeType }: StoreSectionNavProps) {
   return (
-    <nav aria-label="Seções da loja" className="flex gap-2">
-      <Link href={`#${PRODUCT_TYPE_SECTION.SHIRT.anchor}`} className="rounded-full border px-4 py-2 text-sm font-semibold text-brand-navy hover:bg-muted">
-        {PRODUCT_TYPE_SECTION.SHIRT.title}
-      </Link>
-      <Link href={`#${PRODUCT_TYPE_SECTION.MEDAL.anchor}`} className="rounded-full border px-4 py-2 text-sm font-semibold text-brand-navy hover:bg-muted">
-        {PRODUCT_TYPE_SECTION.MEDAL.title}
-      </Link>
+    <nav aria-label="Categorias da loja">
+      <ul className="flex flex-wrap gap-2">
+        {STORE_FILTER_OPTIONS.map((option) => (
+          <StoreSectionNavItem key={option.href} option={option} isActive={option.type === activeType} />
+        ))}
+      </ul>
     </nav>
   )
 }

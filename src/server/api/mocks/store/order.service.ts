@@ -4,7 +4,7 @@ import { addMinutes } from "date-fns"
 
 import { ORDER_RESERVATION_MINUTES } from "@/lib/utils/constants"
 import type { CheckoutData } from "@/lib/validations/checkout.schema"
-import type { StoreRepository } from "@/server/repositories/store-repository.interface"
+import type { StoreRepository } from "./store-repository.interface"
 import type { PricedCart } from "@/types/cart.interface"
 
 import { priceCart } from "./cart.service"

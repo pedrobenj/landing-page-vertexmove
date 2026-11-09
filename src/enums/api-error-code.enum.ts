@@ -14,6 +14,13 @@ export enum API_ERROR_CODE {
   SOLD_OUT = "DISTANCIA_ESGOTADA",
   // Presumido (o mock não valida duplicidade de tamanho); confirmar com o backend.
   DUPLICATE_SHIRT_SIZE = "CODIGO_DUPLICADO",
+  // Loja: o backend ainda não tem a loja (§16); usados pelo mock da Task 20. Confirmar quando a API existir.
+  PRODUCT_DUPLICATE_SLUG = "PRODUTO_SLUG_DUPLICADO",
+  DUPLICATE_VARIANT_LABEL = "TAMANHO_DUPLICADO",
+  VARIANT_NOT_OWNED = "TAMANHO_DE_OUTRO_PRODUTO",
+  STOCK_CHANGED = "ESTOQUE_ALTERADO",
+  CART_CHANGED = "CARRINHO_ALTERADO",
+  EMPTY_CART = "CARRINHO_VAZIO",
   // Gerados pelo BFF (não vêm da API).
   TIMEOUT = "TIMEOUT",
   UNAVAILABLE = "INDISPONIVEL",

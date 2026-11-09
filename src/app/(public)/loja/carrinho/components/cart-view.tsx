@@ -1,9 +1,10 @@
 "use client"
 
-import { ShoppingBag } from "lucide-react"
+import { ArrowRight, ShoppingBag } from "lucide-react"
 import Link from "next/link"
 
 import { EmptyState, ServerError } from "@/components/feedback"
+import { StoreUnavailable } from "@/components/store"
 import { Button } from "@/components/ui/button"
 import { usePricedCart } from "@/hooks/data/use-priced-cart"
 
@@ -12,7 +13,7 @@ import { CartSkeleton } from "./cart-skeleton"
 import { CartSummary } from "./cart-summary"
 
 export function CartView() {
-  const { data, isPending, isError, isEmpty, hydrated, isPlaceholderData } = usePricedCart()
+  const { data, isPending, isError, isEmpty, hydrated, isPlaceholderData, isStoreUnavailable } = usePricedCart()
 
   if (isEmpty) {
     return (
@@ -28,6 +29,7 @@ export function CartView() {
       />
     )
   }
+  if (isStoreUnavailable) return <StoreUnavailable />
   if (!hydrated || (isPending && !data)) return <CartSkeleton />
   if (isError || !data) return <ServerError title="Não foi possível carregar o carrinho" />
 
@@ -36,7 +38,10 @@ export function CartView() {
       <CartLineList lines={data.lines} />
       <CartSummary itemCount={data.itemCount} total={data.total} isUpdating={isPlaceholderData}>
         <Button asChild variant="cta" size="xl" className="w-full">
-          <Link href="/loja/checkout">Finalizar compra</Link>
+          <Link href="/loja/checkout">
+            Finalizar compra
+            <ArrowRight aria-hidden="true" />
+          </Link>
         </Button>
         <Button asChild variant="ghost" className="w-full">
           <Link href="/loja">Continuar comprando</Link>

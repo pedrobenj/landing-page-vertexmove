@@ -1,6 +1,7 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
+import { ArrowRight } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useRef, useState, useTransition } from "react"
@@ -63,18 +64,23 @@ export function CheckoutForm() {
       submittingRef.current = false
       if (response.status === 409 && response.data?.issues) {
         applyIssues(response.data.issues)
-        toast.error(response.title ?? "Seu carrinho mudou")
+        toast.error(response.title ?? "Seu carrinho mudou", { description: response.error })
         router.push("/loja/carrinho")
         return
       }
-      toast.error(response.title ?? "Não foi possível finalizar a compra")
+      toast.error(response.title ?? "Não foi possível finalizar a compra", { description: response.error })
     })
   }
 
   const isBusy = form.formState.isSubmitting || isPending || isRedirecting
 
   return (
-    <form onSubmit={(event) => form.handleSubmit(onSubmit)(event)} noValidate aria-label="Dados do comprador">
+    <form
+      onSubmit={(event) => form.handleSubmit(onSubmit)(event)}
+      noValidate
+      aria-label="Dados do comprador"
+      className="rounded-2xl border bg-card p-5 shadow-sm sm:p-6"
+    >
       <FieldGroup>
         <Controller
           name="name"
@@ -169,6 +175,7 @@ export function CheckoutForm() {
         />
         <Button type="submit" variant="cta" size="xl" disabled={isBusy || items.length === 0}>
           {isBusy ? "Criando pedido..." : "Ir para o pagamento"}
+          {!isBusy && <ArrowRight aria-hidden="true" />}
         </Button>
       </FieldGroup>
     </form>

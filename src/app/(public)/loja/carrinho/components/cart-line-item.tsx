@@ -29,7 +29,7 @@ export function CartLineItem({ line }: CartLineItemProps) {
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <Link href={`/loja/${line.productSlug}`} className="font-bold text-brand-navy hover:underline">
+            <Link href={`/loja/${line.productSlug}`} className="font-heading font-black text-brand-navy-deep hover:underline">
               {line.productName}
             </Link>
             <p className="text-sm text-muted-foreground">

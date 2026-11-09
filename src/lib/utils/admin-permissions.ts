@@ -10,3 +10,11 @@ const EVENT_MANAGERS: ReadonlySet<string> = new Set([ADMIN_ROLE.ORGANIZATION, AD
 export function canManageEvents(papel: ADMIN_ROLE | string): boolean {
   return EVENT_MANAGERS.has(papel)
 }
+
+/**
+ * Papéis que cadastram e alteram produtos da loja. Por ora, os mesmos que gerenciam corridas.
+ * Matriz a confirmar (§16): a loja ainda não existe no backend.
+ */
+export function canManageStore(papel: ADMIN_ROLE | string): boolean {
+  return canManageEvents(papel)
+}

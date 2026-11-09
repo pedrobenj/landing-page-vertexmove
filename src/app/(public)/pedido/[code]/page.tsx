@@ -1,8 +1,12 @@
 import type { Metadata } from "next"
-import { notFound } from "next/navigation"
+import { notFound, unstable_rethrow } from "next/navigation"
 
 import { ServerError } from "@/components/feedback"
-import { getStoreRepository } from "@/server/repositories/store.repository"
+import { SectionBand } from "@/components/sections"
+import { StoreUnavailable } from "@/components/store"
+import { isApiError } from "@/server/api/api-error"
+import { getStoreOrder } from "@/server/api/endpoints/store"
+import { isStoreUnavailable } from "@/server/api/is-store-unavailable"
 import type { OrderSummary } from "@/types/order.interface"
 
 import { ClearCartOnMount, OrderDetails } from "./components"
@@ -18,23 +22,30 @@ export default async function OrderPage({ params }: PageProps<"/pedido/[code]">)
   const code = (await params).code.toUpperCase()
   if (!ORDER_CODE_PATTERN.test(code)) notFound()
 
-  let order: OrderSummary | null
+  let order: OrderSummary | null = null
+  let failure: "unavailable" | "error" | null = null
   try {
-    order = await getStoreRepository().getOrderSummaryByCode(code)
+    order = await getStoreOrder(code)
   } catch (error) {
-    console.error("[OrderPage]", error)
-    return (
-      <div className="mx-auto max-w-2xl px-4 py-10">
-        <ServerError title="Não foi possível carregar o pedido" />
-      </div>
-    )
+    unstable_rethrow(error)
+    if (isApiError(error) && error.status === 404) notFound()
+    if (isStoreUnavailable(error)) failure = "unavailable"
+    else {
+      console.error("[OrderPage]", error instanceof Error ? error.name : "erro desconhecido")
+      failure = "error"
+    }
   }
-  if (!order) notFound()
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10">
-      <ClearCartOnMount code={order.code} />
-      <OrderDetails order={order} />
-    </div>
+    <SectionBand className="border-t-0" containerClassName="max-w-2xl">
+      {order && (
+        <>
+          <ClearCartOnMount code={order.code} />
+          <OrderDetails order={order} />
+        </>
+      )}
+      {failure === "unavailable" && <StoreUnavailable />}
+      {failure === "error" && <ServerError title="Não foi possível carregar o pedido" />}
+    </SectionBand>
   )
 }

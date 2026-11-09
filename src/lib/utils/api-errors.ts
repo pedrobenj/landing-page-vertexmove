@@ -20,6 +20,12 @@ const MESSAGES: Partial<Record<string, string>> = {
   [API_ERROR_CODE.TIMEOUT]: "A conexão demorou demais. Tente novamente.",
   [API_ERROR_CODE.UNAVAILABLE]: "Serviço indisponível no momento. Tente em alguns minutos.",
   [API_ERROR_CODE.STORE_UNAVAILABLE]: "A loja estará disponível em breve.",
+  [API_ERROR_CODE.PRODUCT_DUPLICATE_SLUG]: "Já existe um produto com este endereço (slug).",
+  [API_ERROR_CODE.DUPLICATE_VARIANT_LABEL]: "Já existe um tamanho com esse nome.",
+  [API_ERROR_CODE.VARIANT_NOT_OWNED]: "Um dos tamanhos não pertence a este produto. Recarregue a página e tente de novo.",
+  [API_ERROR_CODE.STOCK_CHANGED]: "O estoque mudou enquanto você editava. Recarregue a página e tente de novo.",
+  [API_ERROR_CODE.CART_CHANGED]: "Seu carrinho mudou. Confira os itens.",
+  [API_ERROR_CODE.EMPTY_CART]: "Seu carrinho está vazio.",
 }
 
 export function getApiErrorMessage(codigo: string | undefined, fallback?: string): string {

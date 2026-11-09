@@ -4,6 +4,7 @@ import { ShoppingBag } from "lucide-react"
 import Link from "next/link"
 
 import { EmptyState, ServerError } from "@/components/feedback"
+import { StoreUnavailable } from "@/components/store"
 import { Button } from "@/components/ui/button"
 import { usePricedCart } from "@/hooks/data/use-priced-cart"
 
@@ -12,7 +13,7 @@ import { CheckoutForm } from "./checkout-form"
 import { CheckoutOrderLine } from "./checkout-order-line"
 
 export function CheckoutView() {
-  const { data, isPending, isError, isEmpty, hydrated, isPlaceholderData } = usePricedCart()
+  const { data, isPending, isError, isEmpty, hydrated, isPlaceholderData, isStoreUnavailable } = usePricedCart()
 
   if (isEmpty) {
     return (
@@ -27,6 +28,7 @@ export function CheckoutView() {
       />
     )
   }
+  if (isStoreUnavailable) return <StoreUnavailable />
   if (!hydrated || (isPending && !data)) return <CartSkeleton />
   if (isError || !data) return <ServerError title="Não foi possível carregar o resumo do pedido" />
 

@@ -12,7 +12,7 @@ interface CartSummaryProps {
 
 export function CartSummary({ itemCount, total, isUpdating = false, children }: CartSummaryProps) {
   return (
-    <aside aria-label="Resumo do pedido" aria-busy={isUpdating} className="flex flex-col gap-4 rounded-xl border bg-card p-5">
+    <aside aria-label="Resumo do pedido" aria-busy={isUpdating} className="flex flex-col gap-4 rounded-2xl border bg-card p-5 shadow-sm">
       <div className="flex flex-wrap justify-between gap-x-4 gap-y-1 text-sm text-muted-foreground">
         <span>{itemCount === 1 ? "1 item" : `${itemCount} itens`}</span>
         <span>Retirada presencial · sem frete</span>

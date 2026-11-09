@@ -8,7 +8,7 @@ import {
   ProductNotFoundError,
   StockChangedError,
   VariantNotOwnedError,
-} from "@/server/errors"
+} from "./store-errors"
 import { buildProduct } from "@/test/factories"
 
 import { createMockStoreRepository } from "./mock-store.repository"

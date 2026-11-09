@@ -10,7 +10,7 @@ import {
   ProductNotFoundError,
   StockChangedError,
   VariantNotOwnedError,
-} from "@/server/errors"
+} from "./store-errors"
 import type { NewOrderData, OrderSummary } from "@/types/order.interface"
 import type { StoreProduct } from "@/types/store-product.interface"
 

@@ -5,13 +5,13 @@ const PICKUP_SEDE = "Retirada na sede do Vertex (Aterrinho da Praia de Iracema),
 const PICKUP_KIT = "Retirada junto com o kit da Corrida Vertex Beira-Mar 2026, 04 e 05/12, das 9h às 18h."
 
 /**
- * Catálogo fictício da loja (a loja ainda não existe na API; ver Task 20 do plano de migração).
+ * Catálogo inicial do mock da loja (a loja ainda não existe na API VertexMove, §16 do CLAUDE.md).
  * - camisa-oficial-vertex-2026: tamanho G esgotado (teste de tamanho desabilitado)
  * - camisa-treino-dry-fit: estoque alto (fluxo de checkout nos testes)
  * - regata-vertex-run: totalmente esgotada (selo "Esgotado")
  * - camisa-edicao-limitada-2024: inativa (não pode aparecer)
  */
-export const STORE_PRODUCTS_MOCK: StoreProduct[] = [
+export const STORE_PRODUCTS_SEED: StoreProduct[] = [
   {
     id: "mock-prod-1",
     slug: "camisa-oficial-vertex-2026",
