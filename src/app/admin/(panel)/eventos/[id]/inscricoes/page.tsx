@@ -1,21 +1,41 @@
+import { Hourglass } from "lucide-react"
 import type { Metadata } from "next"
 import { connection } from "next/server"
 
-import { requireAdminSession } from "@/server/api/require-admin-session"
+import { AdminEventSubpageHeader } from "@/components/admin"
+import { EmptyState, ServerError } from "@/components/feedback"
+import { getAdminEventPageTitle, loadAdminEventPage } from "@/server/api/load-admin-event-page"
 
-export const metadata: Metadata = { title: "Inscrições" }
-
-/** Bloqueante: confere a sessão antes de renderizar (o proxy é pulado em prefetch). */
+/** Bloqueante até ler a corrida: 404 real para id inválido ou inexistente. */
 export const instant = false
 
-// TODO(migracao): Task 19 — página "Em breve" até o backend expor a lista de inscrições (§15).
-export default async function AdminRegistrationsPage() {
+const TITLE = "Inscrições"
+
+export async function generateMetadata({ params }: PageProps<"/admin/eventos/[id]/inscricoes">): Promise<Metadata> {
+  return { title: await getAdminEventPageTitle((await params).id, TITLE) }
+}
+
+/** Lista, exportação CSV e retirada de kit dependem de endpoints do backend (§15). */
+export default async function AdminRegistrationsPage({ params }: PageProps<"/admin/eventos/[id]/inscricoes">) {
   await connection()
-  await requireAdminSession()
+  const data = await loadAdminEventPage((await params).id)
+  if ("error" in data) {
+    return (
+      <section className="flex flex-col gap-6">
+        <h1 className="text-2xl font-extrabold text-brand-navy">{TITLE}</h1>
+        <ServerError title="Não foi possível carregar a corrida" />
+      </section>
+    )
+  }
+
   return (
-    <section className="flex flex-col gap-2">
-      <h1 className="text-2xl font-extrabold text-brand-navy">Inscrições</h1>
-      <p className="text-muted-foreground">Tabela com filtros server-side, exportação CSV e check-in de retirada de kit.</p>
+    <section className="flex flex-col gap-6">
+      <AdminEventSubpageHeader event={data.event} title={TITLE} />
+      <EmptyState
+        icon={Hourglass}
+        title="Em breve: aguardando endpoint do backend."
+        description="Aqui vão ficar a lista de inscritos, a exportação em CSV e a retirada de kit."
+      />
     </section>
   )
 }
