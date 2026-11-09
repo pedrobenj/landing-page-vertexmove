@@ -32,6 +32,16 @@ export function unwrapCached<T>(result: CachedResult<T>): T {
   throw new ApiError(result.status, result.codigo, result.mensagem)
 }
 
+/*
+ * Falhas transitórias usam cacheLife("seconds") (expire 60 < 300): viram buraco dinâmico, fora do shell
+ * estático. Com a API fora do ar no build, o Next 16.4 às vezes avisa "Unexpected cache miss after cache
+ * warming phase" em "/": quando outra rota do mesmo worker já gravou a falha no cache handler, o warming
+ * acha a entrada curta, omite-a do shell e não a guarda no Resume Data Cache; a fase final então não a
+ * encontra. É inofensivo (o resultado é o mesmo buraco dinâmico) e não ocorre com a API no ar (entradas
+ * de 300 s ou mais). `connection()` nas seções evitaria o aviso, mas tiraria do shell estático as listas
+ * que hoje são pré-renderizadas quando a API responde.
+ */
+
 /**
  * Falha de uma rota PROPOSTA (ainda pendente no backend, §16): 404 vira `empty` com o cacheLife normal;
  * as demais falhas ficam só alguns segundos. Chamar dentro do escopo `"use cache"`.

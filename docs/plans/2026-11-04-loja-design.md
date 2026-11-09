@@ -1,7 +1,9 @@
 # Loja Vertex — camisas e medalhas
 
 **Data:** 2026-11-04
-**Status:** desenho validado, aguardando implementação
+**Status:** Etapa 1 implementada sobre mock; aguardando API da loja no backend
+
+> **Nota (2026-11-09):** o Prisma saiu do front. O frontend agora é só o BFF da API VertexMove (ver `CLAUDE.md`); a loja roda sobre o mock em `src/server/api/mocks/store/` (`USE_MOCK_API=true`) e, sem o mock, as páginas mostram "A loja estará disponível em breve.". O modelo Prisma abaixo fica como **referência para o backend** implementar produtos, variantes, pedidos e estoque.
 
 ## Objetivo
 
@@ -43,6 +45,8 @@ Header ganha link "Loja" e ícone de carrinho com contador. Home ganha a seção
 5. **Retirada:** admin marca `READY_FOR_PICKUP` e depois `PICKED_UP` (busca rápida por CPF/código).
 
 ## Modelo de dados
+
+> Referência para o backend (o front não tem Prisma).
 
 ```prisma
 enum ProductType { SHIRT MEDAL }
