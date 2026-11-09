@@ -1,12 +1,8 @@
 import { useSyncExternalStore } from "react"
 
-import { useRegistrationFormStore } from "@/stores/registration-form-store"
+import { hasRegistrationFormHydrated, subscribeRegistrationFormHydration } from "@/stores/registration-form-store"
 
-/** true depois que o rascunho da inscrição foi lido do sessionStorage. */
+/** true depois que o rascunho da inscrição foi lido do sessionStorage (ou de imediato, se ele estiver bloqueado). */
 export function useRegistrationFormHydrated(): boolean {
-  return useSyncExternalStore(
-    (onChange) => useRegistrationFormStore.persist.onFinishHydration(onChange),
-    () => useRegistrationFormStore.persist.hasHydrated(),
-    () => false,
-  )
+  return useSyncExternalStore(subscribeRegistrationFormHydration, hasRegistrationFormHydrated, () => false)
 }

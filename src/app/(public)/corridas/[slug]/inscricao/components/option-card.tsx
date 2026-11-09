@@ -1,5 +1,5 @@
 import { CheckCircle2 } from "lucide-react"
-import type { ReactNode } from "react"
+import type { ReactNode, Ref } from "react"
 
 import { Label } from "@/components/ui/label"
 import { RadioGroupItem } from "@/components/ui/radio-group"
@@ -9,6 +9,8 @@ interface OptionCardProps {
   id: string
   value: string
   disabled?: boolean
+  /** Ref do rádio (ex.: `field.ref` do RHF, para focar a opção quando o grupo tem erro). */
+  inputRef?: Ref<HTMLButtonElement>
   children: ReactNode
   className?: string
 }
@@ -17,10 +19,10 @@ interface OptionCardProps {
  * Opção de RadioGroup em forma de card selecionável (distância, kit, tamanho). O rádio nativo fica
  * escondido (`sr-only`), mas continua focável e navegável pelas setas do teclado.
  */
-export function OptionCard({ id, value, disabled, children, className }: OptionCardProps) {
+export function OptionCard({ id, value, disabled, inputRef, children, className }: OptionCardProps) {
   return (
     <div className="relative h-full">
-      <RadioGroupItem value={value} id={id} disabled={disabled} className="peer sr-only" />
+      <RadioGroupItem ref={inputRef} value={value} id={id} disabled={disabled} className="peer sr-only" />
       <Label
         htmlFor={id}
         className={cn(

@@ -2,18 +2,22 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Info } from "lucide-react"
-import { useEffect } from "react"
-import { useForm } from "react-hook-form"
+import { useEffect, useMemo } from "react"
+import { useForm, useWatch } from "react-hook-form"
 
 import { FieldGroup } from "@/components/ui/field"
 import { formatCpfInput, formatDateInput, formatPhoneInput } from "@/lib/utils"
-import { athleteStepSchema, type AthleteStepData, type AthleteStepValues } from "@/lib/validations/registration.schema"
+import { isMinorOnDate } from "@/lib/utils/is-minor-on-date"
+import { createAthleteStepSchema, type AthleteStepData, type AthleteStepValues } from "@/lib/validations/registration.schema"
 
+import { LegalGuardianConsent } from "./legal-guardian-consent"
 import { MaskedTextField } from "./masked-text-field"
 import { StepActions } from "./step-actions"
 import { StepHeading } from "./step-heading"
 
 interface AthleteStepProps {
+  /** `dataEvento` (`YYYY-MM-DD`): a idade (e a exigência do responsável legal) é calculada nessa data. */
+  eventDate: string
   defaultValues: AthleteStepValues | null
   /** A API respondeu `IDENTIDADES_CONFLITANTES`: marca CPF e WhatsApp ao abrir a etapa. */
   identityConflict: boolean
@@ -21,20 +25,34 @@ interface AthleteStepProps {
   onSubmit: (data: AthleteStepData) => void
 }
 
-const EMPTY_ATHLETE: AthleteStepValues = { nomeCompleto: "", dataNascimento: "", cpf: "", whatsapp: "", email: "" }
+const EMPTY_ATHLETE: AthleteStepValues = {
+  nomeCompleto: "",
+  dataNascimento: "",
+  cpf: "",
+  whatsapp: "",
+  email: "",
+  responsavelLegal: false,
+}
 const CONFLICT_MESSAGE = "CPF e WhatsApp pertencem a cadastros diferentes. Confira os dois."
 
-/** Etapa 2: dados do atleta, com máscaras. CPF e WhatsApp são opcionais, mas um dos dois é obrigatório. */
-export function AthleteStep({ defaultValues, identityConflict, onBack, onSubmit }: AthleteStepProps) {
+/**
+ * Etapa 2: dados do atleta, com máscaras. CPF e WhatsApp são opcionais, mas um dos dois é obrigatório.
+ * Menor de 18 na data da prova → confirmação do responsável legal (só no formulário, não vai à API).
+ */
+export function AthleteStep({ eventDate, defaultValues, identityConflict, onBack, onSubmit }: AthleteStepProps) {
+  const resolver = useMemo(() => zodResolver(createAthleteStepSchema(eventDate)), [eventDate])
   const form = useForm<AthleteStepValues, unknown, AthleteStepData>({
-    resolver: zodResolver(athleteStepSchema),
-    defaultValues: defaultValues ?? EMPTY_ATHLETE,
+    resolver,
+    defaultValues: { ...EMPTY_ATHLETE, ...defaultValues },
   })
+  const birthDate = useWatch({ control: form.control, name: "dataNascimento" })
+  const isMinor = isMinorOnDate(birthDate, eventDate)
 
+  // O wizard não foca o título quando há conflito: o foco vai direto para o CPF.
   useEffect(() => {
     if (!identityConflict) return
-    form.setError("cpf", { type: "server", message: CONFLICT_MESSAGE })
-    form.setError("whatsapp", { type: "server", message: CONFLICT_MESSAGE }, { shouldFocus: true })
+    form.setError("whatsapp", { type: "server", message: CONFLICT_MESSAGE })
+    form.setError("cpf", { type: "server", message: CONFLICT_MESSAGE }, { shouldFocus: true })
   }, [identityConflict, form])
 
   return (
@@ -53,6 +71,8 @@ export function AthleteStep({ defaultValues, identityConflict, onBack, onSubmit 
           autoComplete="bday"
           format={formatDateInput}
         />
+
+        {isMinor && <LegalGuardianConsent control={form.control} />}
 
         <p className="flex gap-2 rounded-xl bg-brand-green/10 p-4 text-sm text-brand-navy-deep">
           <Info aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-brand-green-text" />

@@ -42,11 +42,34 @@ test.describe("Inscrição em etapas", () => {
     await page.goto(REGISTRATION_URL)
     await page.getByRole("button", { name: "Continuar" }).click()
     await expect(page.getByRole("alert").filter({ hasText: "Escolha a distância" })).toBeVisible()
+    // O foco vai para o primeiro rádio disponível (o grupo em si não é focável).
+    await expect(page.getByRole("radio", { name: /^5 km/ })).toBeFocused()
 
     await fillDistanceStep(page)
     await fillAthleteStep(page, { name: "Maria da Silva", birthDate: "06/12/1990" })
     await expect(page.getByRole("alert").filter({ hasText: "Informe o CPF ou o WhatsApp" })).toBeVisible()
     await expect(page.getByRole("heading", { name: "Seus dados" })).toBeVisible()
+  })
+
+  test("atleta menor de 18 na data da prova exige a confirmação do responsável legal", async ({ page }) => {
+    await page.goto(REGISTRATION_URL)
+    await fillDistanceStep(page)
+    // A prova é em 06/12/2026: quem nasceu em 07/12/2008 ainda tem 17 anos.
+    await fillAthleteStep(page, { name: "Lucas Andrade", birthDate: "07/12/2008", whatsapp: generateWhatsapp() })
+
+    const guardian = page.getByRole("checkbox", { name: /Sou o responsável legal ou tenho autorização dele/ })
+    await expect(page.getByText("Atleta menor de 18 anos na data da prova")).toBeVisible()
+    await expect(page.getByRole("alert").filter({ hasText: "Confirme que você é o responsável legal" })).toBeVisible()
+    await expect(page.getByRole("heading", { name: "Seus dados" })).toBeVisible()
+
+    await guardian.check()
+    await page.getByRole("button", { name: "Continuar" }).click()
+    await expect(page.getByRole("heading", { name: "Termos" })).toBeVisible()
+
+    // Maior de idade na data da prova: o aviso some.
+    await page.getByRole("button", { name: "Voltar" }).click()
+    await page.getByLabel("Data de nascimento").fill("06/12/2008")
+    await expect(guardian).toBeHidden()
   })
 
   test("reenviar o mesmo CPF mostra o aviso de duplicata com link para a consulta", async ({ page }) => {

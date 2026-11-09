@@ -40,6 +40,8 @@ export function LookupForm() {
   const mutation = useMutation({
     mutationKey: queryKeys.registrations.lookup(),
     mutationFn: lookupRegistrationsAction,
+    // O CPF/WhatsApp fica em `variables`: sem cache depois que a tela desmonta.
+    gcTime: 0,
     onSuccess: (response) => {
       if (response.status === 422 && response.code === API_ERROR_CODE.INVALID_DATA) {
         form.setError("valor", { type: "server", message: response.error }, { shouldFocus: true })

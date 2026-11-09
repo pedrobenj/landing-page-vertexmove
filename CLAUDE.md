@@ -532,6 +532,7 @@ Antes de cada commit: `lint`, `typecheck` e `build` passando. Commits no padrão
 - [ ] Pagamento (gateway, criação de cobrança Pix, polling de status, webhook) e expiração de pendentes.
 - [ ] Listagem/exportação de inscrições no admin e marcação de retirada de kit.
 - [ ] Campos extras na inscrição: sexo, equipe/assessoria, contato de emergência.
+- [ ] Campo de aceite/identificação do responsável legal para atletas menores de 18 anos.
 - [ ] Lista exata de `status` de evento e inscrição; matriz de permissões por `papel`.
 - [ ] MFA/TOTP para super admin.
 - [ ] Janela de tolerância ao reuso do refresh token (ex.: aceitar o anterior por 10–30 s devolvendo o mesmo par), para o Next em várias instâncias não deslogar o admin em requisições concorrentes.

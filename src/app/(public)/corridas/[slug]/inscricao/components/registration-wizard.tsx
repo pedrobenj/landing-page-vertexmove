@@ -1,11 +1,12 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
+import { useShallow } from "zustand/react/shallow"
 
 import { REGISTRATION_STEP } from "@/enums/registration-step.enum"
 import { useRegistrationFormHydrated } from "@/hooks/use-registration-form-hydrated"
-import { athleteStepSchema, createDistanceStepSchema } from "@/lib/validations/registration.schema"
-import { useRegistrationFormStore } from "@/stores/registration-form-store"
+import { createAthleteStepSchema, createDistanceStepSchema } from "@/lib/validations/registration.schema"
+import { rehydrateRegistrationForm, useRegistrationFormStore } from "@/stores/registration-form-store"
 import type { PublicDocument, PublicEventDetail } from "@/types/api/public-event-detail.interface"
 
 import { AthleteStep } from "./athlete-step"
@@ -32,37 +33,61 @@ export function RegistrationWizard({ event, regulation, liabilityTerm }: Registr
   const previousStepRef = useRef<REGISTRATION_STEP | null>(null)
   const [identityConflict, setIdentityConflict] = useState(false)
 
-  const store = useRegistrationFormStore()
-  const { start, goToStep, setDistance, setAthlete, setTerms, setConfirmation } = store
+  const draft = useRegistrationFormStore(
+    useShallow((state) => ({
+      eventSlug: state.eventSlug,
+      step: state.step,
+      distance: state.distance,
+      athlete: state.athlete,
+      terms: state.terms,
+    })),
+  )
+  const { start, goToStep, setDistance, setAthlete, setTerms, clearTerms, setConfirmation } = useRegistrationFormStore(
+    useShallow((state) => ({
+      start: state.start,
+      goToStep: state.goToStep,
+      setDistance: state.setDistance,
+      setAthlete: state.setAthlete,
+      setTerms: state.setTerms,
+      clearTerms: state.clearTerms,
+      setConfirmation: state.setConfirmation,
+    })),
+  )
 
   useEffect(() => {
-    void Promise.resolve(useRegistrationFormStore.persist.rehydrate()).then(() => start(event.slug))
+    void rehydrateRegistrationForm().then(() => start(event.slug))
   }, [event.slug, start])
 
-  const isReady = hydrated && store.eventSlug === event.slug
+  const isReady = hydrated && draft.eventSlug === event.slug
   const savedDistance = useMemo(
-    () => (store.distance ? createDistanceStepSchema(event).safeParse(store.distance) : null),
-    [event, store.distance],
+    () => (draft.distance ? createDistanceStepSchema(event).safeParse(draft.distance) : null),
+    [event, draft.distance],
   )
-  const savedAthlete = useMemo(() => (store.athlete ? athleteStepSchema.safeParse(store.athlete) : null), [store.athlete])
+  const savedAthlete = useMemo(
+    () => (draft.athlete ? createAthleteStepSchema(event.dataEvento).safeParse(draft.athlete) : null),
+    [event.dataEvento, draft.athlete],
+  )
 
   // Etapa efetiva: não deixa pular para uma etapa cujo passo anterior está faltando ou ficou inválido.
   const step = useMemo(() => {
-    if (store.step > REGISTRATION_STEP.DISTANCE && !savedDistance?.success) return REGISTRATION_STEP.DISTANCE
-    if (store.step > REGISTRATION_STEP.ATHLETE && !savedAthlete?.success) return REGISTRATION_STEP.ATHLETE
-    if (store.step > REGISTRATION_STEP.TERMS && !store.terms) return REGISTRATION_STEP.TERMS
-    return store.step
-  }, [store.step, store.terms, savedDistance, savedAthlete])
+    if (draft.step > REGISTRATION_STEP.DISTANCE && !savedDistance?.success) return REGISTRATION_STEP.DISTANCE
+    if (draft.step > REGISTRATION_STEP.ATHLETE && !savedAthlete?.success) return REGISTRATION_STEP.ATHLETE
+    if (draft.step > REGISTRATION_STEP.TERMS && !draft.terms) return REGISTRATION_STEP.TERMS
+    return draft.step
+  }, [draft.step, draft.terms, savedDistance, savedAthlete])
 
   // Troca de etapa: rola até o topo do formulário e leva o foco ao título (leitores de tela anunciam a etapa).
+  // Com conflito de identidade, a etapa do atleta foca o CPF em vez do título.
   useEffect(() => {
     if (!isReady) return
     if (previousStepRef.current !== null && previousStepRef.current !== step) {
       containerRef.current?.scrollIntoView({ block: "start" })
-      containerRef.current?.querySelector<HTMLElement>("[data-step-heading]")?.focus({ preventScroll: true })
+      if (!identityConflict) {
+        containerRef.current?.querySelector<HTMLElement>("[data-step-heading]")?.focus({ preventScroll: true })
+      }
     }
     previousStepRef.current = step
-  }, [isReady, step])
+  }, [isReady, step, identityConflict])
 
   if (!isReady) return <RegistrationWizardSkeleton />
 
@@ -77,7 +102,8 @@ export function RegistrationWizard({ event, regulation, liabilityTerm }: Registr
         )}
         {step === REGISTRATION_STEP.ATHLETE && (
           <AthleteStep
-            defaultValues={store.athlete}
+            eventDate={event.dataEvento}
+            defaultValues={draft.athlete}
             identityConflict={identityConflict}
             onBack={() => goToStep(REGISTRATION_STEP.DISTANCE)}
             onSubmit={(data) => {
@@ -90,7 +116,7 @@ export function RegistrationWizard({ event, regulation, liabilityTerm }: Registr
           <TermsStep
             regulation={regulation}
             liabilityTerm={liabilityTerm}
-            defaultValues={store.terms}
+            defaultValues={draft.terms}
             onBack={() => goToStep(REGISTRATION_STEP.ATHLETE)}
             onSubmit={setTerms}
           />
@@ -102,6 +128,7 @@ export function RegistrationWizard({ event, regulation, liabilityTerm }: Registr
             athlete={savedAthlete.data}
             documentIds={documentIds}
             onEdit={goToStep}
+            onDocumentsOutdated={clearTerms}
             onIdentityConflict={() => {
               setIdentityConflict(true)
               goToStep(REGISTRATION_STEP.ATHLETE)

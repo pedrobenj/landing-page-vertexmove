@@ -12,7 +12,7 @@ import { REGISTRATION_STEP } from "@/enums/registration-step.enum"
 import { formatCurrency, maskCpf, maskEmail, maskPhone, toCreateRegistrationInput } from "@/lib/utils"
 import type { AthleteStepData, DistanceStepData } from "@/lib/validations/registration.schema"
 import type { PublicEventDetail } from "@/types/api/public-event-detail.interface"
-import type { CreatedRegistration } from "@/types/api/registration.interface"
+import type { CreatedRegistration, CreateRegistrationInput } from "@/types/api/registration.interface"
 
 import { StepHeading } from "./step-heading"
 import { SummaryRow } from "./summary-row"
@@ -24,6 +24,8 @@ interface SummaryStepProps {
   athlete: AthleteStepData
   documentIds: number[]
   onEdit: (step: REGISTRATION_STEP) => void
+  /** A API respondeu `DOCUMENTO_ACEITE_OBRIGATORIO`: limpa os aceites e volta para os termos. */
+  onDocumentsOutdated: () => void
   onIdentityConflict: () => void
   onSuccess: (confirmation: CreatedRegistration) => void
 }
@@ -34,7 +36,16 @@ const CONFIRMATION_PATH = "/inscricao/confirmada"
  * Etapa 4: revisão com dados mascarados e envio para `POST /inscricoes`. O preço exibido é o do lote
  * vigente; o valor final (com descontos) vem da API na confirmação.
  */
-export function SummaryStep({ event, distance, athlete, documentIds, onEdit, onIdentityConflict, onSuccess }: SummaryStepProps) {
+export function SummaryStep({
+  event,
+  distance,
+  athlete,
+  documentIds,
+  onEdit,
+  onDocumentsOutdated,
+  onIdentityConflict,
+  onSuccess,
+}: SummaryStepProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [isRedirecting, setIsRedirecting] = useState(false)
@@ -52,12 +63,22 @@ export function SummaryStep({ event, distance, athlete, documentIds, onEdit, onI
 
   function handleConfirm() {
     if (submittingRef.current) return
-    submittingRef.current = true
 
+    // Montar o corpo só falha com dado inválido (os schemas das etapas deveriam ter barrado): não é rede.
+    let input: CreateRegistrationInput
+    try {
+      input = toCreateRegistrationInput(event.slug, { distance, athlete }, documentIds)
+    } catch {
+      toast.error("Confira seus dados", { description: "Algum dado do atleta ficou inválido. Revise e tente de novo." })
+      onEdit(REGISTRATION_STEP.ATHLETE)
+      return
+    }
+
+    submittingRef.current = true
     startTransition(async () => {
       let response: Awaited<ReturnType<typeof createRegistrationAction>>
       try {
-        response = await createRegistrationAction(toCreateRegistrationInput(event.slug, { distance, athlete }, documentIds))
+        response = await createRegistrationAction(input)
       } catch {
         submittingRef.current = false
         toast.error("Não foi possível enviar a inscrição", { description: "Verifique sua conexão e tente de novo." })
@@ -86,8 +107,10 @@ export function SummaryStep({ event, distance, athlete, documentIds, onEdit, onI
           onIdentityConflict()
           return
         case API_ERROR_CODE.DOCUMENT_ACCEPTANCE_REQUIRED:
+          // Documento com versão nova: busca as versões vigentes e pede o aceite de novo (desmarcado).
           toast.error(title, { description: response.error })
-          onEdit(REGISTRATION_STEP.TERMS)
+          router.refresh()
+          onDocumentsOutdated()
           return
         case API_ERROR_CODE.SOLD_OUT:
           toast.error(title, { description: response.error })

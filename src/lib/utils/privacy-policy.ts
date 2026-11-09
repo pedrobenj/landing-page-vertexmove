@@ -11,6 +11,8 @@ export const PRIVACY_POLICY_UPDATED_AT = "2026-11-09"
  * TODO(cliente): revisar com o jurídico — razão social/CNPJ do controlador, prazos de retenção,
  * a lista de operadores (hospedagem, gateway de pagamento, cronometragem), as bases legais por finalidade,
  * a regra para inscrição de menores e o país onde ficam os servidores da hospedagem.
+ * Menores: hoje a confirmação do responsável legal é só uma declaração no formulário (a API não recebe
+ * o campo — §16 do CLAUDE.md). Quando a API registrar o aceite/identificação, atualizar a seção "menores".
  */
 export const PRIVACY_POLICY_SECTIONS: readonly PrivacySection[] = [
   {
@@ -59,7 +61,8 @@ export const PRIVACY_POLICY_SECTIONS: readonly PrivacySection[] = [
     id: "menores",
     title: "Crianças e adolescentes",
     paragraphs: [
-      "Quando a prova aceitar atletas menores de 18 anos, a inscrição deve ser feita ou autorizada por um dos pais ou pelo responsável legal, e os dados do menor são tratados no seu melhor interesse, como determina o art. 14 da LGPD. Pedimos apenas o necessário para a participação na prova.",
+      "A inscrição de atletas com menos de 18 anos na data da prova deve ser feita por um dos pais ou pelo responsável legal, ou com a autorização dele, como determina o art. 14 da LGPD. Nesses casos, o formulário pede que quem faz a inscrição declare ser o responsável legal ou ter a autorização dele; sem essa declaração, a inscrição não é enviada. Por enquanto, essa declaração não é armazenada junto com a inscrição e não coletamos dados do responsável.",
+      "Os dados do menor são os mesmos pedidos a qualquer atleta, apenas o necessário para a participação na prova, e são tratados no seu melhor interesse.",
     ],
   },
   {

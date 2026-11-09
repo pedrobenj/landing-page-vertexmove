@@ -42,8 +42,9 @@ export function LookupResults({ isPending, error, items }: LookupResultsProps) {
         {items.length === 1 ? "1 inscrição encontrada" : `${items.length} inscrições encontradas`}
       </h2>
       <ul className="flex flex-col gap-4">
-        {items.map((item) => (
-          <LookupResultItem key={`${item.evento}-${item.distancia}-${item.inscritoEm}`} item={item} />
+        {/* A API não devolve id/código: o índice desempata itens com evento, distância e data iguais. */}
+        {items.map((item, index) => (
+          <LookupResultItem key={`${item.evento}-${item.distancia}-${item.inscritoEm}-${index}`} item={item} />
         ))}
       </ul>
     </div>

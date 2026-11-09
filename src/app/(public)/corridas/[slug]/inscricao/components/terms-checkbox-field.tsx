@@ -1,21 +1,20 @@
 "use client"
 
 import type { ReactNode } from "react"
-import { type Control, Controller } from "react-hook-form"
+import { type Control, Controller, type FieldPath, type FieldValues } from "react-hook-form"
 
 import { Checkbox } from "@/components/ui/checkbox"
 import { Field, FieldContent, FieldError, FieldLabel } from "@/components/ui/field"
-import type { TermsStepData, TermsStepValues } from "@/lib/validations/registration.schema"
 
-interface TermsCheckboxFieldProps {
-  control: Control<TermsStepValues, unknown, TermsStepData>
-  name: keyof TermsStepValues
+interface TermsCheckboxFieldProps<T extends FieldValues, TOutput> {
+  control: Control<T, unknown, TOutput>
+  name: FieldPath<T>
   id: string
   children: ReactNode
 }
 
 /** Checkbox de aceite em card, com o texto (e links) como label. */
-export function TermsCheckboxField({ control, name, id, children }: TermsCheckboxFieldProps) {
+export function TermsCheckboxField<T extends FieldValues, TOutput>({ control, name, id, children }: TermsCheckboxFieldProps<T, TOutput>) {
   const errorId = `${id}-error`
   return (
     <Controller
@@ -31,7 +30,7 @@ export function TermsCheckboxField({ control, name, id, children }: TermsCheckbo
             id={id}
             ref={field.ref}
             name={field.name}
-            checked={field.value}
+            checked={field.value === true}
             onCheckedChange={(checked) => field.onChange(checked === true)}
             onBlur={field.onBlur}
             aria-invalid={fieldState.invalid}

@@ -46,6 +46,8 @@ export function DistanceStep({ event, defaultValues, onSubmit }: DistanceStepPro
   })
   const kitId = useWatch({ control: form.control, name: "kitId" })
   const showSizes = kits.length > 0 && kitId !== null && sizes.length > 0
+  // O RHF foca o `field.ref` no erro: vai no primeiro rádio habilitado (o RadioGroup em si não é focável).
+  const firstAvailableDistanceId = distances.find((distance) => !distance.esgotado && distance.loteVigente !== null)?.id
 
   return (
     <form onSubmit={(formEvent) => form.handleSubmit(onSubmit)(formEvent)} noValidate className="flex flex-col gap-8">
@@ -56,19 +58,25 @@ export function DistanceStep({ event, defaultValues, onSubmit }: DistanceStepPro
         control={form.control}
         render={({ field, fieldState }) => (
           <FieldSet data-invalid={fieldState.invalid}>
-            <FieldLegend className={legendClassName}>Distância</FieldLegend>
+            <FieldLegend id="distance-legend" className={legendClassName}>
+              Distância
+            </FieldLegend>
             <RadioGroup
-              ref={field.ref}
               name={field.name}
               value={field.value === null ? "" : String(field.value)}
               onValueChange={(value) => field.onChange(Number(value))}
-              aria-label="Distância"
+              aria-labelledby="distance-legend"
               aria-invalid={fieldState.invalid}
               aria-describedby={fieldState.invalid ? "distance-error" : undefined}
               className="grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
             >
               {distances.map((distance) => (
-                <DistanceOption key={distance.id} distance={distance} eventStartTime={event.horarioLargada} />
+                <DistanceOption
+                  key={distance.id}
+                  distance={distance}
+                  eventStartTime={event.horarioLargada}
+                  inputRef={distance.id === firstAvailableDistanceId ? field.ref : undefined}
+                />
               ))}
             </RadioGroup>
             <FieldError id="distance-error" errors={[fieldState.error]} />
@@ -80,22 +88,32 @@ export function DistanceStep({ event, defaultValues, onSubmit }: DistanceStepPro
         <Controller
           name="kitId"
           control={form.control}
-          render={({ field }) => (
-            <FieldSet>
-              <FieldLegend className={legendClassName}>Kit</FieldLegend>
+          render={({ field, fieldState }) => (
+            <FieldSet data-invalid={fieldState.invalid}>
+              <FieldLegend id="kit-legend" className={legendClassName}>
+                Kit
+              </FieldLegend>
               <RadioGroup
-                ref={field.ref}
                 name={field.name}
                 value={field.value === null ? NO_KIT : String(field.value)}
                 onValueChange={(value) => field.onChange(value === NO_KIT ? null : Number(value))}
-                aria-label="Kit"
+                aria-labelledby="kit-legend"
+                aria-invalid={fieldState.invalid}
+                aria-describedby={fieldState.invalid ? "kit-error" : undefined}
                 className="grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
               >
-                {kits.map((kit) => (
-                  <KitOption key={kit.id} value={String(kit.id)} name={kit.nome} description={kit.descricao} />
+                {kits.map((kit, index) => (
+                  <KitOption
+                    key={kit.id}
+                    value={String(kit.id)}
+                    name={kit.nome}
+                    description={kit.descricao}
+                    inputRef={index === 0 ? field.ref : undefined}
+                  />
                 ))}
                 <KitOption value={NO_KIT} name="Sem kit" description="Só a participação na prova." />
               </RadioGroup>
+              <FieldError id="kit-error" errors={[fieldState.error]} />
             </FieldSet>
           )}
         />
@@ -107,19 +125,20 @@ export function DistanceStep({ event, defaultValues, onSubmit }: DistanceStepPro
           control={form.control}
           render={({ field, fieldState }) => (
             <FieldSet data-invalid={fieldState.invalid}>
-              <FieldLegend className={legendClassName}>Tamanho da camisa</FieldLegend>
+              <FieldLegend id="shirt-size-legend" className={legendClassName}>
+                Tamanho da camisa
+              </FieldLegend>
               <RadioGroup
-                ref={field.ref}
                 name={field.name}
                 value={field.value === null ? "" : String(field.value)}
                 onValueChange={(value) => field.onChange(Number(value))}
-                aria-label="Tamanho da camisa"
+                aria-labelledby="shirt-size-legend"
                 aria-invalid={fieldState.invalid}
                 aria-describedby={fieldState.invalid ? "shirt-size-error" : undefined}
                 className="flex flex-wrap gap-2"
               >
-                {sizes.map((size) => (
-                  <ShirtSizeOption key={size.id} size={size} />
+                {sizes.map((size, index) => (
+                  <ShirtSizeOption key={size.id} size={size} inputRef={index === 0 ? field.ref : undefined} />
                 ))}
               </RadioGroup>
               <FieldError id="shirt-size-error" errors={[fieldState.error]} />

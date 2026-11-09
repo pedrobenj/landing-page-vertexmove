@@ -1,3 +1,5 @@
+import type { Ref } from "react"
+
 import { Label } from "@/components/ui/label"
 import { RadioGroupItem } from "@/components/ui/radio-group"
 import { cn } from "@/lib/utils"
@@ -5,14 +7,15 @@ import type { ShirtSize } from "@/types/api/shirt-size.interface"
 
 interface ShirtSizeOptionProps {
   size: ShirtSize
+  inputRef?: Ref<HTMLButtonElement>
 }
 
 /** Tamanho de camisa em "chip" quadrado (alvo de toque de 48px). */
-export function ShirtSizeOption({ size }: ShirtSizeOptionProps) {
+export function ShirtSizeOption({ size, inputRef }: ShirtSizeOptionProps) {
   const id = `shirt-size-${size.id}`
   return (
     <div>
-      <RadioGroupItem value={String(size.id)} id={id} className="peer sr-only" />
+      <RadioGroupItem ref={inputRef} value={String(size.id)} id={id} className="peer sr-only" />
       <Label
         htmlFor={id}
         className={cn(

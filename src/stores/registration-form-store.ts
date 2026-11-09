@@ -20,6 +20,8 @@ interface RegistrationFormState {
   setDistance: (data: DistanceStepData) => void
   setAthlete: (data: AthleteStepValues) => void
   setTerms: (data: TermsStepValues) => void
+  /** Desmarca os aceites e volta para a etapa de termos (documentos vigentes mudaram). */
+  clearTerms: () => void
   setConfirmation: (confirmation: CreatedRegistration) => void
   /** Limpa o rascunho mantendo a `confirmation` (a página de confirmação ainda a exibe). */
   reset: () => void
@@ -41,7 +43,11 @@ const initialDraft = {
  * fica só nesta aba e some ao fechá-la, nunca vai para localStorage, URL ou servidor antes do envio.
  * `confirmation` fica fora (`partialize`) para não sobreviver a um reload.
  *
- * `skipHydration`: o wizard chama `persist.rehydrate()` depois de montar (evita mismatch SSR/cliente).
+ * `skipHydration`: o wizard chama `rehydrateRegistrationForm()` depois de montar (evita mismatch SSR/cliente).
+ *
+ * Storage bloqueado (navegação privada, cookies desativados): `createJSONStorage` não consegue ler o
+ * `sessionStorage` e o zustand **não anexa** a API `persist` ao store — o rascunho fica só em memória.
+ * Por isso, use sempre os helpers abaixo em vez de `useRegistrationFormStore.persist` direto.
  */
 export const useRegistrationFormStore = create<RegistrationFormState>()(
   persist(
@@ -55,6 +61,7 @@ export const useRegistrationFormStore = create<RegistrationFormState>()(
       setDistance: (distance) => set({ distance, step: REGISTRATION_STEP.ATHLETE }),
       setAthlete: (athlete) => set({ athlete, step: REGISTRATION_STEP.TERMS }),
       setTerms: (terms) => set({ terms, step: REGISTRATION_STEP.SUMMARY }),
+      clearTerms: () => set({ terms: null, step: REGISTRATION_STEP.TERMS }),
       setConfirmation: (confirmation) => set({ confirmation }),
       reset: () => set(initialDraft),
     }),
@@ -69,3 +76,25 @@ export const useRegistrationFormStore = create<RegistrationFormState>()(
     },
   ),
 )
+
+type PersistApi = typeof useRegistrationFormStore.persist
+
+/** `undefined` quando o storage está indisponível (ver acima) — o tipo do zustand não reflete isso. */
+function getPersistApi(): PersistApi | undefined {
+  return useRegistrationFormStore.persist as PersistApi | undefined
+}
+
+/** Assina o fim da hidratação. Sem storage, não há hidratação a esperar. */
+export function subscribeRegistrationFormHydration(onChange: () => void): () => void {
+  return getPersistApi()?.onFinishHydration(onChange) ?? (() => {})
+}
+
+/** true depois de ler o rascunho do sessionStorage — ou sempre, se o storage estiver bloqueado. */
+export function hasRegistrationFormHydrated(): boolean {
+  return getPersistApi()?.hasHydrated() ?? true
+}
+
+/** Lê o rascunho do sessionStorage (no-op se o storage estiver bloqueado). */
+export async function rehydrateRegistrationForm(): Promise<void> {
+  await Promise.resolve(getPersistApi()?.rehydrate())
+}

@@ -53,6 +53,15 @@ describe("registration form store", () => {
     expect(localStorage.length).toBe(0)
   })
 
+  it("clearTerms desmarca os aceites e volta para a etapa de termos", () => {
+    store().start("corrida")
+    store().setDistance({ distanciaId: 1, kitId: null, tamanhoCamisaId: null })
+    store().setAthlete(athlete)
+    store().setTerms({ aceitaRegulamento: true, aceitaTermo: true, aceitaPrivacidade: true })
+    store().clearTerms()
+    expect(store()).toMatchObject({ terms: null, step: REGISTRATION_STEP.TERMS, athlete })
+  })
+
   it("reset limpa o rascunho e mantém a confirmação", () => {
     store().start("corrida")
     store().setAthlete(athlete)
