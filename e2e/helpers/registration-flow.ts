@@ -2,6 +2,8 @@ import { expect, type Page } from "@playwright/test"
 
 export const EVENT_SLUG = "corrida-vertex-beira-mar-2026"
 export const REGISTRATION_URL = `/corridas/${EVENT_SLUG}/inscricao`
+/** A primeira navegação para uma rota compila sob demanda no `next dev`: mais folga que os 5 s padrão. */
+export const NAVIGATION_TIMEOUT = 20_000
 
 export interface AthleteData {
   name: string
@@ -48,7 +50,7 @@ export async function registerAthlete(page: Page, athlete: AthleteData): Promise
   await fillTermsStep(page)
   await expect(page.getByRole("heading", { name: "Revise sua inscrição" })).toBeVisible()
   await page.getByRole("button", { name: "Confirmar inscrição" }).click()
-  await expect(page).toHaveURL("/inscricao/confirmada")
+  await expect(page).toHaveURL("/inscricao/confirmada", { timeout: NAVIGATION_TIMEOUT })
   const code = page.getByTestId("registration-code")
   await expect(code).toHaveText(/^VX-/)
   return (await code.textContent()) ?? ""

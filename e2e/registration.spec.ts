@@ -4,6 +4,7 @@ import {
   fillAthleteStep,
   fillDistanceStep,
   fillTermsStep,
+  NAVIGATION_TIMEOUT,
   REGISTRATION_URL,
   registerAthlete,
 } from "./helpers/registration-flow"
@@ -30,7 +31,7 @@ test.describe("Inscrição em etapas", () => {
     await expect(page.getByText(/O valor final é confirmado após o envio/)).toBeVisible()
 
     await page.getByRole("button", { name: "Confirmar inscrição" }).click()
-    await expect(page).toHaveURL("/inscricao/confirmada")
+    await expect(page).toHaveURL("/inscricao/confirmada", { timeout: NAVIGATION_TIMEOUT })
     await expect(page.getByRole("heading", { level: 1, name: "Inscrição realizada!" })).toBeVisible()
     await expect(page.getByTestId("registration-code")).toHaveText(/^VX-\d{4}-\d{8}$/)
     await expect(page.getByText("Status: Pendente")).toBeVisible()
@@ -60,7 +61,7 @@ test.describe("Inscrição em etapas", () => {
 
     await expect(page.getByText("Já existe uma inscrição para este atleta nesta distância.")).toBeVisible()
     await page.getByRole("button", { name: "Consultar inscrição" }).click()
-    await expect(page).toHaveURL("/consulta")
+    await expect(page).toHaveURL("/consulta", { timeout: NAVIGATION_TIMEOUT })
   })
 
   test("recarregar no meio do formulário mantém a etapa e os dados", async ({ page }) => {
