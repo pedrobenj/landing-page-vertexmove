@@ -15,6 +15,7 @@ const MESSAGES: Partial<Record<string, string>> = {
   [API_ERROR_CODE.INVALID_DATA]: "Confira os dados informados e tente novamente.",
   [API_ERROR_CODE.DUPLICATE_SLUG]: "Já existe um evento com este endereço (slug).",
   [API_ERROR_CODE.INVALID_TRANSITION]: "Esta ação não é permitida no status atual do evento.",
+  [API_ERROR_CODE.SOLD_OUT]: "As vagas desta distância esgotaram.",
   [API_ERROR_CODE.TIMEOUT]: "A conexão demorou demais. Tente novamente.",
   [API_ERROR_CODE.UNAVAILABLE]: "Serviço indisponível no momento. Tente em alguns minutos.",
   [API_ERROR_CODE.STORE_UNAVAILABLE]: "A loja estará disponível em breve.",
