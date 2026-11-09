@@ -4,19 +4,19 @@ import { ptBR } from "date-fns/locale"
 const API_DATE = "yyyy-MM-dd"
 const BR_DATE = "dd/MM/yyyy"
 
-/** Data pura da API (`YYYY-MM-DD`) como data local, sem conversão de fuso. */
+/** Data pura da API (`YYYY-MM-DD`) como data local, sem conversão de fuso. Lança erro se inválida. */
 function parseApiDate(value: string): Date {
   const date = parse(value, API_DATE, new Date(2000, 0, 1))
   if (!isValid(date)) throw new Error(`Data inválida: ${value}`)
   return date
 }
 
-/** `"2026-12-06" → "06/12/2026"` */
+/** `"2026-12-06" → "06/12/2026"`. Lança erro se a data for inválida. */
 export function formatApiDate(value: string): string {
   return format(parseApiDate(value), BR_DATE)
 }
 
-/** `"2026-12-06" → "domingo, 6 de dezembro de 2026"` */
+/** `"2026-12-06" → "domingo, 6 de dezembro de 2026"`. Lança erro se a data for inválida. */
 export function formatApiDateLong(value: string): string {
   return format(parseApiDate(value), "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR })
 }

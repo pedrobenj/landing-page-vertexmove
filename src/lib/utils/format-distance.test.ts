@@ -15,5 +15,6 @@ describe("formatDistance", () => {
 
   it("formata menos de 1 km em metros", () => {
     expect(formatDistance(800)).toBe("800 m")
+    expect(formatDistance(799.6)).toBe("800 m")
   })
 })

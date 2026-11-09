@@ -2,9 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const transport = vi.fn<(url: string, init: RequestInit) => Promise<Response>>()
 
-vi.mock("@/lib/env", () => ({
-  env: { API_URL: "http://api.test", API_TIMEOUT_MS: 5_000, USE_MOCK_API: false },
-}))
+const mockEnv = vi.hoisted(() => ({ API_URL: "http://api.test", API_TIMEOUT_MS: 5_000, USE_MOCK_API: false }))
+vi.mock("@/lib/env", () => ({ env: mockEnv }))
 vi.mock("./transport", () => ({ getTransport: async () => transport }))
 vi.mock("next/headers", () => ({
   headers: async () =>
@@ -63,6 +62,18 @@ describe("apiFetch", () => {
     expect(headers.get("Content-Type")).toBe("application/json")
   })
 
+  it("ignora barra final na API_URL", async () => {
+    mockEnv.API_URL = "http://api.test//"
+    transport.mockResolvedValue(jsonResponse(200, {}))
+    try {
+      await apiFetch("/eventos")
+    } finally {
+      mockEnv.API_URL = "http://api.test"
+    }
+
+    expect(lastCall().url).toBe("http://api.test/api/v1/eventos")
+  })
+
   it("devolve status e headers no apiFetchRaw", async () => {
     transport.mockResolvedValue(
       new Response("{}", { status: 201, headers: { Location: "/api/v1/admin/eventos/9" } }),
@@ -106,6 +117,35 @@ describe("apiFetch", () => {
     const error = await catchError(apiFetch("/eventos"))
 
     expect(error).toMatchObject({ status: 504, codigo: "TIMEOUT" })
+  })
+
+  it("converte timeout durante a leitura do corpo em ApiError TIMEOUT", async () => {
+    const res = new Response("{}", { status: 200 })
+    vi.spyOn(res, "text").mockRejectedValue(new DOMException("The operation timed out.", "TimeoutError"))
+    transport.mockResolvedValue(res)
+
+    const error = await catchError(apiFetch("/eventos"))
+
+    expect(error).toMatchObject({ status: 504, codigo: "TIMEOUT" })
+  })
+
+  it("converte queda de conexão durante a leitura do corpo em ApiError INDISPONIVEL", async () => {
+    const res = new Response("{}", { status: 200 })
+    vi.spyOn(res, "text").mockRejectedValue(new TypeError("terminated"))
+    transport.mockResolvedValue(res)
+
+    const error = await catchError(apiFetch("/eventos"))
+
+    expect(error).toMatchObject({ status: 503, codigo: "INDISPONIVEL" })
+  })
+
+  it("converte JSON inválido em 2xx em ApiError DESCONHECIDO", async () => {
+    transport.mockResolvedValue(new Response("<html>ok</html>", { status: 200 }))
+
+    const error = await catchError(apiFetch("/eventos"))
+
+    expect(isApiError(error)).toBe(true)
+    expect(error).toMatchObject({ status: 200, codigo: "DESCONHECIDO", mensagem: "Resposta inválida da API." })
   })
 
   it("converte falha de rede em ApiError INDISPONIVEL", async () => {

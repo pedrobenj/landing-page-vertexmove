@@ -21,4 +21,10 @@ describe("toE164Phone", () => {
     expect(() => toE164Phone("")).toThrow(Error)
     expect(() => toE164Phone("123456789012345")).toThrow(Error)
   })
+
+  it("lança erro com DDD inválido ou celular sem o 9", () => {
+    expect(() => toE164Phone("(05) 98888-7777")).toThrow(Error)
+    expect(() => toE164Phone("(85) 88888-7777")).toThrow(Error)
+    expect(() => toE164Phone("+55 10 98888-7777")).toThrow(Error)
+  })
 })

@@ -20,6 +20,16 @@ describe("isValidBrPhone", () => {
     expect(isValidBrPhone("(10) 98888-7777")).toBe(false)
   })
 
+  it("aceita entrada com o prefixo 55", () => {
+    expect(isValidBrPhone("+55 (85) 98888-7777")).toBe(true)
+    expect(isValidBrPhone("558532221111")).toBe(true)
+  })
+
+  it("rejeita entrada com 55 e número nacional inválido", () => {
+    expect(isValidBrPhone("+55 (05) 98888-7777")).toBe(false)
+    expect(isValidBrPhone("5585888887777")).toBe(false)
+  })
+
   it("rejeita quantidade errada de dígitos", () => {
     expect(isValidBrPhone("98888-7777")).toBe(false)
     expect(isValidBrPhone("859888877771")).toBe(false)
