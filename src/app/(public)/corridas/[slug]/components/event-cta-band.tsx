@@ -30,7 +30,7 @@ export function EventCtaBand({ eventName, registrationHref }: EventCtaBandProps)
             </p>
           </div>
         </div>
-        <Button asChild size="xl" className="hidden bg-brand-navy-deep font-bold text-white hover:bg-brand-navy md:inline-flex">
+        <Button asChild variant="navy" size="xl" className="hidden md:inline-flex">
           <Link href={registrationHref}>
             Inscrever-se
             <ArrowRight aria-hidden="true" />

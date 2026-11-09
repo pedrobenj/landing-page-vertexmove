@@ -3,13 +3,14 @@ import type { PrivacySection } from "@/types/privacy-section.interface"
 import { CONTACT_INFO } from "./contact-info"
 
 /** Data da última revisão, exibida no topo da página (YYYY-MM-DD). */
-export const PRIVACY_POLICY_UPDATED_AT = "2026-11-08"
+export const PRIVACY_POLICY_UPDATED_AT = "2026-11-09"
 
 /**
  * Política de privacidade (LGPD). Lista apenas os dados que o site realmente coleta hoje
  * (inscrição: nome, nascimento, CPF/WhatsApp, e-mail; loja: dados do comprador).
- * TODO(cliente): revisar com o jurídico — razão social/CNPJ do controlador, prazos de retenção
- * e a lista de operadores (hospedagem, gateway de pagamento, cronometragem).
+ * TODO(cliente): revisar com o jurídico — razão social/CNPJ do controlador, prazos de retenção,
+ * a lista de operadores (hospedagem, gateway de pagamento, cronometragem), as bases legais por finalidade,
+ * a regra para inscrição de menores e o país onde ficam os servidores da hospedagem.
  */
 export const PRIVACY_POLICY_SECTIONS: readonly PrivacySection[] = [
   {
@@ -25,7 +26,7 @@ export const PRIVACY_POLICY_SECTIONS: readonly PrivacySection[] = [
     paragraphs: ["Pedimos apenas o necessário para cada serviço:"],
     items: [
       "Na inscrição em uma corrida: nome completo, data de nascimento, CPF e/ou WhatsApp, e-mail (opcional), a distância, o kit e o tamanho de camisa escolhidos, e a data e a hora em que você aceitou o regulamento e o termo de responsabilidade.",
-      "Na loja: nome, CPF, WhatsApp e e-mail de quem compra, além dos itens do pedido.",
+      "Na loja: nome, CPF, WhatsApp e e-mail de quem compra, os itens do pedido e a data e a hora em que você aceitou esta política no checkout.",
       "Na consulta de inscrição: o CPF ou o WhatsApp que você digitar, usado só para localizar as suas inscrições.",
       "Na navegação: dados técnicos como endereço IP e tipo de navegador, para segurança e para limitar tentativas abusivas. O carrinho da loja fica salvo no seu próprio navegador, apenas com os produtos e as quantidades.",
     ],
@@ -44,10 +45,35 @@ export const PRIVACY_POLICY_SECTIONS: readonly PrivacySection[] = [
     ],
   },
   {
+    id: "bases-legais",
+    title: "Com base em quê tratamos seus dados",
+    paragraphs: ["Cada uso tem uma base legal prevista no art. 7º da LGPD:"],
+    items: [
+      "Execução de contrato e de procedimentos preliminares (inciso V): para realizar a inscrição, entregar o kit ou o pedido da loja e falar com você sobre eles.",
+      "Cumprimento de obrigação legal ou regulatória (inciso II): para guardar registros exigidos por lei, como os fiscais.",
+      "Legítimo interesse (inciso IX): para prevenir fraudes, limitar tentativas abusivas e manter o site seguro, sempre respeitando seus direitos.",
+      "Consentimento (inciso I): quando pedirmos sua autorização para algo além disso, como receber novidades. Você pode revogá-lo quando quiser.",
+    ],
+  },
+  {
+    id: "menores",
+    title: "Crianças e adolescentes",
+    paragraphs: [
+      "Quando a prova aceitar atletas menores de 18 anos, a inscrição deve ser feita ou autorizada por um dos pais ou pelo responsável legal, e os dados do menor são tratados no seu melhor interesse, como determina o art. 14 da LGPD. Pedimos apenas o necessário para a participação na prova.",
+    ],
+  },
+  {
     id: "compartilhamento",
     title: "Com quem compartilhamos",
     paragraphs: [
       "Não vendemos nem alugamos seus dados. Eles são compartilhados apenas com prestadores de serviço que nos ajudam a operar o site e as provas (como hospedagem, sistema de inscrições e, quando disponível, processamento de pagamentos), sempre no limite do necessário, ou quando a lei exigir.",
+    ],
+  },
+  {
+    id: "transferencia-internacional",
+    title: "Transferência internacional",
+    paragraphs: [
+      "Alguns prestadores de serviço, como a hospedagem do site, podem manter servidores fora do Brasil. Nesses casos, a transferência acontece apenas para empresas que oferecem proteção adequada aos dados, nos termos dos arts. 33 a 36 da LGPD.",
     ],
   },
   {

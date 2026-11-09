@@ -20,6 +20,11 @@ interface HorizontalCarouselProps {
 
 const SCROLL_RATIO = 0.85
 
+/** Respeita `prefers-reduced-motion`: sem animação de rolagem para quem pediu menos movimento. */
+function getScrollBehavior(): ScrollBehavior {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"
+}
+
 /** Carrossel horizontal com scroll-snap, setas no desktop e indicadores. Sem bibliotecas. */
 export function HorizontalCarousel({ children, label, className }: HorizontalCarouselProps) {
   const trackRef = useRef<HTMLUListElement>(null)
@@ -71,14 +76,14 @@ export function HorizontalCarousel({ children, label, className }: HorizontalCar
   const scrollByPage = (direction: 1 | -1) => {
     const track = trackRef.current
     if (!track) return
-    track.scrollBy({ left: direction * track.clientWidth * SCROLL_RATIO, behavior: "smooth" })
+    track.scrollBy({ left: direction * track.clientWidth * SCROLL_RATIO, behavior: getScrollBehavior() })
   }
 
   const scrollToPage = (page: number) => {
     const track = trackRef.current
     if (!track) return
     const maxScroll = track.scrollWidth - track.clientWidth
-    track.scrollTo({ left: getCarouselPageOffset(page, maxScroll, pageCount), behavior: "smooth" })
+    track.scrollTo({ left: getCarouselPageOffset(page, maxScroll, pageCount), behavior: getScrollBehavior() })
   }
 
   const handleKeyDown = (event: KeyboardEvent<HTMLUListElement>) => {
@@ -120,10 +125,12 @@ export function HorizontalCarousel({ children, label, className }: HorizontalCar
 
       <ul
         ref={trackRef}
-        tabIndex={0}
-        aria-label={`${label} (use as setas do teclado para navegar)`}
-        onKeyDown={handleKeyDown}
-        className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto overscroll-x-contain px-4 pb-1 [scrollbar-width:none] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-green md:mx-0 md:scroll-px-0 md:px-0 [&::-webkit-scrollbar]:hidden"
+        // Focável só quando há o que rolar; sem overflow, o foco iria para um elemento inerte.
+        tabIndex={hasOverflow ? 0 : undefined}
+        aria-label={hasOverflow ? `${label} (use as setas do teclado para navegar)` : label}
+        onKeyDown={hasOverflow ? handleKeyDown : undefined}
+        // No mobile a trilha encosta nas bordas da tela (-mx-4): o contorno fica para dentro para não ser cortado.
+        className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto overscroll-x-contain px-4 pb-1 [scrollbar-width:none] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-green md:mx-0 md:scroll-px-0 md:px-0 md:focus-visible:outline-offset-4 [&::-webkit-scrollbar]:hidden"
       >
         {children}
       </ul>

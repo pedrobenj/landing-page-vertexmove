@@ -19,6 +19,8 @@ const buttonVariants = cva(
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline",
         cta: "bg-cta text-cta-foreground font-bold uppercase tracking-wide hover:bg-cta/85",
+        // Sobre fundo verde (faixas `accent`): o anel padrão é verde e sumiria; aqui o anel é navy com offset verde.
+        navy: "bg-brand-navy-deep font-bold text-white hover:bg-brand-navy focus-visible:border-transparent focus-visible:ring-3 focus-visible:ring-brand-navy-deep focus-visible:ring-offset-2 focus-visible:ring-offset-brand-green",
       },
       size: {
         default:

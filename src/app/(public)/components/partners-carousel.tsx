@@ -9,8 +9,8 @@ interface PartnersCarouselProps {
 export function PartnersCarousel({ partners }: PartnersCarouselProps) {
   return (
     <HorizontalCarousel label="Parceiros do Vertex">
-      {partners.map((partner) => (
-        <HorizontalCarouselItem key={partner.nome} className="w-[44%] sm:w-[30%] lg:w-[calc((100%-4rem)/5)]">
+      {partners.map((partner, index) => (
+        <HorizontalCarouselItem position={index + 1} total={partners.length} key={partner.nome} className="w-[44%] sm:w-[30%] lg:w-[calc((100%-4rem)/5)]">
           <PartnerLogoCard partner={partner} />
         </HorizontalCarouselItem>
       ))}

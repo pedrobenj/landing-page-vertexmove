@@ -50,7 +50,7 @@ export function PartnerRaceCard({ race }: PartnerRaceCardProps) {
           <a href={race.urlInscricao} target="_blank" rel="noopener noreferrer">
             Inscrever-se
             <ExternalLink aria-hidden="true" />
-            <span className="sr-only">(abre em nova aba)</span>
+            <span className="sr-only"> na {race.nome} (abre em nova aba)</span>
           </a>
         </Button>
       </div>

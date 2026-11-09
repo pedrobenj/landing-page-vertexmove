@@ -9,8 +9,8 @@ interface PastEventsCarouselProps {
 export function PastEventsCarousel({ events }: PastEventsCarouselProps) {
   return (
     <HorizontalCarousel label="Edições passadas">
-      {events.map((event) => (
-        <HorizontalCarouselItem key={event.slug}>
+      {events.map((event, index) => (
+        <HorizontalCarouselItem position={index + 1} total={events.length} key={event.slug}>
           <PastEventCard event={event} />
         </HorizontalCarouselItem>
       ))}
