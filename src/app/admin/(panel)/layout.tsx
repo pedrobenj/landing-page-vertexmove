@@ -4,7 +4,7 @@ import { VertexLogo } from "@/components/brand"
 
 import { LogoutButton } from "./components"
 
-// Acesso protegido pelo proxy.ts. Server actions de admin DEVEM checar a sessão com getAdminSession().
+// TODO(migracao): Task 7 — acesso volta a ser protegido pelo proxy.ts com a sessão da API.
 export default function AdminPanelLayout({ children }: LayoutProps<"/admin">) {
   return (
     <>

@@ -1,17 +1,7 @@
-import { RegistrationStatus } from "@/generated/prisma/enums"
-
-export { RegistrationStatus }
-
-export const REGISTRATION_STATUS_LABEL: Record<RegistrationStatus, string> = {
-  PENDING: "Aguardando pagamento",
-  PAID: "Confirmada",
-  CANCELLED: "Cancelada",
-  EXPIRED: "Expirada",
-  REFUNDED: "Reembolsada",
+/** Literais da API VertexMove (lista a confirmar com o backend, §16 do CLAUDE.md). */
+export enum REGISTRATION_STATUS {
+  PENDING = "pendente",
+  CONFIRMED = "confirmada",
+  CANCELLED = "cancelada",
+  EXPIRED = "expirada",
 }
-
-/** Status que ocupam vaga na modalidade (PENDING só enquanto não expirada). */
-export const ACTIVE_REGISTRATION_STATUSES: RegistrationStatus[] = [
-  RegistrationStatus.PENDING,
-  RegistrationStatus.PAID,
-]

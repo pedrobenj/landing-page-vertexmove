@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
+import { PRODUCT_TYPE } from "@/enums/product-type.enum"
 import type { ProductFormInput } from "@/lib/validations/product.schema"
 import { DuplicateSlugError, ProductNotFoundError } from "@/server/errors"
 import { buildProduct } from "@/test/factories"
@@ -7,13 +8,11 @@ import { buildProduct } from "@/test/factories"
 import { saveProductAction } from "./admin-products"
 
 const mocks = vi.hoisted(() => ({
-  getAdminSession: vi.fn(),
   saveProduct: vi.fn(),
   revalidatePath: vi.fn(),
 }))
 
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }))
-vi.mock("@/server/auth/require-admin", () => ({ getAdminSession: mocks.getAdminSession }))
 vi.mock("@/server/repositories/store.repository", () => ({
   getStoreRepository: () => ({ saveProduct: mocks.saveProduct }),
 }))
@@ -22,7 +21,7 @@ const input: ProductFormInput = {
   name: "Camisa Teste",
   slug: "camisa-teste",
   description: "Descrição longa o bastante.",
-  type: "SHIRT",
+  type: PRODUCT_TYPE.SHIRT,
   price: "89,90",
   pickupInfo: "Sede do Vertex",
   isActive: true,
@@ -33,14 +32,6 @@ const input: ProductFormInput = {
 describe("saveProductAction", () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mocks.getAdminSession.mockResolvedValue({ user: { id: "admin" } })
-  })
-
-  it("sem sessão → 401, sem tocar no repositório", async () => {
-    mocks.getAdminSession.mockResolvedValue(null)
-    const response = await saveProductAction(input)
-    expect(response).toMatchObject({ status: 401, error: "UNAUTHORIZED" })
-    expect(mocks.saveProduct).not.toHaveBeenCalled()
   })
 
   it("entrada inválida → 400", async () => {

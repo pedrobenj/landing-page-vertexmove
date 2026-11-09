@@ -1,13 +1,14 @@
-import { ProductType } from "@/generated/prisma/enums"
+export enum PRODUCT_TYPE {
+  SHIRT = "SHIRT",
+  MEDAL = "MEDAL",
+}
 
-export { ProductType }
-
-export const PRODUCT_TYPE_LABEL: Record<ProductType, string> = {
+export const PRODUCT_TYPE_LABEL: Record<PRODUCT_TYPE, string> = {
   SHIRT: "Camisa",
   MEDAL: "Medalha",
 }
 
-export const PRODUCT_TYPE_SECTION: Record<ProductType, { title: string; anchor: string }> = {
+export const PRODUCT_TYPE_SECTION: Record<PRODUCT_TYPE, { title: string; anchor: string }> = {
   SHIRT: { title: "Camisas", anchor: "camisas" },
   MEDAL: { title: "Medalhas", anchor: "medalhas" },
 }

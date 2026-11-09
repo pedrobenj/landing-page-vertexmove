@@ -14,8 +14,7 @@ import { Field, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSet } from
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { PRODUCT_TYPE_LABEL } from "@/enums/product-type.enum"
-import { ProductType } from "@/generated/prisma/enums"
+import { PRODUCT_TYPE, PRODUCT_TYPE_LABEL } from "@/enums/product-type.enum"
 import { slugify } from "@/lib/utils"
 import { productFormSchema, type ProductFormData, type ProductFormInput } from "@/lib/validations/product.schema"
 
@@ -26,7 +25,7 @@ interface ProductFormProps {
   productId?: string
 }
 
-const PRODUCT_TYPES = Object.values(ProductType)
+const PRODUCT_TYPES = Object.values(PRODUCT_TYPE)
 
 export function ProductForm({ defaultValues, productId }: ProductFormProps) {
   const router = useRouter()

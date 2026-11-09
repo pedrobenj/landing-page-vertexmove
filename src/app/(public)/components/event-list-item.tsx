@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatDate } from "@/lib/utils"
-import type { OpenEvent } from "@/server/services/event.service"
+import type { OpenEvent } from "@/types/open-event.interface"
 
 interface EventListItemProps {
   event: OpenEvent

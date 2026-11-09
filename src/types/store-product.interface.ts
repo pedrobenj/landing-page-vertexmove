@@ -1,4 +1,4 @@
-import type { ProductType } from "@/generated/prisma/enums"
+import type { PRODUCT_TYPE } from "@/enums/product-type.enum"
 
 export interface StoreVariant {
   id: string
@@ -11,7 +11,7 @@ export interface StoreProduct {
   slug: string
   name: string
   description: string
-  type: ProductType
+  type: PRODUCT_TYPE
   imageUrls: string[]
   /** centavos */
   price: number

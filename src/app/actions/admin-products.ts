@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache"
 import { z } from "zod"
 
 import { productFormSchema, type ProductFormInput } from "@/lib/validations/product.schema"
-import { getAdminSession } from "@/server/auth/require-admin"
 import { isStoreConflictErrorName, type StoreConflictErrorName } from "@/server/errors"
 import { getStoreRepository } from "@/server/repositories/store.repository"
 import type { HttpResponse } from "@/types/http-response.interface"
@@ -24,7 +23,7 @@ const CONFLICT_ERROR_CODES: Record<StoreConflictErrorName, string> = {
 }
 
 export async function saveProductAction(input: ProductFormInput, id?: string): Promise<HttpResponse<{ id: string }>> {
-  if (!(await getAdminSession())) return { status: 401, error: "UNAUTHORIZED", title: "Sessão expirada. Entre novamente." }
+  // TODO(migracao): Task 7 — voltar a checar a sessão do admin (agora via API) antes de tudo.
 
   const parsedId = productIdSchema.safeParse(id)
   if (!parsedId.success) return { status: 400, error: "INVALID_INPUT", title: "Produto inválido" }

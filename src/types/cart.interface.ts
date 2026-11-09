@@ -1,5 +1,5 @@
 import type { CART_ISSUE_REASON } from "@/enums/cart-issue-reason.enum"
-import type { ProductType } from "@/generated/prisma/enums"
+import type { PRODUCT_TYPE } from "@/enums/product-type.enum"
 
 /** O que o navegador guarda. Nunca preço. */
 export interface CartItem {
@@ -12,7 +12,7 @@ export interface PricedCartLine {
   productId: string
   productSlug: string
   productName: string
-  productType: ProductType
+  productType: PRODUCT_TYPE
   variantLabel: string
   imageUrl: string | null
   /** centavos */

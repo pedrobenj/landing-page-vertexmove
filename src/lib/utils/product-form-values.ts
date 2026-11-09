@@ -1,3 +1,4 @@
+import { PRODUCT_TYPE } from "@/enums/product-type.enum"
 import type { ProductFormInput } from "@/lib/validations/product.schema"
 import type { StoreProduct } from "@/types/store-product.interface"
 
@@ -7,7 +8,7 @@ export const EMPTY_PRODUCT_FORM: ProductFormInput = {
   name: "",
   slug: "",
   description: "",
-  type: "SHIRT",
+  type: PRODUCT_TYPE.SHIRT,
   price: "",
   pickupInfo: "",
   isActive: true,

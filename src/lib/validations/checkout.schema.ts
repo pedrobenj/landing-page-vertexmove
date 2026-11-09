@@ -1,13 +1,19 @@
 import { z } from "zod"
 
-import { cartItemsSchema } from "./cart.schema"
-import { participantSchema } from "./participant.schema"
+import { isValidCpf, onlyDigits } from "@/lib/utils"
 
-export const checkoutFormSchema = participantSchema
-  .pick({ name: true, cpf: true, whatsapp: true, email: true })
-  .extend({
-    acceptPrivacy: z.literal(true, { error: "Você precisa aceitar a política de privacidade" }),
-  })
+import { cartItemsSchema } from "./cart.schema"
+
+export const checkoutFormSchema = z.object({
+  name: z.string().trim().min(3, "Informe o nome completo"),
+  cpf: z.string().transform(onlyDigits).refine(isValidCpf, "CPF inválido"),
+  whatsapp: z
+    .string()
+    .transform(onlyDigits)
+    .refine((v) => v.length === 10 || v.length === 11, "Informe um telefone com DDD"),
+  email: z.string().trim().toLowerCase().pipe(z.email("E-mail inválido")),
+  acceptPrivacy: z.literal(true, { error: "Você precisa aceitar a política de privacidade" }),
+})
 
 export const checkoutSchema = checkoutFormSchema.extend({ items: cartItemsSchema })
 

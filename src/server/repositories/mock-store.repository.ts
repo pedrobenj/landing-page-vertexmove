@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto"
 
+import { ORDER_STATUS } from "@/enums/order-status.enum"
 import { generateOrderCode } from "@/lib/utils/generate-code"
 import { getFirstName } from "@/lib/utils/get-first-name"
 import type { ProductFormData } from "@/lib/validations/product.schema"
@@ -54,7 +55,7 @@ export function createMockStoreRepository(seed: StoreProduct[]): StoreRepository
     },
 
     async createPendingOrder(data: NewOrderData) {
-      // Verifica tudo antes de baixar (equivale à transação no Prisma).
+      // Verifica tudo antes de baixar (como numa transação).
       const outOfStock = data.lines
         .filter((line) => (findVariant(line.variantId)?.variant.stock ?? 0) < line.quantity)
         .map((line) => line.variantId)
@@ -69,7 +70,7 @@ export function createMockStoreRepository(seed: StoreProduct[]): StoreRepository
       const code = generateOrderCode()
       orders.set(code, {
         code,
-        status: "PENDING",
+        status: ORDER_STATUS.PENDING,
         amount: data.amount,
         buyerFirstName: getFirstName(data.buyer.name),
         buyerCpf: data.buyer.cpf,
@@ -101,7 +102,7 @@ export function createMockStoreRepository(seed: StoreProduct[]): StoreRepository
     },
 
     async saveProduct(data: ProductFormData, id?: string) {
-      // Id desconhecido nunca vira um produto novo (igual ao Prisma).
+      // Id desconhecido nunca vira um produto novo.
       const existing = id ? products.find((p) => p.id === id) : undefined
       if (id && !existing) throw new ProductNotFoundError()
       if (products.some((p) => p.slug === data.slug && p.id !== id)) throw new DuplicateSlugError()
@@ -109,12 +110,12 @@ export function createMockStoreRepository(seed: StoreProduct[]): StoreRepository
       const { variants, ...fields } = data
 
       if (existing) {
-        // Valida tudo antes de alterar qualquer coisa (equivale à transação no Prisma).
+        // Valida tudo antes de alterar qualquer coisa (como numa transação).
         const savedById = new Map(existing.variants.map((v) => [v.id, v]))
         const incomingIds = new Set(variants.flatMap((variant) => (variant.id ? [variant.id] : [])))
         if ([...incomingIds].some((variantId) => !savedById.has(variantId))) throw new VariantNotOwnedError()
 
-        // Tamanhos salvos que não vieram no formulário continuam existindo (igual ao Prisma).
+        // Tamanhos salvos que não vieram no formulário continuam existindo.
         const omitted = existing.variants.filter((v) => !incomingIds.has(v.id))
         const omittedLabels = new Set(omitted.map((v) => v.label))
         if (variants.some((variant) => omittedLabels.has(variant.label))) throw new DuplicateVariantLabelError()

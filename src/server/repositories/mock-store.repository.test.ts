@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 
+import { PRODUCT_TYPE } from "@/enums/product-type.enum"
 import type { ProductFormData } from "@/lib/validations/product.schema"
 import {
   DuplicateSlugError,
@@ -24,7 +25,7 @@ const productData = (overrides: Partial<ProductFormData> = {}): ProductFormData 
   name: "Outra",
   slug: "camisa-teste",
   description: "Descrição longa o bastante.",
-  type: "SHIRT",
+  type: PRODUCT_TYPE.SHIRT,
   price: 1000,
   pickupInfo: "Sede",
   isActive: true,

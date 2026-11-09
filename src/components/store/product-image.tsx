@@ -1,14 +1,13 @@
 import Image from "next/image"
 
 import { Chevron } from "@/components/brand"
-import { PRODUCT_TYPE_LABEL } from "@/enums/product-type.enum"
-import type { ProductType } from "@/generated/prisma/enums"
+import { type PRODUCT_TYPE, PRODUCT_TYPE_LABEL } from "@/enums/product-type.enum"
 import { cn } from "@/lib/utils"
 
 interface ProductImageProps {
   src: string | null
   alt: string
-  type: ProductType
+  type: PRODUCT_TYPE
   className?: string
   sizes?: string
   priority?: boolean

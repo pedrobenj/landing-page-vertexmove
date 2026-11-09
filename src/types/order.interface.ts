@@ -1,4 +1,4 @@
-import type { OrderStatus } from "@/generated/prisma/enums"
+import type { ORDER_STATUS } from "@/enums/order-status.enum"
 
 export interface Buyer {
   name: string
@@ -40,7 +40,7 @@ export interface OrderSummaryLine {
 /** Dados públicos do pedido (sem CPF/telefone/e-mail). */
 export interface OrderSummary {
   code: string
-  status: OrderStatus
+  status: ORDER_STATUS
   /** centavos */
   amount: number
   buyerFirstName: string

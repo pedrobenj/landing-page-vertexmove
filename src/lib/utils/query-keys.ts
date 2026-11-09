@@ -1,5 +1,4 @@
 import type { CartItem } from "@/types/cart.interface"
-import type { RegistrationFilters } from "@/types/registration-filters.interface"
 
 export const queryKeys = {
   events: {
@@ -11,8 +10,6 @@ export const queryKeys = {
     all: ["registrations"] as const,
     byCode: (code: string) => [...queryKeys.registrations.all, "code", code] as const,
     paymentStatus: (code: string) => [...queryKeys.registrations.all, "payment-status", code] as const,
-    admin: (eventId: string, filters: RegistrationFilters) =>
-      [...queryKeys.registrations.all, "admin", eventId, filters] as const,
   },
   store: {
     all: ["store"] as const,

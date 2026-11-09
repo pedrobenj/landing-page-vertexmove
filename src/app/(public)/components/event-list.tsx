@@ -1,4 +1,4 @@
-import type { OpenEvent } from "@/server/services/event.service"
+import type { OpenEvent } from "@/types/open-event.interface"
 
 import { EventListItem } from "./event-list-item"
 

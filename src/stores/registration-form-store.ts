@@ -2,8 +2,10 @@ import { create } from "zustand"
 import { createJSONStorage, persist } from "zustand/middleware"
 
 import { REGISTRATION_STEP } from "@/enums/registration-step.enum"
-import type { ParticipantInput } from "@/lib/validations/participant.schema"
-import type { ModalityAndKitInput } from "@/lib/validations/registration.schema"
+
+// TODO(migracao): Task 12 — store reescrito com os schemas da API (registration.schema); tipos provisórios.
+type ModalityAndKitInput = Record<string, string>
+type ParticipantInput = Record<string, string>
 
 interface RegistrationFormState {
   eventSlug: string | null

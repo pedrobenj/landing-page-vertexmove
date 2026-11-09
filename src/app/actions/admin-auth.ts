@@ -1,28 +1,11 @@
 "use server"
 
-import { AuthError } from "next-auth"
-
-import { signIn, signOut } from "@/auth"
-import { adminLoginSchema, type AdminLoginInput } from "@/lib/validations/admin-login.schema"
 import type { HttpResponse } from "@/types/http-response.interface"
 
-export async function loginAdmin(input: AdminLoginInput): Promise<HttpResponse> {
-  const parsed = adminLoginSchema.safeParse(input)
-  if (!parsed.success) {
-    return { status: 400, error: "Dados inválidos", title: "Verifique e-mail e senha" }
-  }
-
-  try {
-    await signIn("credentials", { ...parsed.data, redirectTo: "/admin" })
-    return { status: 200 }
-  } catch (error) {
-    if (error instanceof AuthError) {
-      return { status: 401, error: error.type, title: "E-mail ou senha incorretos" }
-    }
-    throw error // redirect do signIn precisa propagar
-  }
+// TODO(migracao): Task 7 — login/logout passam a usar a API VertexMove (cookies de sessão).
+export async function loginAdmin(): Promise<HttpResponse> {
+  return { status: 503, error: "Em migração", title: "Login do admin temporariamente indisponível" }
 }
 
-export async function logoutAdmin() {
-  await signOut({ redirectTo: "/admin/login" })
-}
+// TODO(migracao): Task 7 — logout via API e limpeza dos cookies de sessão.
+export async function logoutAdmin(): Promise<void> {}

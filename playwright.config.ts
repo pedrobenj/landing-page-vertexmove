@@ -1,11 +1,11 @@
 import { defineConfig, devices } from "@playwright/test"
 
-const PORT = Number(process.env.E2E_PORT ?? 3000)
+const PORT = Number(process.env.E2E_PORT ?? 3001)
 const BASE_URL = `http://localhost:${PORT}`
 
 /**
- * Testes end-to-end. Rodam contra o servidor de desenvolvimento com USE_MOCK_DATA=true,
- * então não precisam de banco de dados.
+ * Testes end-to-end. Rodam contra o servidor de desenvolvimento com USE_MOCK_API=true,
+ * então não precisam da API VertexMove de pé. Porta 3001 (a API usa a 3000).
  */
 export default defineConfig({
   testDir: "./e2e",
@@ -36,10 +36,6 @@ export default defineConfig({
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
-    env: {
-      USE_MOCK_DATA: "true",
-      DATABASE_URL: process.env.DATABASE_URL ?? "postgresql://e2e:e2e@localhost:5432/e2e",
-      AUTH_SECRET: process.env.AUTH_SECRET ?? "e2e-secret-e2e-secret-e2e-secret-123",
-    },
+    env: { USE_MOCK_API: "true" },
   },
 })

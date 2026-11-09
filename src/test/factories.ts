@@ -1,3 +1,4 @@
+import { PRODUCT_TYPE } from "@/enums/product-type.enum"
 import type { StoreProduct } from "@/types/store-product.interface"
 
 export function buildProduct(overrides: Partial<StoreProduct> = {}): StoreProduct {
@@ -6,7 +7,7 @@ export function buildProduct(overrides: Partial<StoreProduct> = {}): StoreProduc
     slug: "camisa-teste",
     name: "Camisa Teste",
     description: "Camisa para testes automatizados.",
-    type: "SHIRT",
+    type: PRODUCT_TYPE.SHIRT,
     imageUrls: [],
     price: 8990,
     pickupInfo: "Retirada na sede",

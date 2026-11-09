@@ -5,14 +5,10 @@ import { revalidatePath } from "next/cache"
 import { cartItemsSchema } from "@/lib/validations/cart.schema"
 import { checkoutSchema, type CheckoutInput } from "@/lib/validations/checkout.schema"
 import { getStoreRepository } from "@/server/repositories/store.repository"
-import { isRequestRateLimited } from "@/server/request-rate-limit"
 import { priceCart } from "@/server/services/cart.service"
 import { createOrder } from "@/server/services/order.service"
 import type { CartIssue, CartItem, PricedCart } from "@/types/cart.interface"
 import type { HttpResponse } from "@/types/http-response.interface"
-
-const CHECKOUT_LIMIT = 10
-const CHECKOUT_WINDOW_MS = 60_000
 
 export async function validateCartAction(items: CartItem[]): Promise<HttpResponse<PricedCart>> {
   const parsed = cartItemsSchema.safeParse(items)
@@ -36,9 +32,7 @@ export interface CheckoutResponseData {
 }
 
 export async function createOrderAction(input: CheckoutInput): Promise<HttpResponse<CheckoutResponseData>> {
-  if (await isRequestRateLimited("checkout", CHECKOUT_LIMIT, CHECKOUT_WINDOW_MS)) {
-    return { status: 429, error: "RATE_LIMITED", title: "Muitas tentativas. Aguarde um minuto e tente de novo." }
-  }
+  // TODO(migracao): Task 20 — o rate limit em memória do Next saiu; a loja vira backend falso e o limite fica com ele.
 
   const parsed = checkoutSchema.safeParse(input)
   if (!parsed.success) {
