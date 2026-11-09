@@ -1,0 +1,43 @@
+import { describe, expect, it } from "vitest"
+
+import { kitFormSchema, type KitFormInput, MAX_KIT_PHOTOS } from "./kit.schema"
+
+const valid: KitFormInput = {
+  nome: "Kit completo",
+  descricao: "",
+  ativo: true,
+  fotos: [{ url: "https://cdn.example.com/kit.jpg", alt: "Camisa e medalha", ordem: "1" }],
+}
+
+const errorPaths = (input: KitFormInput) => {
+  const result = kitFormSchema.safeParse(input)
+  return result.success ? [] : [...new Set(result.error.issues.map((issue) => issue.path.join(".")))]
+}
+
+describe("kitFormSchema", () => {
+  it("converte para o formato da API", () => {
+    expect(kitFormSchema.parse(valid)).toEqual({
+      nome: "Kit completo",
+      descricao: null,
+      ativo: true,
+      fotos: [{ url: "https://cdn.example.com/kit.jpg", alt: "Camisa e medalha", ordem: 1 }],
+    })
+  })
+
+  it("aceita kit sem fotos", () => {
+    expect(kitFormSchema.parse({ ...valid, fotos: [] }).fotos).toEqual([])
+  })
+
+  it("valida cada foto no próprio campo", () => {
+    expect(errorPaths({ ...valid, fotos: [{ url: "kit.jpg", alt: "", ordem: "x" }] })).toEqual([
+      "fotos.0.url",
+      "fotos.0.alt",
+      "fotos.0.ordem",
+    ])
+  })
+
+  it("limita a quantidade de fotos", () => {
+    const fotos = Array.from({ length: MAX_KIT_PHOTOS + 1 }, (_, index) => ({ ...valid.fotos[0], ordem: String(index) }))
+    expect(errorPaths({ ...valid, fotos })).toEqual(["fotos"])
+  })
+})
