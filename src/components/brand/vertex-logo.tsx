@@ -30,6 +30,7 @@ export function VertexLogo({ variant = "full", className, priority }: VertexLogo
       <span
         role="img"
         aria-label="Vertex Grupo de Corrida"
+        data-logo-fallback=""
         className={cn(
           "inline-flex items-center justify-center font-heading font-black uppercase leading-none tracking-tight",
           variant === "white" ? "text-white" : "text-brand-navy",

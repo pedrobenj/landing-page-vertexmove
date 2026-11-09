@@ -47,7 +47,7 @@ test.describe("Navegação pública", () => {
     { path: "/consulta", title: "Consultar inscrição" },
     { path: "/loja", title: "Camisas e medalhas" },
     { path: "/privacidade", title: "Política de privacidade" },
-    { path: "/corridas/corrida-vertex-beira-mar-2026", title: "Página da corrida" },
+    { path: "/corridas/corrida-vertex-beira-mar-2026", title: "Corrida Vertex Beira-Mar 2026" },
     { path: "/regulamento/corrida-vertex-beira-mar-2026", title: "Regulamento" },
   ]
 

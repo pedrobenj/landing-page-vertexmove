@@ -13,7 +13,7 @@ export function HorizontalCarouselDot({ page, isActive, onSelect }: HorizontalCa
       aria-label={`Ir para a página ${page + 1}`}
       aria-current={isActive ? "true" : undefined}
       onClick={() => onSelect(page)}
-      className="flex h-6 items-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-green"
+      className="flex h-6 min-w-6 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-green"
     >
       <span
         aria-hidden="true"

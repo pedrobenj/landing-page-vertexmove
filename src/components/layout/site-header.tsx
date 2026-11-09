@@ -14,10 +14,11 @@ export function SiteHeader() {
         <Link
           href="/"
           aria-label="Vertex Grupo de Corrida — início"
-          className="flex items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-green"
+          className="group/brand flex items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-green"
         >
           <VertexLogoPlate priority />
-          <span aria-hidden="true" className="hidden font-heading text-lg font-extrabold sm:inline">
+          {/* Sem o arquivo da logo, o fallback já mostra "Vertex": esconde o texto para não repetir. */}
+          <span aria-hidden="true" className="hidden font-heading text-lg font-extrabold sm:inline sm:group-has-data-logo-fallback/brand:hidden">
             Vertex
           </span>
         </Link>

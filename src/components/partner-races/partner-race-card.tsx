@@ -16,7 +16,7 @@ export function PartnerRaceCard({ race }: PartnerRaceCardProps) {
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-2xl border bg-card shadow-sm">
       <div className="relative aspect-[4/3] overflow-hidden bg-brand-navy-deep">
-        <CoverImage src={race.imagemCapaUrl} alt={race.nome} sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 100vw" />
+        <CoverImage src={race.imagemCapaUrl} alt="" sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 100vw" />
         <PillBadge size="sm" className="absolute top-3 left-3">
           Inscrições abertas
         </PillBadge>

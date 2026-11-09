@@ -17,7 +17,7 @@ export function EventCard({ event }: EventCardProps) {
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-2xl border bg-card shadow-sm transition-shadow hover:shadow-md">
       <div className="relative aspect-video overflow-hidden bg-brand-navy-deep">
-        <CoverImage src={event.imagemCapaUrl} alt={event.nome} sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 100vw" />
+        <CoverImage src={event.imagemCapaUrl} alt="" sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 100vw" />
         <PillBadge size="sm" className="absolute top-3 left-3">
           Inscrições abertas
         </PillBadge>

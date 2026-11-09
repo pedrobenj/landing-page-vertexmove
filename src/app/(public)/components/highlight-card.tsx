@@ -17,7 +17,11 @@ export function HighlightCard({ title, description, badge, linkLabel, href, imag
   return (
     <article className="relative isolate flex min-h-60 flex-col justify-end md:min-h-80 overflow-hidden rounded-2xl bg-brand-navy-deep p-6 text-white shadow-md">
       <CoverImage src={imageSrc} alt="" sizes="(min-width: 768px) 33vw, 100vw" className="-z-10" />
-      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-brand-navy-deep/45" />
+      {/* Gradiente mais forte embaixo, onde fica o texto: contraste AA também sobre fotos reais. */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 -z-10 bg-linear-to-t from-brand-navy-deep/90 via-brand-navy-deep/70 to-brand-navy-deep/35"
+      />
       <div className="flex flex-col gap-2">
         {badge}
         <h3 className="font-heading text-4xl font-black">{title}</h3>

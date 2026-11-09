@@ -1,7 +1,7 @@
 "use client"
 
 import { ArrowLeft, ArrowRight } from "lucide-react"
-import { type ReactNode, useCallback, useEffect, useRef, useState } from "react"
+import { type KeyboardEvent, type ReactNode, useCallback, useEffect, useRef, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { cn, getCarouselActivePage, getCarouselPageCount, getCarouselPageOffset } from "@/lib/utils"
@@ -11,7 +11,7 @@ import { HorizontalCarouselDot } from "./horizontal-carousel-dot"
 interface HorizontalCarouselProps {
   /**
    * `HorizontalCarouselItem`s — cada item é um componente próprio no chamador.
-   * As setas (desktop) ficam alinhadas à direita do cabeçalho logo acima (gap de 2.5rem do `SectionBand`).
+   * As setas (desktop largo, `lg`) ficam alinhadas à direita do cabeçalho logo acima (gap de 2.5rem do `SectionBand`).
    */
   children: ReactNode
   label: string
@@ -27,29 +27,46 @@ export function HorizontalCarousel({ children, label, className }: HorizontalCar
   const [activePage, setActivePage] = useState(0)
   const [edges, setEdges] = useState({ atStart: true, atEnd: true })
 
+  const frameRef = useRef<number | null>(null)
+
   const measure = useCallback(() => {
     const track = trackRef.current
     if (!track) return
     const { scrollLeft, scrollWidth, clientWidth } = track
     const maxScroll = scrollWidth - clientWidth
     const pages = getCarouselPageCount(scrollWidth, clientWidth)
-    setPageCount(pages)
-    setActivePage(getCarouselActivePage(scrollLeft, maxScroll, pages))
-    setEdges({ atStart: scrollLeft <= 4, atEnd: scrollLeft >= maxScroll - 4 })
+    const page = getCarouselActivePage(scrollLeft, maxScroll, pages)
+    const atStart = scrollLeft <= 4
+    const atEnd = scrollLeft >= maxScroll - 4
+    // Só atualiza o que mudou: o scroll dispara dezenas de eventos por segundo.
+    setPageCount((current) => (current === pages ? current : pages))
+    setActivePage((current) => (current === page ? current : page))
+    setEdges((current) => (current.atStart === atStart && current.atEnd === atEnd ? current : { atStart, atEnd }))
   }, [])
+
+  /** Agrupa as medições num frame de animação (scroll e resize). */
+  const scheduleMeasure = useCallback(() => {
+    if (frameRef.current !== null) return
+    frameRef.current = requestAnimationFrame(() => {
+      frameRef.current = null
+      measure()
+    })
+  }, [measure])
 
   useEffect(() => {
     const track = trackRef.current
     if (!track) return
     measure()
-    const observer = new ResizeObserver(measure)
+    const observer = new ResizeObserver(scheduleMeasure)
     observer.observe(track)
-    track.addEventListener("scroll", measure, { passive: true })
+    track.addEventListener("scroll", scheduleMeasure, { passive: true })
     return () => {
       observer.disconnect()
-      track.removeEventListener("scroll", measure)
+      track.removeEventListener("scroll", scheduleMeasure)
+      if (frameRef.current !== null) cancelAnimationFrame(frameRef.current)
+      frameRef.current = null
     }
-  }, [measure])
+  }, [measure, scheduleMeasure])
 
   const scrollByPage = (direction: 1 | -1) => {
     const track = trackRef.current
@@ -64,12 +81,18 @@ export function HorizontalCarousel({ children, label, className }: HorizontalCar
     track.scrollTo({ left: getCarouselPageOffset(page, maxScroll, pageCount), behavior: "smooth" })
   }
 
+  const handleKeyDown = (event: KeyboardEvent<HTMLUListElement>) => {
+    if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return
+    event.preventDefault()
+    scrollByPage(event.key === "ArrowRight" ? 1 : -1)
+  }
+
   const hasOverflow = pageCount > 1
 
   return (
     <div role="region" aria-roledescription="carrossel" aria-label={label} className={cn("relative flex flex-col gap-6", className)}>
       {hasOverflow && (
-        <div className="absolute right-0 bottom-[calc(100%+2.5rem)] hidden gap-2 md:flex">
+        <div className="absolute right-0 bottom-[calc(100%+2.5rem)] hidden gap-2 lg:flex">
           <Button
             type="button"
             variant="outline"
@@ -97,7 +120,10 @@ export function HorizontalCarousel({ children, label, className }: HorizontalCar
 
       <ul
         ref={trackRef}
-        className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto overscroll-x-contain px-4 pb-1 [scrollbar-width:none] md:mx-0 md:scroll-px-0 md:px-0 [&::-webkit-scrollbar]:hidden"
+        tabIndex={0}
+        aria-label={`${label} (use as setas do teclado para navegar)`}
+        onKeyDown={handleKeyDown}
+        className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto overscroll-x-contain px-4 pb-1 [scrollbar-width:none] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-green md:mx-0 md:scroll-px-0 md:px-0 [&::-webkit-scrollbar]:hidden"
       >
         {children}
       </ul>

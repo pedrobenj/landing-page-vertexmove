@@ -7,9 +7,13 @@ interface HorizontalCarouselItemProps {
   className?: string
 }
 
-/** Item do `HorizontalCarousel`. A largura vem do chamador (padrão: ~3 por linha no desktop). */
+/** Item do `HorizontalCarousel` (slide dentro de um item de lista, padrão APG). A largura vem do chamador (padrão: ~3 por linha no desktop). */
 export function HorizontalCarouselItem({ children, className }: HorizontalCarouselItemProps) {
   return (
-    <li className={cn("w-[78%] shrink-0 snap-start sm:w-[45%] lg:w-[calc((100%-2rem)/3)]", className)}>{children}</li>
+    <li className={cn("w-[78%] shrink-0 snap-start sm:w-[45%] lg:w-[calc((100%-2rem)/3)]", className)}>
+      <div role="group" aria-roledescription="slide" className="h-full">
+        {children}
+      </div>
+    </li>
   )
 }
