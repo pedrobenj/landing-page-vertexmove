@@ -1,9 +1,30 @@
+import { ShieldCheck } from "lucide-react"
 import type { Metadata } from "next"
 
-import { PagePlaceholder } from "@/components/layout"
+import { SectionBand, SectionHeading } from "@/components/sections"
 
-export const metadata: Metadata = { title: "Consultar inscrição" }
+import { LookupForm } from "./components"
+
+export const metadata: Metadata = {
+  title: "Consultar inscrição",
+  description: "Consulte suas inscrições nas corridas do Vertex pelo WhatsApp ou CPF, sem login e sem senha.",
+}
 
 export default function LookupPage() {
-  return <PagePlaceholder title="Consultar inscrição" description="Informe o WhatsApp ou o CPF usado na inscrição." />
+  return (
+    <SectionBand aria-labelledby="consulta-title" className="border-t-0" containerClassName="max-w-3xl gap-8">
+      <SectionHeading
+        as="h1"
+        id="consulta-title"
+        eyebrow="Sem login e sem senha"
+        title="Consultar inscrição"
+        description="Informe o WhatsApp ou o CPF usado na inscrição para ver suas corridas e o status de cada uma."
+      />
+      <p className="flex gap-2 text-sm text-muted-foreground">
+        <ShieldCheck aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-brand-green-text" />
+        Por segurança (LGPD), mostramos apenas dados mascarados: nome parcial, corrida, distância e status.
+      </p>
+      <LookupForm />
+    </SectionBand>
+  )
 }

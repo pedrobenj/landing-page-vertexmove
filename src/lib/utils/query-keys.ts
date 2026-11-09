@@ -1,5 +1,4 @@
 import type { CartItem } from "@/types/cart.interface"
-import type { RegistrationLookupInput } from "@/types/api/registration.interface"
 
 export const queryKeys = {
   events: {
@@ -21,7 +20,8 @@ export const queryKeys = {
   },
   registrations: {
     all: ["registrations"] as const,
-    lookup: (input: RegistrationLookupInput) => [...queryKeys.registrations.all, "lookup", input] as const,
+    /** Chave de mutação da consulta: CPF/WhatsApp nunca entram em chaves de cache (LGPD). */
+    lookup: () => [...queryKeys.registrations.all, "lookup"] as const,
   },
   store: {
     all: ["store"] as const,
