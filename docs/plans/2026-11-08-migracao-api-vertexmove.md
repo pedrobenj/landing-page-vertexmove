@@ -928,3 +928,89 @@ O backend ainda não tem a loja (§16). Hoje a lógica está em `src/server/serv
 - Lista e exportação de inscritos no admin e retirada de kit.
 - API da loja, corridas encerradas, corridas parceiras dinâmicas.
 - MFA, upload de imagens e e-mails.
+
+---
+
+## Revisão 2026-11-08: visual igual à referência (substitui partes das Tasks 4, 8, 9 e 11)
+
+O usuário pediu que o front fique **igual à referência atual** (https://www.corredasamigas.com.br/), com as cores e o conteúdo do Vertex. O CLAUDE.md §2 (ordem da home e header) e o §3 ("Linguagem visual") foram atualizados: **leia-os, porque prevalecem sobre as Tasks 8 e 9 originais.**
+
+Screenshots da referência, para abrir com a ferramenta Read:
+- desktop, topo: `/private/tmp/claude-501/-Users-pedbenjamin-Desktop-Projeto-Landing-Corrida/aa13280e-796b-4f78-9c7b-e3eb2e36f10f/scratchpad/top.png`
+- desktop, demais trechos (`part1.png` a `part4.png`): `.../scratchpad/part1.png`, `part2.png`, `part3.png`, `part4.png` (no mesmo diretório);
+- mobile, topo: `.../scratchpad/mtop.png`;
+- página inteira: `.../scratchpad/ref-desktop.png` e `.../scratchpad/ref-mobile.png`.
+
+**Nova ordem de execução:** Lote 1 (Tasks 1–5) → **Lote 3 (Tasks 8–11, revisadas abaixo)** → Lote 2 (6–7) → Lote 4 → Lote 5 → Lote 6 → Lote 7.
+
+Antes da Task 7 (admin), o header usa o link "Área administrativa" para `/admin/login` normalmente.
+
+### Acréscimos à Task 4 (mock)
+São rotas **propostas**, ainda pendentes no backend (§16). Marque-as assim no código.
+- `GET /eventos/encerrados?cursor&limit` → `CursorPage<PublicEvent>` com os eventos `encerrado`. O seed ganha **4 edições passadas** do Vertex (datas de 2025–2026, nomes como "Corrida Vertex Beira-Mar 2025", "Night Run Vertex 2025", "Vertex Cocó Trail 2026" e "Corrida das Mães Vertex 2026"), com `imagemCapaUrl: null`.
+- `GET /corridas-parceiras` → `PartnerRace[]`. Crie `src/types/api/partner-race.interface.ts` com `{ id: number; nome; dataEvento; localNome; cidade; uf; distancias: string[]; cupom; descontoPercentual: number; realizacao?: string | null; urlInscricao; imagemCapaUrl: string | null }`. O seed tem 3 corridas fictícias em Fortaleza, sem nomes de marcas reais, com o cupom `VERTEX10`.
+- Endpoints na Task 5:
+  - `listPastEvents()` e `listPartnerRaces()`, com `"use cache"`, tag `events` / `partner-races` e `cacheLife` de 5 min;
+  - um 404 do backend real (rota inexistente) deve virar **lista vazia**, e não erro.
+
+### Conteúdo estático com demonstração
+Crie `src/server/content/`, só para o servidor:
+- `partners.ts`: `getPartners(): Partner[]` (`{ nome; logoUrl: string | null; url?: string }`).
+- `community-stats.ts`: `getCommunityStats(): CommunityStat[] | null` (`{ valor: string; rotulo: string }`).
+- Com `env.USE_MOCK_API`, as duas devolvem dados de demonstração (6 parceiros fictícios sem logo, que a UI exibe como "monograma" com o nome; e os números 12+ corridas, 3.500+ participantes, 5.000+ inscrições, 4 anos). Sem mock, devolvem as listas reais, que ficam em constantes `PARTNERS`/`COMMUNITY_STATS` vazias ou `null` com `// TODO(cliente)`.
+- Seções sem dados **não renderizam**.
+
+### Tokens de tema (globals.css)
+- Acrescente `--brand-navy-deep` (≈ `#071F4A`) para as faixas escuras e o header/rodapé, e `--brand-green-text` (verde escurecido, ≈ `#4D7A12`, contraste AA sobre branco) para eyebrows e ícones sobre fundo claro.
+- Verde puro só sobre fundo escuro ou como fundo, com texto navy.
+- **Fonte:** Montserrat 800 e **900**. Adicione o peso 900 no `next/font`.
+
+### Task 8 revisada — Header, menu e rodapé
+- **Header:** barra `brand-navy-deep`, altura ~64 px. À esquerda, a logo dentro de uma "placa" branca arredondada mais o texto "Vertex" no desktop (como na referência). À direita, `CartButton` em versão clara e o botão hambúrguer, **em todos os tamanhos**.
+- **Menu (Sheet lateral à direita):** itens de `SITE_NAV_ITEMS` em fonte grande, depois "Consultar inscrição" e, por último e discreto, "Área administrativa". Use `useCloseOnRouteChange`.
+- **Rodapé:** fundo `brand-navy-deep`, em 3 colunas.
+  - Coluna 1: logo em placa branca e "Vertex Grupo de Corrida — {tagline}".
+  - Coluna 2: "CONTATO" (eyebrow), com WhatsApp formatado, e-mail e @ do Instagram, cada um com ícone.
+  - Coluna 3: "NAVEGAÇÃO", com os mesmos itens do menu e "Área administrativa".
+  - Linha final, centralizada: "© {ano} Vertex Grupo de Corrida. Todos os direitos reservados. · Desenvolvido por Pedro Benjamin" e o link Privacidade.
+
+### Task 9 revisada — Home
+Crie primeiro os componentes compartilhados em `src/components/sections/`, um por arquivo:
+- `section-heading.tsx`: eyebrow + título grande + subtítulo + slot `actions` à direita (`md:flex-row md:items-end md:justify-between`), com variantes `light`/`dark`.
+- `pill-badge.tsx`: selo-pílula com ícone opcional.
+- `arrow-link.tsx`: link com `ArrowRight`.
+- `section-band.tsx`: `<section>` com fundo `white | muted | dark | accent`, padding vertical e container `max-w-6xl`.
+- `horizontal-carousel.tsx`: client; scroll-snap horizontal, botões ← → no desktop e indicadores (dots), sem bibliotecas novas. Itens via `children`; cada item é um componente próprio no chamador.
+
+Seções da home, na ordem do CLAUDE.md §2:
+1. **`hero-section.tsx`:** pílula "VERTEX GRUPO DE CORRIDA" com ponto verde; H1 "Corra. Conecte-se. Evolua." (Montserrat 900, `text-5xl sm:text-7xl lg:text-8xl`, `leading-[0.95]`, cor navy-deep); subtítulo; botões "Quero me inscrever" (primário) e "Conheça nossa história" (secundário). Chevron como marca d'água discreta.
+2. **`highlight-cards-section.tsx`:** 3 cards com imagem de fundo e sobreposição `bg-brand-navy-deep/70`.
+   - Enquanto não houver fotos, use um fundo com gradiente navy mais o chevron grande. Deixe `imageSrc` opcional, com TODO de foto do cliente.
+   - Selo dinâmico no card de corridas ("{n} corridas abertas", a partir de `listPublicEvents`, dentro de `Suspense` com fallback sem número).
+   - Abaixo do card do meio, o botão de largura total "Acompanhe sua inscrição" → `/consulta`, como o "Acompanhe seu desafio" da referência.
+3. **`past-events-section.tsx`:** "NOSSA HISTÓRIA EM MOVIMENTO" / "Corridas que já vivemos" / "Edições que viraram histórias, conquistas e amizades."
+   - `HorizontalCarousel` de `past-event-card.tsx` (capa alta `aspect-[3/4]`, `rounded-2xl`; data "06 DE SET. DE 2026" com ícone de calendário; nome);
+   - botão "Ver todas as corridas" → `/corridas/encerradas`;
+   - dentro de `Suspense` com skeleton; vazio → não renderiza.
+4. **`open-events-section.tsx`** (`id="corridas"`): "PRÓXIMAS CORRIDAS" / "Escolha seu próximo desafio".
+   - Grade 1/2/3 colunas de `event-card.tsx`: capa `aspect-video`; nome; ícones calendário (data · largada), pin (local) e rota (distâncias, se o detalhe as tiver; na lista pública só há o básico, então omita); preço "a partir de" só se disponível; botão "Inscrever-se →" para a página do evento.
+   - Os 4 estados. Vazio: "Nenhuma corrida aberta no momento. Volte em breve!" + link para encerradas.
+   - Abaixo, linha com borda e o link "Ver corridas encerradas".
+5. **`how-it-works-section.tsx`:** no novo estilo (números grandes em verde sobre cards).
+6. **`track-registration-band.tsx`:** faixa escura; círculo verde com ícone `Search`/`Ticket`; "Acompanhe sua inscrição!" e texto; botão "Consultar minha inscrição" → `/consulta`.
+7. **`partners-strip-section.tsx`:** eyebrow "MARCAS QUE CORREM COM A GENTE"; carrossel de `partner-logo-card.tsx` (caixa branca com borda; logo via `next/image` ou monograma com o nome).
+8. **`store-band-section.tsx`:** "LEVE O VERTEX COM VOCÊ" / "Loja Vertex" / "Produtos oficiais para vestir o movimento." + "Conhecer a loja".
+9. **`more-than-running-section.tsx`:** faixa escura, com 2 colunas no desktop.
+   - À esquerda: eyebrow, título "Quem corre junto vai mais longe", texto e botão.
+   - À direita: grade 2×2 de `value-badge.tsx` (ícone verde + rótulo, divisores finos claros).
+10. **`partner-races-section.tsx`:** "AGENDA PARCEIRA" / "Próximas corridas parceiras" / "Corridas com benefícios exclusivos para a nossa comunidade." + "Ver todas →".
+    - Até 3 `partner-race-card.tsx`: capa com o selo "Inscrições abertas"; nome; data; local; distâncias; "Por {realizacao}"; caixa de cupom (fundo verde claro, borda verde, rótulo "CUPOM", código grande e "{n}% de desconto") com `CopyCouponButton`; botão de largura total "Inscrever-se" (externo).
+    - O card e o botão de copiar ficam em `src/components/partner-races/` para reúso na página `/corridas-parceiras`.
+11. **`community-stats-band.tsx`:** faixa `brand-green` com 4 números (Montserrat 900, `text-5xl`, navy) e rótulos em caixa alta e `tracking-widest`.
+
+### Acréscimos à Task 11
+- `/corridas/encerradas`: lista paginada (grade) de `PastEventCard`, a partir de `listPastEvents`, com os 4 estados.
+- `/corridas-parceiras`: grade de `PartnerRaceCard`, a partir de `listPartnerRaces`.
+- `/parceiros`: grade de `PartnerLogoCard` a partir de `getPartners()`.
+- `/sobre`: `CommunityStatsBand` quando houver números.
+- Todas as páginas internas abrem com o mesmo `SectionHeading` grande, no padrão da referência.

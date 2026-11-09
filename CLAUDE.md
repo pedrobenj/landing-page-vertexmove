@@ -40,17 +40,24 @@ Referência: **https://www.corredasamigas.com.br/** (site do grupo de corrida fe
 
 **Menu principal** (header e repetido no rodapé): Início · Corridas · Loja · Corridas Parceiras · Conheça o Vertex · Parceiros · Contato · Área administrativa (link discreto, por último).
 
-**Home, nesta ordem:**
-1. **Hero** — frase curta e motivacional de três batidas (no estilo "Corra. Conecte-se. Evolua."), uma linha sobre o grupo e CTA "Conheça nossa história" (`/sobre`). Adicionar um CTA primário "Quero me inscrever" (âncora `#corridas`), já que aqui o foco é a inscrição.
-2. **Três cards de destaque**, lado a lado no desktop e empilhados no mobile, cada um com título, frase e botão:
+**Home, nesta ordem (espelhando o site atual da referência):**
+1. **Hero** — selo-pílula com o nome do grupo, frase curta e motivacional de três batidas (no estilo "Corra. Conecte-se. Evolua.") em tipografia enorme, uma linha sobre o grupo e CTA "Conheça nossa história" (`/sobre`). Adicionar um CTA primário "Quero me inscrever" (âncora `#corridas`), já que aqui o foco é a inscrição.
+2. **Três cards de destaque com foto e sobreposição escura**, lado a lado no desktop e empilhados no mobile, cada um com selo (ex.: "2 corridas abertas"), título, frase e link:
    - *Próximas corridas* → "Garantir minha vaga" (`#corridas`)
    - *Consultar inscrição* → "Consultar" (`/consulta`) — no lugar dos "Desafios Online" da referência
    - *Loja* → "Acessar a loja" (`/loja`)
-3. **Próximas corridas** (`#corridas`) — título "Escolha seu próximo desafio", texto curto, grade de cards de corridas abertas e link "Ver corridas encerradas" (`/corridas/encerradas`).
-4. **Acompanhe sua inscrição** — bloco de consulta por WhatsApp/CPF (inline ou CTA para `/consulta`). Equivale ao "Acompanhe seu desafio" da referência, trocando quilômetros por status da inscrição.
-5. **Vista o movimento** — chamada para os produtos oficiais com CTA "Conhecer a loja".
-6. **Mais que corrida** — título institucional e **quatro selos** com ícone + frase (ex.: ambiente acolhedor, todos os níveis, experiências marcantes, comunidade em movimento — adaptar ao Vertex) e CTA para `/sobre`.
-7. **Rodapé** — logo + tagline, bloco "Contato" (WhatsApp `wa.me`, Instagram, e-mail), lista de navegação, © ano e "Desenvolvido por Pedro Benjamin".
+3. **Corridas que já vivemos** — carrossel de edições passadas (foto, data, nome) e link "Ver todas" (`/corridas/encerradas`). Some se não houver dados.
+4. **Próximas corridas** (`#corridas`) — título "Escolha seu próximo desafio", texto curto, grade de cards de corridas abertas (capa, nome, data/largada, local, distâncias, "a partir de" e botão "Inscrever-se").
+5. **Como funciona** — passos numerados (mantido do projeto, não existe na referência).
+6. **Acompanhe sua inscrição** — faixa escura com ícone, texto e botão "Consultar minha inscrição" (`/consulta`). Equivale ao "Acompanhe seu desafio" da referência, trocando quilômetros por status da inscrição.
+7. **Marcas que correm com a gente** — faixa/carrossel de logos dos parceiros (`/parceiros`). Some se não houver parceiros.
+8. **Vista o movimento** — faixa da loja com CTA "Conhecer a loja".
+9. **Mais que corrida** — faixa escura: título institucional, texto, CTA para `/sobre` e grade 2×2 com **quatro selos** (ícone + frase: ambiente acolhedor, todos os níveis, experiências marcantes, comunidade em movimento — adaptar ao Vertex).
+10. **Próximas corridas parceiras** — três cards com capa, data, local, distâncias, caixa de cupom e botão "Inscrever-se" (link externo), mais link "Ver todas" (`/corridas-parceiras`). Some se não houver dados.
+11. **Números da comunidade** — faixa na cor de destaque com 4 indicadores grandes (corridas realizadas, participantes, inscrições, anos de grupo). Some se os números não estiverem definidos.
+12. **Rodapé** escuro em 3 colunas — logo + tagline, "Contato" (WhatsApp `wa.me`, e-mail, Instagram) e "Navegação"; linha final com © ano e "Desenvolvido por Pedro Benjamin".
+
+**Header:** barra escura com a logo, carrinho e botão de menu (hambúrguer) que abre a navegação em painel lateral, em todos os tamanhos de tela, como na referência.
 
 **Páginas internas da referência que entram no projeto:**
 - **Corridas encerradas** ("Eventos que já vivemos") — histórico das edições passadas com capa e data; futuramente com galeria e resultados.
@@ -94,6 +101,14 @@ Mapear no tema do shadcn/ui (CSS variables em `globals.css`):
 ### Tipografia
 - Títulos: **Montserrat** (700/800, caixa alta em títulos curtos). Corpo: **Inter**. Carregar via `next/font/google`.
 - Subtítulos no estilo "GRUPO DE CORRIDA": caixa alta, `tracking-widest`, ladeados por traços verdes — padrão de "eyebrow" acima dos títulos de seção.
+
+### Linguagem visual (adaptada da referência)
+- **Ritmo de seções:** faixas brancas alternadas com faixas escuras (`brand-navy`, ou um navy mais profundo como `brand-navy-deep`) e uma faixa na cor de destaque (`brand-green`, texto navy) para os números. Seções brancas separadas por borda fina.
+- **Cabeçalho de seção:** eyebrow pequeno em caixa alta na cor de destaque (verde escurecido para passar AA sobre branco) → título **muito grande e pesado** (Montserrat 800/900, `text-4xl`–`text-6xl`) → linha de apoio em cinza; botões secundários ("Ver todas →") alinhados à direita no desktop.
+- **Cards:** cantos bem arredondados (`rounded-2xl`), borda clara e sombra suave; imagem de capa no topo; linhas de informação com ícones lucide na cor de destaque; preço em destaque e botão pequeno com seta.
+- **Cards de destaque do topo:** foto de fundo com sobreposição escura, selo-pílula, título branco grande e link na cor de destaque.
+- **Botões:** primário na cor de destaque com seta (`ArrowRight`); secundário branco com borda.
+- **Mobile:** tudo empilhado, botões em largura total.
 
 ### Motivo gráfico
 - O **pico/chevron verde** ("^") é o elemento-assinatura: divisor de seção, marca d'água no hero, bullet de listas, ícone de "subida/progresso". Um uso marcante por tela.
@@ -519,8 +534,9 @@ Antes de cada commit: `lint`, `typecheck` e `build` passando. Commits no padrão
 - [ ] Qual header de IP do cliente o rate limit confia (`X-Forwarded-For`?) e como o Next se autentica como proxy confiável.
 - [ ] Domínio/`SameSite` dos cookies em produção e CORS (se algum dia o browser chamar a API direto).
 - [ ] Loja (produtos, variantes, pedidos, estoque).
-- [ ] Listagem pública de corridas encerradas (histórico) e, depois, resultados/galeria.
-- [ ] Corridas parceiras (nome, data, distâncias, cupom, link externo, imagem) com CRUD no admin.
+- [ ] Listagem pública de corridas encerradas (histórico) e, depois, resultados/galeria. Proposta: `GET /eventos/encerrados?cursor&limit` → `CursorPage<PublicEvent>` (já implementada no mock).
+- [ ] Corridas parceiras (nome, data, distâncias, cupom, link externo, imagem) com CRUD no admin. Proposta: `GET /corridas-parceiras` → `PartnerRace[]` (já implementada no mock).
+- [ ] Parceiros/apoiadores e números da comunidade: estáticos no front até haver endpoint (mock fornece dados de demonstração).
 
 ### Cliente
 - [ ] Gateway de pagamento e quem arca com as taxas
