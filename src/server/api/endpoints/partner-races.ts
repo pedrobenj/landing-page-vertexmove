@@ -5,7 +5,7 @@ import { cacheLife, cacheTag } from "next/cache"
 import type { PartnerRace } from "@/types/api/partner-race.interface"
 
 import { apiFetch } from "../api-client"
-import { type CachedResult, toCachedFailure, unwrapCached } from "./cached-result"
+import { type CachedResult, PROPOSED_LIST_CACHE_LIFE, proposedRouteFailure, unwrapCached } from "./cached-result"
 
 /**
  * `GET /corridas-parceiras` — rota PROPOSTA, ainda pendente no backend (§16 do CLAUDE.md).
@@ -16,16 +16,10 @@ async function fetchPartnerRaces(): Promise<CachedResult<PartnerRace[]>> {
   cacheTag("partner-races")
   try {
     const data = await apiFetch<PartnerRace[]>("/corridas-parceiras", { forwardClient: false })
-    cacheLife({ stale: 300, revalidate: 300, expire: 900 })
+    cacheLife(PROPOSED_LIST_CACHE_LIFE)
     return { ok: true, data }
   } catch (error) {
-    const failure = toCachedFailure(error)
-    if (failure.status === 404) {
-      cacheLife({ stale: 300, revalidate: 300, expire: 900 })
-      return { ok: true, data: [] }
-    }
-    cacheLife("seconds")
-    return failure
+    return proposedRouteFailure(error, [])
   }
 }
 

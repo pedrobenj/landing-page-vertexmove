@@ -23,16 +23,17 @@ async function simulateLatency(signal: AbortSignal | null | undefined): Promise<
   if (env.NODE_ENV === "test") return
   latencyCounter = (latencyCounter + 1) % DELAY_STEPS
   const delay = MIN_DELAY_MS + latencyCounter * DELAY_STEP_MS
+  signal?.throwIfAborted()
   await new Promise<void>((resolve, reject) => {
-    const timer = setTimeout(resolve, delay)
-    signal?.addEventListener(
-      "abort",
-      () => {
-        clearTimeout(timer)
-        reject(signal.reason)
-      },
-      { once: true },
-    )
+    const onAbort = () => {
+      clearTimeout(timer)
+      reject(signal?.reason)
+    }
+    const timer = setTimeout(() => {
+      signal?.removeEventListener("abort", onAbort)
+      resolve()
+    }, delay)
+    signal?.addEventListener("abort", onAbort, { once: true })
   })
 }
 
@@ -63,7 +64,13 @@ export const mockFetch: Transport = async (input, init) => {
   const headers = new Headers(init.headers)
   for (const route of mockRoutes) {
     if (route.method !== method) continue
-    const params = matchPath(route.path, path)
+    let params: Record<string, string> | null
+    try {
+      params = matchPath(route.path, path)
+    } catch (error) {
+      if (error instanceof URIError) return apiError(400, API_ERROR_CODE.INVALID_DATA, "URL malformada.")
+      throw error
+    }
     if (!params) continue
     const ctx: MockContext = {
       params,

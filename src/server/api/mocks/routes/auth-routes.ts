@@ -5,10 +5,10 @@ import type { AdminLoginResponse, AdminProfile, AdminRefreshResponse } from "@/t
 
 import { ACCESS_TOKEN_TTL_S, csrfMatchesRefresh, issueSession, readRefreshToken, REFRESH_TOKEN_TTL_S } from "../mock-auth"
 import { getMockDb } from "../mock-db"
-import { requireAdmin } from "../mock-guards"
+import { withAdmin } from "../mock-guards"
 import { apiError, json, type MockContext, type MockRoute, noContent } from "../mock-http"
 import { paginate } from "../mock-pagination"
-import { loginSchema, validate } from "../mock-schemas"
+import { loginSchema } from "../mock-schemas"
 import type { MockAdmin } from "../mock-types"
 
 const MAX_LOGIN_FAILURES = 5
@@ -50,12 +50,14 @@ export const authRoutes: MockRoute[] = [
     method: "POST",
     path: "/admin/auth/login",
     handler: ({ body }) => {
-      const input = validate(loginSchema, body)
-      if (input instanceof Response) return input
+      const invalid = () => apiError(401, API_ERROR_CODE.NOT_AUTHENTICATED, "Credenciais inválidas.")
+      // Como o backend: corpo inválido no login é 401 genérico (não revela qual campo faltou).
+      const parsed = loginSchema.safeParse(body)
+      if (!parsed.success) return invalid()
+      const input = parsed.data
 
       const db = getMockDb()
       const email = input.email.trim().toLowerCase()
-      const invalid = () => apiError(401, API_ERROR_CODE.NOT_AUTHENTICATED, "Credenciais inválidas.")
       // Lockout simplificado: depois de 5 falhas seguidas, até a senha certa é recusada.
       if ((db.loginFailures[email] ?? 0) >= MAX_LOGIN_FAILURES) return invalid()
 
@@ -98,6 +100,8 @@ export const authRoutes: MockRoute[] = [
   {
     method: "POST",
     path: "/admin/auth/logout",
+    // Fidelidade: os tokens do mock não têm estado, então o logout não revoga a família de sessões; um
+    // refresh token copiado antes do logout continua válido até expirar (no backend real, não).
     handler: (ctx) => {
       const admin = requireRefreshSession(ctx)
       if (admin instanceof Response) return admin
@@ -107,9 +111,7 @@ export const authRoutes: MockRoute[] = [
   {
     method: "GET",
     path: "/admin/me",
-    handler: (ctx) => {
-      const admin = requireAdmin(ctx)
-      if (admin instanceof Response) return admin
+    handler: withAdmin((ctx, admin) => {
       const profile: AdminProfile = {
         id: admin.id,
         nome: admin.nome,
@@ -118,17 +120,15 @@ export const authRoutes: MockRoute[] = [
         mfaAtivo: admin.mfaAtivo,
       }
       return json(200, profile)
-    },
+    }),
   },
   {
     method: "GET",
     path: "/admin/auditoria",
-    handler: (ctx) => {
-      const admin = requireAdmin(ctx)
-      if (admin instanceof Response) return admin
+    handler: withAdmin((ctx) => {
       const entries = [...getMockDb().audit].sort((a, b) => b.id - a.id)
       const page = paginate(entries, ctx.query, (entry) => entry.id, (entry) => entry)
       return page instanceof Response ? page : json(200, page)
-    },
+    }),
   },
 ]

@@ -7,7 +7,14 @@ import type { PublicEvent } from "@/types/api/event.interface"
 import type { PublicEventDetail } from "@/types/api/public-event-detail.interface"
 
 import { apiFetch } from "../api-client"
-import { type CachedResult, toCachedFailure, unwrapCached } from "./cached-result"
+import {
+  type CachedResult,
+  PROPOSED_LIST_CACHE_LIFE,
+  proposedRouteFailure,
+  PUBLIC_CATALOG_CACHE_LIFE,
+  toCachedFailure,
+  unwrapCached,
+} from "./cached-result"
 
 const PUBLIC_LIMIT = 50
 const EMPTY_PAGE: CursorPage<PublicEvent> = { items: [], nextCursor: null }
@@ -23,7 +30,7 @@ async function fetchPublicEvents(cursor: string | undefined): Promise<CachedResu
       query: { cursor, limit: PUBLIC_LIMIT },
       forwardClient: false,
     })
-    cacheLife({ stale: 60, revalidate: 60, expire: 300 })
+    cacheLife(PUBLIC_CATALOG_CACHE_LIFE)
     return { ok: true, data }
   } catch (error) {
     cacheLife("seconds")
@@ -36,11 +43,11 @@ async function fetchPublicEvent(slug: string): Promise<CachedResult<PublicEventD
   cacheTag("events", `event:${slug}`)
   try {
     const data = await apiFetch<PublicEventDetail>(`/eventos/${encodeURIComponent(slug)}`, { forwardClient: false })
-    cacheLife({ stale: 60, revalidate: 60, expire: 300 })
+    cacheLife(PUBLIC_CATALOG_CACHE_LIFE)
     return { ok: true, data }
   } catch (error) {
     const failure = toCachedFailure(error)
-    if (failure.status === 404) cacheLife({ stale: 60, revalidate: 60, expire: 300 })
+    if (failure.status === 404) cacheLife(PUBLIC_CATALOG_CACHE_LIFE)
     else cacheLife("seconds")
     return failure
   }
@@ -58,16 +65,10 @@ async function fetchPastEvents(): Promise<CachedResult<CursorPage<PublicEvent>>>
       query: { limit: PUBLIC_LIMIT },
       forwardClient: false,
     })
-    cacheLife({ stale: 300, revalidate: 300, expire: 900 })
+    cacheLife(PROPOSED_LIST_CACHE_LIFE)
     return { ok: true, data }
   } catch (error) {
-    const failure = toCachedFailure(error)
-    if (failure.status === 404) {
-      cacheLife({ stale: 300, revalidate: 300, expire: 900 })
-      return { ok: true, data: EMPTY_PAGE }
-    }
-    cacheLife("seconds")
-    return failure
+    return proposedRouteFailure(error, EMPTY_PAGE)
   }
 }
 

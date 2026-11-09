@@ -18,7 +18,7 @@ interface FormDialogProps extends VariantProps<typeof buttonVariants> {
   description?: string
   /**
    * O formulário. Recebe `close()` (chamar depois de salvar) e `setBusy()` (avisar que o envio está em
-   * andamento: enquanto ocupado, o diálogo ignora Esc, clique fora e o "X", para não ser fechado e
+   * andamento: enquanto ocupado, o diálogo ignora Esc, clique fora e arrastar, esconde o "X", para não ser fechado e
    * reaberto no meio do envio e reenviado em duplicidade).
    */
   children: (controls: FormDialogControls) => ReactNode
@@ -66,7 +66,7 @@ export function FormDialog({ triggerLabel, triggerAriaLabel, title, description,
       {trigger}
       {isDesktop ? (
         <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-          <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
+          <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl" showCloseButton={!isBusy}>
             <DialogHeader>
               <DialogTitle>{title}</DialogTitle>
               {description && <DialogDescription>{description}</DialogDescription>}
@@ -75,7 +75,7 @@ export function FormDialog({ triggerLabel, triggerAriaLabel, title, description,
           </DialogContent>
         </Dialog>
       ) : (
-        <Drawer open={isOpen} onOpenChange={handleOpenChange}>
+        <Drawer open={isOpen} onOpenChange={handleOpenChange} dismissible={!isBusy}>
           <DrawerContent>
             <DrawerHeader>
               <DrawerTitle>{title}</DrawerTitle>

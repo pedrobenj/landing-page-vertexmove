@@ -7,11 +7,11 @@ import { REGISTRATION_STATUS } from "@/enums/registration-status.enum"
 import type { CreatedRegistration, RegistrationLookupItem } from "@/types/api/registration.interface"
 
 import { getMockDb, nextId } from "../mock-db"
-import { apiError, json, type MockRoute } from "../mock-http"
+import { apiError, created, json, type MockRoute } from "../mock-http"
 import { findCurrentDocuments, findCurrentTier, isActiveRegistrationStatus, isSoldOut, maskName } from "../mock-mappers"
 import { paginate } from "../mock-pagination"
 import { createRegistrationSchema, lookupSchema, validate } from "../mock-schemas"
-import { ageOn, toFortalezaIso } from "../mock-time"
+import { ageOn, toFortalezaIso, todayInFortaleza } from "../mock-time"
 import type { MockRegistration } from "../mock-types"
 
 const SENIOR_AGE = 60
@@ -89,7 +89,7 @@ export const registrationRoutes: MockRoute[] = [
           : 0
       const registration: MockRegistration = {
         id,
-        codigo: `VX-${new Date().getFullYear()}-${String(id).padStart(8, "0")}`,
+        codigo: `VX-${todayInFortaleza().slice(0, 4)}-${String(id).padStart(8, "0")}`,
         eventoId: event.id,
         distanciaId: distance.id,
         kitId: input.kitId ?? null,
@@ -117,7 +117,7 @@ export const registrationRoutes: MockRoute[] = [
         kitId: registration.kitId,
         tamanhoCamisaId: registration.tamanhoCamisaId,
       }
-      return json(201, response, { headers: new Headers({ Location: `/api/v1/inscricoes/${registration.codigo}` }) })
+      return created(response, `/inscricoes/${registration.codigo}`)
     },
   },
   {

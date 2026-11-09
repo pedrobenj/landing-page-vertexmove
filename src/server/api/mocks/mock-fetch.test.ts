@@ -308,6 +308,12 @@ describe("mockFetch", () => {
       expect((await login("operador@example.com")).status).toBe(401)
     })
 
+    it("responde 401 genérico para corpo de login inválido", async () => {
+      const res = await call("POST", "/admin/auth/login", { body: { email: "admin@example.com" } })
+      expect(res.status).toBe(401)
+      expect(await errorCode(res)).toBe("NAO_AUTENTICADO")
+    })
+
     it("exige MFA do super admin", async () => {
       const res = await login("superadmin@example.com")
       expect(res.status).toBe(403)
@@ -452,6 +458,29 @@ describe("mockFetch", () => {
       const documents = (await (await call("GET", "/admin/documentos?eventoId=1", { headers: auth })).json()) as unknown[]
       expect(documents).toHaveLength(3)
       expect((await call("PATCH", "/admin/documentos/101", { headers: auth, body: {} })).status).toBe(404)
+    })
+
+    it("recusa eventoId inválido com 422 DADO_INVALIDO", async () => {
+      const auth = await bearer()
+      for (const path of ["/admin/eventos/abc/distancias", "/admin/eventos/0/kits", "/admin/documentos?eventoId=abc"]) {
+        const res = await call("GET", path, { headers: auth })
+        expect(res.status).toBe(422)
+        expect(await errorCode(res)).toBe("DADO_INVALIDO")
+      }
+      expect((await call("GET", "/admin/eventos/9999/distancias", { headers: auth })).status).toBe(404)
+    })
+  })
+
+  describe("robustez", () => {
+    it("responde 400 para caminho com escape malformado", async () => {
+      const res = await call("GET", "/eventos/%E0%A4%A")
+      expect(res.status).toBe(400)
+      expect(await errorCode(res)).toBe("DADO_INVALIDO")
+    })
+
+    it("tolera cookie com escape malformado", async () => {
+      const res = await call("POST", "/admin/auth/refresh", { headers: { Cookie: "vm_admin_csrf=%E0%A4%A", "X-CSRF-Token": "%E0%A4%A" } })
+      expect(res.status).toBe(401)
     })
   })
 })

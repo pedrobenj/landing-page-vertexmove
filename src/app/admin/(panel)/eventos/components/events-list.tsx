@@ -2,8 +2,8 @@
 
 import { CalendarX } from "lucide-react"
 
-import { CursorPagination } from "@/components/admin"
-import { EmptyState, ServerError } from "@/components/feedback"
+import { AdminListError, CursorPagination } from "@/components/admin"
+import { EmptyState } from "@/components/feedback"
 import { Button } from "@/components/ui/button"
 import { useAdminEvents } from "@/hooks/data/use-admin-events"
 import { useAdminEventsFiltersStore } from "@/stores/admin-events-filters-store"
@@ -18,7 +18,7 @@ interface EventsListProps {
 }
 
 export function EventsList({ canManage }: EventsListProps) {
-  const { data, isPending, isError, isFetching, isPlaceholderData } = useAdminEvents()
+  const { data, isPending, isError, isFetching, isPlaceholderData, refetch } = useAdminEvents()
   const status = useAdminEventsFiltersStore((state) => state.status)
   const cursor = useAdminEventsFiltersStore((state) => state.cursor)
   const hasPrevious = useAdminEventsFiltersStore((state) => state.cursorStack.length > 0)
@@ -36,7 +36,12 @@ export function EventsList({ canManage }: EventsListProps) {
       {isPending ? (
         <EventsTableSkeleton />
       ) : isError ? (
-        <ServerError title="Não foi possível carregar as corridas" />
+        <AdminListError
+          title="Não foi possível carregar as corridas"
+          onRetry={() => void refetch()}
+          onReset={isFirstPage ? undefined : () => setStatus(status)}
+          isRetrying={isFetching}
+        />
       ) : data.items.length === 0 && !isFirstPage ? (
         <EmptyState
           icon={CalendarX}

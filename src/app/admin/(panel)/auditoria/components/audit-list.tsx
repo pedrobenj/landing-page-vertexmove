@@ -3,8 +3,8 @@
 import { History } from "lucide-react"
 import { useEffect } from "react"
 
-import { CursorPagination } from "@/components/admin"
-import { EmptyState, ServerError } from "@/components/feedback"
+import { AdminListError, CursorPagination } from "@/components/admin"
+import { EmptyState } from "@/components/feedback"
 import { Button } from "@/components/ui/button"
 import { useAdminAudit } from "@/hooks/data/use-admin-audit"
 import { useAdminAuditStore } from "@/stores/admin-audit-store"
@@ -13,7 +13,7 @@ import { AuditTable } from "./audit-table"
 import { AuditTableSkeleton } from "./audit-table-skeleton"
 
 export function AuditList() {
-  const { data, isPending, isError, isFetching, isPlaceholderData } = useAdminAudit()
+  const { data, isPending, isError, isFetching, isPlaceholderData, refetch } = useAdminAudit()
   const isFirstPage = useAdminAuditStore((state) => state.cursor === null)
   const hasPrevious = useAdminAuditStore((state) => state.cursorStack.length > 0)
   const nextPage = useAdminAuditStore((state) => state.nextPage)
@@ -24,7 +24,16 @@ export function AuditList() {
   useEffect(() => reset, [reset])
 
   if (isPending) return <AuditTableSkeleton />
-  if (isError) return <ServerError title="Não foi possível carregar a auditoria" />
+  if (isError) {
+    return (
+      <AdminListError
+        title="Não foi possível carregar a auditoria"
+        onRetry={() => void refetch()}
+        onReset={isFirstPage ? undefined : reset}
+        isRetrying={isFetching}
+      />
+    )
+  }
 
   if (data.items.length === 0) {
     return (

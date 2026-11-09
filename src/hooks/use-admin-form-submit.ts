@@ -58,7 +58,13 @@ export function useAdminFormSubmit<TValues extends FieldValues, TOutput, TData>(
         }
 
         toast.success(response.title ?? "Salvo")
-        await onSuccess?.(response.data)
+        try {
+          await onSuccess?.(response.data)
+        } catch {
+          // Já salvou: uma falha no pós-sucesso (ex.: navegação) não pode cair no error boundary.
+          toast.error("Salvo, mas não foi possível atualizar a tela. Recarregue a página.")
+          return
+        }
         if (refreshOnSuccess) router.refresh()
       } finally {
         submittingRef.current = false

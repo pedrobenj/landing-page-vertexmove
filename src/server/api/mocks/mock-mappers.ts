@@ -63,7 +63,10 @@ export function toDistance(distance: MockDistance): Distance {
   return rest
 }
 
-/** Lote ativo cujo período contém `now` (menor `ordem` em caso de sobreposição). */
+/**
+ * Lote vigente: o ativo de menor `ordem` cuja janela contém `now`. Fidelidade: o mock ignora
+ * `quantidadeTotal` (não vira para o próximo lote quando um lote esgota); quem decide é o backend.
+ */
 export function findCurrentTier(distanceId: number, now: Date = new Date()): PriceTier | null {
   const time = now.getTime()
   const tiers = getMockDb()

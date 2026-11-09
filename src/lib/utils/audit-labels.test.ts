@@ -3,10 +3,15 @@ import { describe, expect, it } from "vitest"
 import { formatAuditEntity, getAuditActionLabel, getAuditEntityLabel } from "./audit-labels"
 
 describe("audit labels", () => {
-  it("ações no formato entidade.verbo", () => {
-    expect(getAuditActionLabel("evento.publicado")).toBe("Evento publicado")
-    expect(getAuditActionLabel("evento.excluido")).toBe("Evento excluído")
-    expect(getAuditActionLabel("tamanho_camisa.criado")).toBe("Tamanho camisa criado")
+  it("ações conhecidas com rótulo próprio, no vocabulário de corrida", () => {
+    expect(getAuditActionLabel("evento.publicado")).toBe("Corrida publicada")
+    expect(getAuditActionLabel("evento.excluido")).toBe("Corrida excluída")
+    expect(getAuditActionLabel("tamanho_camisa.criado")).toBe("Tamanho de camisa criado")
+    expect(getAuditActionLabel("distancia.criada")).toBe("Distância criada")
+  })
+
+  it("ações desconhecidas no formato entidade.verbo", () => {
+    expect(getAuditActionLabel("cupom.excluido")).toBe("Cupom excluído")
     expect(getAuditActionLabel("distancia.novo_verbo")).toBe("Distancia novo verbo")
   })
 

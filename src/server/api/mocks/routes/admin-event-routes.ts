@@ -5,8 +5,8 @@ import { EVENT_ACTION } from "@/enums/event-action.enum"
 import { EVENT_STATUS } from "@/enums/event-status.enum"
 
 import { getMockDb, nextId, recordAudit } from "../mock-db"
-import { notFound, paramId, requireAdmin } from "../mock-guards"
-import { apiError, json, type MockContext, type MockRoute, noContent } from "../mock-http"
+import { notFound, paramId, withAdmin } from "../mock-guards"
+import { apiError, created, json, type MockContext, type MockRoute, noContent } from "../mock-http"
 import { toAdminEvent } from "../mock-mappers"
 import { paginate } from "../mock-pagination"
 import { adminEventSchema, validate, validatePatch } from "../mock-schemas"
@@ -47,9 +47,7 @@ export const adminEventRoutes: MockRoute[] = [
   {
     method: "GET",
     path: "/admin/eventos",
-    handler: (ctx) => {
-      const admin = requireAdmin(ctx)
-      if (admin instanceof Response) return admin
+    handler: withAdmin((ctx) => {
       const status = ctx.query.get("status")
       if (status && !isEventStatus(status)) return apiError(422, API_ERROR_CODE.INVALID_DATA, "Status inválido.")
       const events = getMockDb()
@@ -57,14 +55,12 @@ export const adminEventRoutes: MockRoute[] = [
         .sort((a, b) => b.id - a.id)
       const page = paginate(events, ctx.query, (event) => event.id, toAdminEvent)
       return page instanceof Response ? page : json(200, page)
-    },
+    }),
   },
   {
     method: "POST",
     path: "/admin/eventos",
-    handler: (ctx) => {
-      const admin = requireAdmin(ctx)
-      if (admin instanceof Response) return admin
+    handler: withAdmin((ctx, admin) => {
       const input = validate(adminEventSchema, ctx.body)
       if (input instanceof Response) return input
       if (slugTaken(input.slug)) return duplicateSlug()
@@ -73,25 +69,21 @@ export const adminEventRoutes: MockRoute[] = [
       const event: MockEvent = { ...input, id: nextId(db.events), status: DRAFT, deletedAt: null }
       db.events.push(event)
       recordAudit(admin, { acao: "evento.criado", entidade: "evento", entidadeId: event.id })
-      return json(201, toAdminEvent(event), { headers: new Headers({ Location: `/api/v1/admin/eventos/${event.id}` }) })
-    },
+      return created(toAdminEvent(event), `/admin/eventos/${event.id}`)
+    }),
   },
   {
     method: "GET",
     path: "/admin/eventos/:id",
-    handler: (ctx) => {
-      const admin = requireAdmin(ctx)
-      if (admin instanceof Response) return admin
+    handler: withAdmin((ctx) => {
       const event = findEvent(ctx)
       return event ? json(200, toAdminEvent(event)) : notFound("Evento")
-    },
+    }),
   },
   {
     method: "PATCH",
     path: "/admin/eventos/:id",
-    handler: (ctx) => {
-      const admin = requireAdmin(ctx)
-      if (admin instanceof Response) return admin
+    handler: withAdmin((ctx, admin) => {
       const event = findEvent(ctx)
       if (!event) return notFound("Evento")
       const changes = validatePatch(adminEventSchema, ctx.body)
@@ -101,27 +93,23 @@ export const adminEventRoutes: MockRoute[] = [
       Object.assign(event, changes)
       recordAudit(admin, { acao: "evento.atualizado", entidade: "evento", entidadeId: event.id })
       return json(200, toAdminEvent(event))
-    },
+    }),
   },
   {
     method: "DELETE",
     path: "/admin/eventos/:id",
-    handler: (ctx) => {
-      const admin = requireAdmin(ctx)
-      if (admin instanceof Response) return admin
+    handler: withAdmin((ctx, admin) => {
       const event = findEvent(ctx)
       if (!event) return notFound("Evento")
       event.deletedAt = toFortalezaIso(new Date())
       recordAudit(admin, { acao: "evento.excluido", entidade: "evento", entidadeId: event.id })
       return noContent()
-    },
+    }),
   },
   {
     method: "POST",
     path: "/admin/eventos/:id/:acao",
-    handler: (ctx) => {
-      const admin = requireAdmin(ctx)
-      if (admin instanceof Response) return admin
+    handler: withAdmin((ctx, admin) => {
       const action = ctx.params.acao
       if (!isEventAction(action)) return notFound("Ação")
       const event = findEvent(ctx)
@@ -134,6 +122,6 @@ export const adminEventRoutes: MockRoute[] = [
       event.status = transition.to
       recordAudit(admin, { acao: transition.audit, entidade: "evento", entidadeId: event.id })
       return noContent()
-    },
+    }),
   },
 ]

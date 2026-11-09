@@ -7,8 +7,8 @@ import type { PriceTier } from "@/types/api/price-tier.interface"
 import type { ShirtSize } from "@/types/api/shirt-size.interface"
 
 import { getMockDb, nextId, recordAudit } from "../mock-db"
-import { notFound, paramId, requireAdmin } from "../mock-guards"
-import { apiError, json, type MockContext, type MockRoute } from "../mock-http"
+import { invalidId, notFound, paramId, withAdmin } from "../mock-guards"
+import { apiError, created, json, type MockRoute } from "../mock-http"
 import { toDistance } from "../mock-mappers"
 import {
   distanceSchema,
@@ -19,24 +19,10 @@ import {
   validate,
   validatePatch,
 } from "../mock-schemas"
-import type { MockAdmin, MockDistance } from "../mock-types"
-
-type Guarded<T> = (ctx: MockContext, admin: MockAdmin) => T
-
-/** Exige Bearer antes de chamar o handler. */
-function withAdmin(handler: Guarded<Response>): (ctx: MockContext) => Response {
-  return (ctx) => {
-    const admin = requireAdmin(ctx)
-    return admin instanceof Response ? admin : handler(ctx, admin)
-  }
-}
+import type { MockDistance } from "../mock-types"
 
 function hasEvent(eventId: number | null): boolean {
   return getMockDb().events.some((event) => event.id === eventId && !event.deletedAt)
-}
-
-function created(body: unknown, location: string): Response {
-  return json(201, body, { headers: new Headers({ Location: `/api/v1${location}` }) })
 }
 
 function byOrder<T extends { ordem: number; id: number }>(a: T, b: T): number {
@@ -50,6 +36,7 @@ export const adminCatalogRoutes: MockRoute[] = [
     path: "/admin/eventos/:eventoId/distancias",
     handler: withAdmin((ctx) => {
       const eventId = paramId(ctx, "eventoId")
+      if (eventId === null) return invalidId("eventoId")
       if (!hasEvent(eventId)) return notFound("Evento")
       return json(200, getMockDb().distances.filter((item) => item.eventoId === eventId).sort(byOrder).map(toDistance))
     }),
@@ -59,7 +46,8 @@ export const adminCatalogRoutes: MockRoute[] = [
     path: "/admin/eventos/:eventoId/distancias",
     handler: withAdmin((ctx, admin) => {
       const eventId = paramId(ctx, "eventoId")
-      if (eventId === null || !hasEvent(eventId)) return notFound("Evento")
+      if (eventId === null) return invalidId("eventoId")
+      if (!hasEvent(eventId)) return notFound("Evento")
       const input = validate(distanceSchema, ctx.body)
       if (input instanceof Response) return input
       const db = getMockDb()
@@ -134,6 +122,7 @@ export const adminCatalogRoutes: MockRoute[] = [
     path: "/admin/eventos/:eventoId/kits",
     handler: withAdmin((ctx) => {
       const eventId = paramId(ctx, "eventoId")
+      if (eventId === null) return invalidId("eventoId")
       if (!hasEvent(eventId)) return notFound("Evento")
       return json(200, getMockDb().kits.filter((item) => item.eventoId === eventId))
     }),
@@ -143,7 +132,8 @@ export const adminCatalogRoutes: MockRoute[] = [
     path: "/admin/eventos/:eventoId/kits",
     handler: withAdmin((ctx, admin) => {
       const eventId = paramId(ctx, "eventoId")
-      if (eventId === null || !hasEvent(eventId)) return notFound("Evento")
+      if (eventId === null) return invalidId("eventoId")
+      if (!hasEvent(eventId)) return notFound("Evento")
       const input = validate(kitSchema, ctx.body)
       if (input instanceof Response) return input
       const db = getMockDb()
@@ -205,6 +195,7 @@ export const adminCatalogRoutes: MockRoute[] = [
     handler: withAdmin((ctx) => {
       const rawEventId = ctx.query.get("eventoId")
       const eventId = rawEventId === null ? null : Number(rawEventId)
+      if (eventId !== null && !(Number.isInteger(eventId) && eventId > 0)) return invalidId("eventoId")
       const documents = getMockDb().documents.filter((item) => eventId === null || item.eventoId === eventId)
       return json(200, documents.sort((a, b) => a.id - b.id))
     }),

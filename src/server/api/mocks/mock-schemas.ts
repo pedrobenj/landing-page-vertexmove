@@ -7,6 +7,7 @@ import { DOCUMENT_TYPE } from "@/enums/document-type.enum"
 import { isValidCpf } from "@/lib/utils/is-valid-cpf"
 
 import { apiError } from "./mock-http"
+import { todayInFortaleza } from "./mock-time"
 
 /** Validações que o backend faria. Falha → 422 `DADO_INVALIDO` com a primeira mensagem. */
 export function validate<T>(schema: z.ZodType<T>, body: unknown): T | Response {
@@ -44,7 +45,8 @@ export const createRegistrationSchema = z
     kitId: id.nullish(),
     tamanhoCamisaId: id.nullish(),
     nomeCompleto: z.string().trim().min(3).max(150),
-    dataNascimento: z.iso.date().refine((value) => value < new Date().toISOString().slice(0, 10), "Data no futuro."),
+    // "Hoje" no fuso de Fortaleza: em UTC, das 21h às 24h a data de amanhã passaria a valer como hoje.
+    dataNascimento: z.iso.date().refine((value) => value < todayInFortaleza(), "Data no futuro."),
     cpf: cpf.nullish(),
     whatsapp: e164.nullish(),
     email: z.email().nullish(),

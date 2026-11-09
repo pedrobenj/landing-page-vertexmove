@@ -26,6 +26,11 @@ export function json(status: number, body: unknown, init: { headers?: Headers } 
   return new Response(JSON.stringify(body), { status, headers })
 }
 
+/** 201 com o recurso e o header `Location` (caminho sem `/api/v1`). */
+export function created(body: unknown, location: string): Response {
+  return json(201, body, { headers: new Headers({ Location: `/api/v1${location}` }) })
+}
+
 export function noContent(headers?: Headers): Response {
   return new Response(null, { status: 204, headers })
 }
@@ -40,12 +45,21 @@ export function parseCookies(header: string | null): Record<string, string> {
   for (const part of (header ?? "").split(";")) {
     const index = part.indexOf("=")
     if (index <= 0) continue
-    cookies[part.slice(0, index).trim()] = decodeURIComponent(part.slice(index + 1).trim())
+    const raw = part.slice(index + 1).trim()
+    // Valor com `%` malformado fica como veio (como os navegadores fazem), em vez de derrubar a requisição.
+    try {
+      cookies[part.slice(0, index).trim()] = decodeURIComponent(raw)
+    } catch {
+      cookies[part.slice(0, index).trim()] = raw
+    }
   }
   return cookies
 }
 
-/** Casa `path` (com segmentos `:nome`) contra o caminho real; devolve os params ou `null`. */
+/**
+ * Casa `path` (com segmentos `:nome`) contra o caminho real; devolve os params ou `null`.
+ * Lança `URIError` se um segmento tiver escape malformado (`%E0%A4%A`): o `mockFetch` responde 400.
+ */
 export function matchPath(template: string, actual: string): Record<string, string> | null {
   const expected = template.split("/")
   const received = actual.split("/")
