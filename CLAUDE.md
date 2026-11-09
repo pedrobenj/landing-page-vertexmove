@@ -1,8 +1,10 @@
-# Vertex Grupo de Corrida — Plataforma de Inscrições
+# Vertex Grupo de Corrida — Plataforma de Inscrições (frontend)
 
 Guia de contexto e convenções para o desenvolvimento do site de inscrições em corridas de rua do **Vertex Grupo de Corrida** (Fortaleza/CE). Leia este arquivo inteiro antes de qualquer tarefa e siga-o em todo o código gerado.
 
 > Desenvolvedor: **Pedro Benjamin** (prestador de serviço). O rodapé de todas as páginas públicas deve conter o crédito "Desenvolvido por Pedro Benjamin".
+
+> **Arquitetura:** este repositório é **somente o frontend** (Next.js 16). Regras de negócio, banco, autenticação, preços, vagas e pagamentos vivem no **backend VertexMove (NestJS)**, consumido via HTTP em `/api/v1`. O contrato de referência é a collection Postman **"VertexMove — Admin Auth + Inscrições"** (ver §6). O front **não** tem Prisma, banco nem regras de preço próprias.
 
 ---
 
@@ -10,40 +12,61 @@ Guia de contexto e convenções para o desenvolvimento do site de inscrições e
 
 Plataforma web onde o atleta:
 
-1. Vê as corridas abertas do Vertex;
-2. Escolhe a prova, a distância/modalidade e o kit;
-3. Preenche os dados e paga a inscrição (Pix e cartão);
-4. Compra camisas e medalhas na **loja** (carrinho, Pix, retirada presencial);
-5. Consulta suas inscrições e pedidos **sem login e sem senha**, informando WhatsApp ou CPF.
+1. Vê as corridas publicadas do Vertex;
+2. Escolhe a prova, a distância e, se houver, o kit e o tamanho da camisa;
+3. Preenche os dados, aceita regulamento e termo de responsabilidade e gera a inscrição (pagamento Pix/cartão — **pendente no backend**);
+4. Compra camisas, viseiras, acessórios e medalhas na **loja** (**pendente no backend**, ver §16);
+5. Conhece o grupo, os parceiros e as corridas parceiras com cupom exclusivo;
+6. Consulta suas inscrições **sem login e sem senha**, informando WhatsApp **ou** CPF.
 
 E onde o organizador (admin), numa área protegida:
 
-- Cria e edita eventos, modalidades, lotes de preço, kits e cupons;
-- Cadastra produtos da loja (fotos, tamanhos, estoque) e gerencia pedidos e retiradas;
-- Acompanha inscrições e pagamentos em tempo real;
-- Exporta a lista de inscritos (CSV/Excel) para entrega de kits e cronometragem.
+- Cria e edita corridas, distâncias, lotes de preço, kits, tamanhos de camisa e documentos (regulamento/termo);
+- Controla o ciclo de vida da corrida (publicar, despublicar, encerrar, cancelar, restaurar, excluir);
+- Consulta a trilha de auditoria administrativa;
+- Acompanha inscrições e exporta a lista de inscritos (**endpoints pendentes no backend**).
 
 **Público:** corredores amadores de Fortaleza e região, acessando majoritariamente **pelo celular, vindo do Instagram ou WhatsApp**. Mobile-first é obrigatório.
 
-**Idioma:** toda a interface em português do Brasil. Identificadores de código (variáveis, funções, tipos, arquivos) em inglês.
+**Idioma:** toda a interface em português do Brasil. Identificadores de código (variáveis, funções, tipos, arquivos) em inglês — **exceto as chaves dos payloads da API**, que seguem o contrato do backend em português (ver §9, "Tipos da API").
 
 ---
 
 ## 2. Referência do cliente
 
-Referência: https://www.paineldodesafio.com.br/ (plataforma do "Desafio Virtual Correr e Viver").
+Referência: **https://www.corredasamigas.com.br/** (site do grupo de corrida feminino "Corre das Amigas"). Substitui a referência anterior (paineldodesafio.com.br).
 
-O que **aproveitar** da referência:
+### Estrutura da referência a seguir
 
-- Home de página única e direta: hero com dois CTAs ("Quero me inscrever" e "Consultar minha inscrição"), seção de consulta, lista de eventos, seção "Como funciona" em passos numerados e CTA final.
-- **Consulta sem login**: o atleta digita o WhatsApp cadastrado e vê suas inscrições/status.
-- Seção "Como funciona" com passos curtos (escolha a prova → escolha a distância → pague → retire o kit → corra → receba a medalha).
-- Venda de **medalhas de edições anteriores** ("Complete sua coleção"), com aviso claro de que a compra é só da medalha física e não gera inscrição — aqui ampliada para uma **loja de camisas e medalhas** (ver §7 e `docs/plans/2026-11-04-loja-design.md`).
-- Rodapé enxuto: logo, WhatsApp (link `wa.me`), Instagram e link para a loja.
-- Link discreto para "Área do admin" no header.
-- Estado vazio amigável quando não há eventos abertos ("Nenhuma corrida aberta no momento. Volte em breve!").
+**Menu principal** (header e repetido no rodapé): Início · Corridas · Loja · Corridas Parceiras · Conheça o Vertex · Parceiros · Contato · Área administrativa (link discreto, por último).
 
-O que **é diferente** aqui: a referência é de desafio *virtual* (o atleta registra quilômetros). Este projeto é de **corrida de rua presencial**, então substituímos "registrar quilômetros/progresso" por informações de prova: data, horário de largada, local, percurso, retirada de kit, regulamento e, futuramente, resultados.
+**Home, nesta ordem:**
+1. **Hero** — frase curta e motivacional de três batidas (no estilo "Corra. Conecte-se. Evolua."), uma linha sobre o grupo e CTA "Conheça nossa história" (`/sobre`). Adicionar um CTA primário "Quero me inscrever" (âncora `#corridas`), já que aqui o foco é a inscrição.
+2. **Três cards de destaque**, lado a lado no desktop e empilhados no mobile, cada um com título, frase e botão:
+   - *Próximas corridas* → "Garantir minha vaga" (`#corridas`)
+   - *Consultar inscrição* → "Consultar" (`/consulta`) — no lugar dos "Desafios Online" da referência
+   - *Loja* → "Acessar a loja" (`/loja`)
+3. **Próximas corridas** (`#corridas`) — título "Escolha seu próximo desafio", texto curto, grade de cards de corridas abertas e link "Ver corridas encerradas" (`/corridas/encerradas`).
+4. **Acompanhe sua inscrição** — bloco de consulta por WhatsApp/CPF (inline ou CTA para `/consulta`). Equivale ao "Acompanhe seu desafio" da referência, trocando quilômetros por status da inscrição.
+5. **Vista o movimento** — chamada para os produtos oficiais com CTA "Conhecer a loja".
+6. **Mais que corrida** — título institucional e **quatro selos** com ícone + frase (ex.: ambiente acolhedor, todos os níveis, experiências marcantes, comunidade em movimento — adaptar ao Vertex) e CTA para `/sobre`.
+7. **Rodapé** — logo + tagline, bloco "Contato" (WhatsApp `wa.me`, Instagram, e-mail), lista de navegação, © ano e "Desenvolvido por Pedro Benjamin".
+
+**Páginas internas da referência que entram no projeto:**
+- **Corridas encerradas** ("Eventos que já vivemos") — histórico das edições passadas com capa e data; futuramente com galeria e resultados.
+- **Loja** — grade de produtos (camisas, viseiras, ecobags, acessórios, medalhas) com filtro por categoria ("Todos" + tipos) e link para o carrinho; pagamento Pix ou cartão.
+- **Corridas Parceiras** — corridas de outras organizações com **cupom de desconto exclusivo** do Vertex: card com data, distâncias, cupom (botão copiar) e link externo de inscrição.
+- **Conheça o Vertex** (`/sobre`) — título + tagline, "Nossa história", "Missão", CTA "Ver próximas corridas". Melhorar em relação à referência com fotos reais e números do grupo.
+- **Parceiros** — logos/links dos apoiadores.
+- **Contato** — WhatsApp, Instagram, e-mail e, se houver, local/horário dos treinos.
+
+**Tom:** acolhedor, motivacional e inclusivo; frases curtas focadas em comunidade. Títulos de seção no formato eyebrow + título forte (ver §3).
+
+### O que não copiar / o que é diferente
+- A referência é um grupo **feminino** com treinos e **desafios online por meta de km**. O Vertex organiza **corridas de rua presenciais** abertas a todos: nada de "desafios online"/"meus quilômetros"; no lugar, informações de prova (data, largada, local, percurso, kit, regulamento, resultados).
+- A referência carrega listas só no client ("Carregando eventos...") e deixa contato e redes vazios. Aqui: listas renderizadas no servidor (SEO e skeleton com os 4 estados), contato e redes sempre preenchidos.
+- Manter o que já era nosso e a referência não tem: **consulta de inscrição sem login**, seção **"Como funciona"** em passos (pode entrar entre as seções 3 e 4 da home) e **FAQ** na página do evento.
+- Estado vazio amigável quando não há corridas abertas: "Nenhuma corrida aberta no momento. Volte em breve!" + link para corridas encerradas.
 
 ---
 
@@ -69,31 +92,30 @@ Mapear no tema do shadcn/ui (CSS variables em `globals.css`):
 - `--ring` → green
 
 ### Tipografia
-- A logo usa uma sans geométrica pesada. Títulos: **Montserrat** (700/800, caixa alta em títulos curtos). Corpo: **Inter**. Carregar via `next/font/google`.
-- Subtítulos no estilo "GRUPO DE CORRIDA": caixa alta, `tracking-widest`, ladeados por traços verdes — usar como padrão de "eyebrow" acima dos títulos de seção.
+- Títulos: **Montserrat** (700/800, caixa alta em títulos curtos). Corpo: **Inter**. Carregar via `next/font/google`.
+- Subtítulos no estilo "GRUPO DE CORRIDA": caixa alta, `tracking-widest`, ladeados por traços verdes — padrão de "eyebrow" acima dos títulos de seção.
 
 ### Motivo gráfico
-- O **pico/chevron verde** (forma de "^") é o elemento-assinatura: usar como divisor de seção, marca d'água no hero, bullet de listas e ícone de "subida/progresso". Não exagerar — um uso marcante por tela.
+- O **pico/chevron verde** ("^") é o elemento-assinatura: divisor de seção, marca d'água no hero, bullet de listas, ícone de "subida/progresso". Um uso marcante por tela.
 - Fotos: corredores reais de Fortaleza (Beira-Mar, Aterro, Parque do Cocó) pedidas ao cliente. Evitar banco de imagens genérico.
 
 ---
 
 ## 4. Stack
 
-- **Framework:** Next.js 16 (App Router, Server Components por padrão)
+- **Framework:** Next.js 16 (App Router, Server Components por padrão). Ler `AGENTS.md` e os guias em `node_modules/next/dist/docs/` antes de usar APIs do Next — a versão tem breaking changes (ex.: `middleware.ts` → `proxy.ts`, `cookies()`/`headers()` assíncronos).
 - **Linguagem:** TypeScript (strict)
+- **Backend:** API **VertexMove (NestJS)** em `${API_URL}/api/v1` — fonte única de dados e regras.
 - **UI:** shadcn/ui + Radix UI
 - **Estilo:** Tailwind CSS
-- **Banco:** PostgreSQL + Prisma ORM *(proposta — confirmar hospedagem: Neon ou Supabase)*
-- **Auth (somente admin):** NextAuth v5 (Credentials, estratégia JWT). Atletas **não** têm conta.
-- **Pagamentos:** Mercado Pago (Pix + cartão) com webhook *(proposta — confirmar com o cliente qual gateway ele já usa)*
-- **Estado:** Zustand (estado de UI/filtros/formulário multi-etapas) + TanStack Query (dados no client)
+- **Auth (somente admin):** JWT emitido pelo backend; sessão gerenciada pelo próprio Next via cookies HttpOnly (padrão BFF, ver §8). **Não usar NextAuth.** Atletas não têm conta.
+- **Pagamentos:** a definir no backend (Mercado Pago proposto). O webhook do gateway fica **no backend**, não no Next.
+- **Estado:** Zustand (UI, filtros, cursor de paginação, formulário multi-etapas, carrinho) + TanStack Query (dados no client)
 - **Formulários:** React Hook Form + Zod
 - **Datas:** date-fns com locale `ptBR`, fuso `America/Fortaleza`
 - **Toasts:** sonner
 - **Animações:** Framer Motion (sutil)
-- **E-mail transacional:** Resend + React Email *(confirmação de inscrição e pagamento)*
-- **Storage de imagens:** Vercel Blob ou Cloudflare R2 (banners de evento, fotos de kit/medalha)
+- **Imagens:** URLs vindas da API (`imagemCapaUrl`, `fotos[].url`); configurar `images.remotePatterns` para o CDN.
 - **Deploy:** Vercel
 
 ---
@@ -101,135 +123,246 @@ Mapear no tema do shadcn/ui (CSS variables em `globals.css`):
 ## 5. Páginas e rotas
 
 ### Públicas — `src/app/(public)/`
-| Rota | Conteúdo |
-|---|---|
-| `/` | Hero, consulta de inscrição, corridas abertas, "Como funciona", sobre o Vertex, FAQ, CTA final |
-| `/corridas/[slug]` | Página do evento: banner, data/horário, local (mapa), modalidades e preços do lote atual, kit (com fotos e tamanhos de camisa), percurso, retirada de kit, regulamento, FAQ, CTA fixo "Inscrever-se" no mobile |
-| `/corridas/[slug]/inscricao` | Formulário de inscrição em etapas (ver §7) |
-| `/inscricao/[code]` | Status da inscrição/pagamento (QR Pix, copia-e-cola, comprovante, dados da prova) |
-| `/consulta` | Consulta por WhatsApp ou CPF → inscrições e pedidos da loja |
-| `/loja` | Catálogo de camisas e medalhas (filtro por tipo, selo "Esgotado") |
-| `/loja/[slug]` | Produto: fotos, descrição, tamanho, quantidade, "Adicionar ao carrinho" |
-| `/loja/carrinho` | Carrinho |
-| `/loja/checkout` | Dados do comprador, aceite de privacidade, resumo e Pix |
-| `/pedido/[code]` | Status do pedido (QR Pix, copia-e-cola, local/horário de retirada) |
-| `/medalhas` | Redireciona para `/loja?tipo=medalhas` |
-| `/regulamento/[slug]` | Regulamento completo do evento (também exportável em PDF) |
-| `/privacidade` | Política de privacidade (LGPD) |
+| Rota | Conteúdo | API |
+|---|---|---|
+| `/` | Hero, 3 cards de destaque, próximas corridas, como funciona, acompanhe sua inscrição, vista o movimento, mais que corrida (ver §2) | `GET /eventos` |
+| `/corridas/encerradas` | "Corridas que já vivemos": edições passadas | **pendente** (API pública só lista publicadas) |
+| `/corridas/[slug]` | Página do evento: capa, data/largada, local (mapa por `latitude`/`longitude`), distâncias e preço do lote vigente, kits (fotos), percurso, regulamento, FAQ, CTA fixo "Inscrever-se" no mobile | `GET /eventos/:slug` |
+| `/corridas/[slug]/inscricao` | Formulário em etapas (ver §7) | `POST /inscricoes` |
+| `/inscricao/confirmada` | Confirmação pós-criação com código e valores (dados vindos da resposta do `POST /inscricoes`, guardados em memória no store) | — |
+| `/inscricao/[code]` | Status/pagamento por código (QR Pix, copia-e-cola) | **pendente** (`GET` por código não existe) |
+| `/consulta` | Consulta por WhatsApp **ou** CPF → lista mascarada | `POST /inscricoes/consulta` |
+| `/loja`, `/loja/[slug]`, `/loja/carrinho`, `/loja/checkout`, `/pedido/[code]` | Loja de camisas e medalhas | **pendente** |
+| `/medalhas` | Redireciona para `/loja?tipo=medalhas` | — |
+| `/corridas-parceiras` | Corridas de parceiros com cupom exclusivo e link externo | **pendente** (conteúdo estático até haver endpoint) |
+| `/sobre` | Conheça o Vertex: história, missão, fotos, números | estático |
+| `/parceiros` | Apoiadores (logos e links) | estático |
+| `/contato` | WhatsApp, Instagram, e-mail, treinos | estático |
+| `/regulamento/[slug]` | Regulamento do evento (link para `documento.url`) | depende de §15 |
+| `/privacidade` | Política de privacidade (LGPD) | — |
 
 ### Admin — `src/app/admin/`
-| Rota | Conteúdo |
-|---|---|
-| `/admin/login` | Login do organizador |
-| `/admin` | Dashboard: inscritos por evento/modalidade, receita, pagamentos pendentes |
-| `/admin/eventos` | CRUD de eventos, modalidades, lotes, kits, cupons |
-| `/admin/eventos/[id]/inscricoes` | Tabela com filtro/busca/paginação server-side, exportação CSV, marcar kit como retirado |
-| `/admin/loja/produtos` | CRUD de produtos, variantes (tamanhos) e estoque, ativo/destaque |
-| `/admin/loja/pedidos` | Pedidos com filtros, busca por CPF/código, exportação CSV, "Pronto para retirada" e "Retirado" |
+| Rota | Conteúdo | API |
+|---|---|---|
+| `/admin/login` | Login (e-mail + senha) | `POST /admin/auth/login` |
+| `/admin` | Dashboard (perfil, atalhos; métricas quando houver endpoint) | `GET /admin/me` |
+| `/admin/eventos` | Lista com filtro por status e paginação por cursor | `GET /admin/eventos` |
+| `/admin/eventos/novo` e `/admin/eventos/[id]` | Formulário do evento + ações de ciclo de vida | `POST/GET/PATCH/DELETE /admin/eventos/:id`, `POST .../publicar|despublicar|encerrar|cancelar|restaurar` |
+| `/admin/eventos/[id]/distancias` | CRUD de distâncias e, dentro de cada uma, lotes | `/admin/eventos/:id/distancias`, `/admin/distancias/:id`, `/admin/distancias/:id/lotes`, `/admin/lotes/:id` |
+| `/admin/eventos/[id]/kits` | CRUD de kits com fotos | `/admin/eventos/:id/kits`, `/admin/kits/:id` |
+| `/admin/eventos/[id]/documentos` | Regulamento e termo de responsabilidade versionados | `/admin/documentos?eventoId=` |
+| `/admin/tamanhos-camisa` | Catálogo global de tamanhos | `/admin/tamanhos-camisa` |
+| `/admin/auditoria` | Trilha de auditoria (cursor) | `GET /admin/auditoria` |
+| `/admin/eventos/[id]/inscricoes` | Inscritos, exportação CSV, retirada de kit | **pendente** |
+| `/admin/loja/*` | Produtos e pedidos | **pendente** |
 
-Proteger `/admin/*` (exceto `/admin/login`) no `proxy.ts` (no Next 16 o `middleware.ts` foi renomeado para `proxy.ts`).
+Proteger `/admin/*` (exceto `/admin/login`) no `proxy.ts`, que também renova o access token (ver §8). Admin com `noindex`.
 
-### API — `src/app/api/`
-- `api/webhooks/payments` — webhook do gateway (validar assinatura, idempotente)
-- `api/auth/[...nextauth]` — NextAuth
-
----
-
-## 6. Modelo de domínio (base para o schema Prisma)
-
-- **Event**: `id, slug, name, description, date, startTime, location, address, mapUrl, bannerUrl, status (DRAFT | OPEN | CLOSED | FINISHED), registrationOpensAt, registrationClosesAt, regulation, kitPickupInfo`
-- **Modality** (distância/categoria): `id, eventId, name ("5 km", "10 km", "Caminhada"), distanceKm, capacity, minAge`
-- **PriceTier** (lote): `id, modalityId, name ("1º lote"), price (em centavos), startsAt, endsAt, maxSlots?`
-- **Kit**: `id, eventId, name ("Kit Básico", "Kit Premium"), extraPrice, items[], imageUrl, shirtSizes[]`
-- **Participant**: `id, name, cpf, birthDate, gender, whatsapp, email, emergencyContactName, emergencyContactPhone, team?`
-- **Registration**: `id, code (curto, legível, ex: VTX-7K3P), eventId, modalityId, kitId, participantId, shirtSize, priceTierId, amount, discount, couponId?, status (PENDING | PAID | CANCELLED | EXPIRED | REFUNDED), bibNumber?, kitPickedUpAt?, createdAt`
-- **Payment**: `id, registrationId?, orderId?, provider, providerPaymentId, method (PIX | CARD), status, amount, pixQrCode?, pixCopyPaste?, paidAt?, rawPayload`
-- **Coupon**: `id, eventId?, code, type (PERCENT | FIXED), value, maxUses, usedCount, expiresAt`
-- **Product**: `id, slug, name, description, type (SHIRT | MEDAL), eventId?, imageUrls[], price, pickupInfo, isActive, isFeatured`
-- **ProductVariant**: `id, productId, label ("P", "M", "G", "Única"), stock`
-- **Order**: `id, code (ex: VTX-P-7K3P), buyerName, buyerCpf, buyerWhatsapp, buyerEmail, amount, status (PENDING | PAID | READY_FOR_PICKUP | PICKED_UP | CANCELLED | EXPIRED | REFUNDED), expiresAt?, privacyAcceptedAt, readyAt?, pickedUpAt?`
-- **OrderItem**: `id, orderId, variantId, quantity, unitPrice, productName, variantLabel` (nome e tamanho copiados no momento da compra)
-- **AdminUser**: `id, name, email, passwordHash, role`
-
-Valores monetários **sempre em centavos (integer)**. Formatar só na UI com `formatCurrency`.
+### Rotas de API no Next
+- **Nenhuma** regra de negócio. Só criar Route Handlers quando um componente client precisar de um proxy fino para a API (preferir server actions).
 
 ---
 
-## 7. Regras de negócio
+## 6. Contrato da API (VertexMove)
 
-- **Lote vigente**: o preço é o do `PriceTier` ativo pela data atual (e por vagas, se `maxSlots` definido). Calcular sempre no servidor — nunca confiar em preço vindo do client.
-- **Vagas**: bloquear a modalidade quando `inscrições PAID + PENDING não expiradas >= capacity`. Exibir "Esgotado".
-- **Reserva**: inscrição `PENDING` expira se não paga em **30 min** (Pix) — job/cron muda para `EXPIRED` e libera a vaga.
-- **Desconto 60+**: aplicar desconto para atletas com 60 anos ou mais na data da prova, conforme o Estatuto da Pessoa Idosa (percentual e regras a confirmar com o cliente).
-- **Idade mínima** por modalidade, calculada na data da prova.
-- **CPF**: validar dígitos; um CPF não pode ter duas inscrições ativas na mesma modalidade do mesmo evento.
-- **Webhook**: idempotente (chave `providerPaymentId`), atualiza `Payment` e `Registration` em transação, dispara e-mail/WhatsApp de confirmação.
-- **Número de peito** (`bibNumber`): atribuído pelo admin ou automaticamente por modalidade após pagamento (definir com o cliente).
-- **Consulta sem login**: busca por WhatsApp ou CPF retorna apenas dados mínimos (evento, modalidade, status, código). Mascarar CPF/e-mail. Aplicar rate limit na action de consulta.
+Base: `${API_URL}/api/v1` (saúde fora do prefixo: `GET ${API_URL}/health/live` e `/health/ready`).
 
-### Loja (camisas e medalhas)
-- **Somente retirada** presencial — sem frete nem endereço. Local/horário em `Product.pickupInfo`.
-- **Carrinho** em Zustand persistido em `localStorage`, guardando só `variantId` + `quantity` (nunca preço).
-- **Checkout** revalida no servidor produto ativo, estoque e preço; cria `Order` `PENDING` e reserva estoque por **30 min**.
-- **Estoque:** decremento em transação com update condicional (`stock >= quantity`); expiração/cancelamento devolvem; o webhook nunca altera estoque.
-- **Payment** pertence a exatamente uma inscrição **ou** um pedido.
-- Limites: até 10 unidades por item e 20 itens por pedido; rate limit no checkout.
-- Medalhas exibem aviso: compra apenas da medalha física, não gera inscrição.
+### Convenções gerais
+- JSON; datas `YYYY-MM-DD` (`dataEvento`, `dataNascimento`), horários `HH:mm` (`horarioLargada`), instantes ISO-8601 com offset `-03:00` (`inicioEm`, `fimEm`, `vigenteEm`).
+- **Dinheiro em centavos** (`precoCentavos`, `valorBaseCentavos`, `valorDescontoCentavos`, `valorTotalCentavos`). Formatar só na UI com `formatCurrency`.
+- **Listas paginadas por cursor:** `{ items: T[], nextCursor: string | null }`, query `cursor` e `limit` (1–100, padrão 20). Algumas listas administrativas (distâncias, lotes, kits, tamanhos, documentos) retornam **array simples**.
+- **Criação:** `201` com o recurso e header `Location`. **Ações e exclusão:** `204` sem corpo.
+- **Erros:** `{ error: { codigo: string, mensagem: string } }`. Códigos conhecidos:
+
+| HTTP | `codigo` | Situação / mensagem na UI |
+|---|---|---|
+| 401 | `NAO_AUTENTICADO` | Credenciais inválidas ou sem token → "E-mail ou senha inválidos." / redirecionar ao login |
+| 403 | `MFA_NECESSARIO` | Conta com MFA (ainda não implementado) → "Esta conta exige verificação em duas etapas, ainda indisponível." |
+| 403 | `ACESSO_NEGADO` | CSRF ausente/inválido ou papel sem permissão |
+| 404 | — | Evento não publicado/inexistente → `notFound()` |
+| 409 | `INSCRICAO_DUPLICADA` | "Já existe uma inscrição para este atleta nesta distância." |
+| 409 | `IDENTIDADES_CONFLITANTES` | CPF e WhatsApp pertencem a atletas diferentes → "Os dados informados pertencem a cadastros diferentes. Confira o CPF e o WhatsApp." |
+| 422 | `DOCUMENTO_ACEITE_OBRIGATORIO` | Faltou aceitar regulamento/termo |
+| 422 | `DADO_INVALIDO` | Validação (ex.: consulta com CPF **e** WhatsApp) |
+
+- Respostas sensíveis vêm com `Cache-Control: no-store` e `Referrer-Policy: no-referrer`: **nunca cachear** no Next (`cache: 'no-store'`) inscrição, consulta ou admin.
+- O login tem **lockout após 5 tentativas**: não fazer retries automáticos no login.
+
+### Autenticação admin
+| Método | Rota | Corpo / headers | Resposta |
+|---|---|---|---|
+| POST | `/admin/auth/login` | `{ email, senha }` | `200 { accessToken, tokenType: 'Bearer', expiresIn: 900, csrfToken, admin: { id, nome, papel, mfaAtivo } }` + cookies `vm_admin_rt` (HttpOnly) e `vm_admin_csrf` |
+| POST | `/admin/auth/refresh` | cookies `vm_admin_rt` + `vm_admin_csrf`; header `X-CSRF-Token` = valor do csrf | `200 { accessToken, expiresIn, csrfToken }` + **novo** `vm_admin_rt` (rotação) |
+| POST | `/admin/auth/logout` | mesmos de refresh | `204`, revoga a família de sessões |
+| GET | `/admin/me` | `Authorization: Bearer` | `{ id, nome, email, papel, mfaAtivo }` |
+| GET | `/admin/auditoria?limit&cursor` | Bearer | página por cursor |
+
+Papéis vistos no seed: organização (`admin@example.com`), operador (`operador@example.com`), super admin (exige MFA). Esconder na UI ações que o `papel` não pode executar, mas sempre tratar `403` vindo da API.
+
+### Catálogo público
+| Método | Rota | Observações |
+|---|---|---|
+| GET | `/eventos?cursor&limit` | Só publicadas; **não** expõe `status` |
+| GET | `/eventos/:slug` | Detalhe público com `localizacao` (objeto) e sem `id`. Rascunho/encerrada/cancelada/arquivada → 404 |
+
+### Catálogo admin (Bearer)
+- **Evento** — `POST /admin/eventos`, `GET /admin/eventos?status&limit&cursor`, `GET|PATCH|DELETE /admin/eventos/:id` (DELETE = soft delete).
+  Campos: `slug, nome, descricao, dataEvento, horarioLargada, localNome, endereco, complemento, bairro, cidade, uf, cep (só dígitos), latitude, longitude, imagemCapaUrl, galeriaUrl`.
+  Resposta adiciona `id, status, localizacao { localNome, cidade, uf, ... }, localizacaoResumo`.
+  **Status:** nasce `rascunho`; muda **somente** pelas ações `publicar`, `despublicar`, `encerrar`, `cancelar`, `restaurar` (`POST /admin/eventos/:id/<acao>`, 204). Valores: `rascunho | publicado | encerrado | cancelado | arquivado` (confirmar lista exata com o backend).
+- **Distância** — `POST|GET /admin/eventos/:eventoId/distancias`, `PATCH /admin/distancias/:id`.
+  Campos: `nome, descricao, distanciaMetros, capacidadeTotal, horarioLargada, percursoUrl, ordem, ativo`.
+- **Lote** — `POST|GET /admin/distancias/:distanciaId/lotes`, `PATCH /admin/lotes/:id`.
+  Campos: `nome, precoCentavos, inicioEm, fimEm, quantidadeTotal, ordem, ativo`. O lote vigente é decidido pelo backend.
+- **Kit** — `POST|GET /admin/eventos/:eventoId/kits`, `PATCH /admin/kits/:id`.
+  Campos: `nome, descricao, ativo, fotos: [{ url, alt, ordem }]`.
+- **Tamanho de camisa** (catálogo global) — `POST|GET /admin/tamanhos-camisa`, `PATCH /admin/tamanhos-camisa/:id`.
+  Campos: `codigo ("GG"), descricao, ordem, ativo`.
+- **Documento** — `POST /admin/documentos`, `GET /admin/documentos?eventoId=`.
+  Campos: `eventoId, tipo ('regulamento' | 'termo_responsabilidade'), versao, titulo, url, hashSha256, vigenteEm`. Documentos são versionados e imutáveis (sem PATCH): nova versão = novo documento.
+- IDs são numéricos. A collection às vezes envia `eventoId` como string — no front, tipar como `number` e enviar número.
+
+### Inscrições (público, sem auth)
+**`POST /inscricoes`**
+```json
+{
+  "eventoSlug": "corrida-do-sol-2026",
+  "distanciaId": 12,
+  "kitId": 3,                 // opcional
+  "tamanhoCamisaId": 4,       // opcional (quando o kit tem camisa)
+  "nomeCompleto": "Ana Silva",
+  "dataNascimento": "1990-05-10",
+  "cpf": "52998224725",       // opcional — só dígitos
+  "whatsapp": "+5585999999999", // opcional — E.164
+  "email": "ana@example.com", // opcional
+  "documentosAceitos": [101, 102] // IDs do regulamento e do termo vigentes
+}
+```
+- Identificação: **CPF ou WhatsApp** (pelo menos um). Combinações válidas: CPF+WhatsApp, CPF+e-mail, só WhatsApp.
+- O mesmo WhatsApp pode ter vários atletas (família): o atleta é identificado por nome + nascimento dentro do telefone.
+- Resposta `201`: `{ codigo: "VX-2026-00000042", status: "pendente", valorBaseCentavos, valorDescontoCentavos, valorTotalCentavos, kitId?, tamanhoCamisaId? }`. **Sem PII** na resposta.
+- Formato do código: `/^VX-\d{4}-\d{8}$/`.
+
+**`POST /inscricoes/consulta`** — corpo com **exatamente um** de `{ cpf }` ou `{ whatsapp }` (os dois → 422).
+- Resposta: `{ items: [{ nomeMascarado, evento, distancia, status, inscritoEm }], nextCursor }`.
+- **Não retorna código nem valores**; CPF sem inscrições → `200` com `items: []` (não revela se o CPF existe).
+
+---
+
+## 7. Regras de negócio (no front)
+
+O backend é a autoridade. O front **valida para UX** e **nunca** calcula preço, vaga ou lote para decidir algo — exibe o que a API retorna.
+
+- **Preço/lote/vagas:** exibir o que vier do detalhe público do evento; a cobrança é o `valorTotalCentavos` devolvido por `POST /inscricoes`.
+- **Normalização antes de enviar:** CPF só dígitos (`normalizeCpf`), WhatsApp em E.164 `+55DDDNÚMERO` (`toE164Phone`), datas `YYYY-MM-DD`. Máscaras apenas na UI.
+- **Validação local (Zod):** dígitos do CPF (`isValidCpf`), WhatsApp brasileiro válido, nascimento no passado, pelo menos CPF ou WhatsApp, ambos os documentos aceitos.
+- **Consulta:** campo único com seletor "WhatsApp / CPF"; enviar só o escolhido. Lista exibe nome mascarado, evento, distância, status e data — sem link para o código (a API não o devolve).
+- **Erros da API** mapeados para mensagens amigáveis pela tabela de §6 (`getApiErrorMessage` em `src/lib/utils/api-errors.ts`). `409 INSCRICAO_DUPLICADA` sugere ir para `/consulta`.
+- **Rate limit:** feito pelo backend. Como as chamadas saem do servidor do Next, **repassar o IP do cliente** em `X-Forwarded-For` (e `User-Agent`) para que o limite valha por atleta e não pelo IP da Vercel (confirmar com o backend qual header ele confia).
+- **Desconto 60+, cupons, número de peito, expiração de pendentes:** regras do backend (pendentes de implementação/definição — §15). O front só exibe `valorDescontoCentavos`.
 
 ### Fluxo do formulário de inscrição (multi-etapas, estado em Zustand)
-1. **Modalidade e kit** — distância, kit, tamanho da camisa
-2. **Dados do atleta** — nome, CPF, nascimento, sexo, WhatsApp, e-mail, equipe/assessoria (opcional), contato de emergência
-3. **Termos** — aceite do regulamento e do termo de responsabilidade/condição de saúde (checkbox obrigatório, salvar data/hora do aceite)
-4. **Pagamento** — resumo (lote, kit, desconto, cupom, total) → Pix ou cartão
-5. **Confirmação** — redireciona para `/inscricao/[code]`
+1. **Distância e kit** — distância; kit (opcional, se o evento tiver); tamanho da camisa (quando aplicável)
+2. **Dados do atleta** — nome completo, data de nascimento, CPF, WhatsApp, e-mail (CPF ou WhatsApp obrigatório; recomendar ambos)
+3. **Termos** — checkbox do regulamento e do termo de responsabilidade, cada um com link para `documento.url` e versão; consentimento LGPD com link para `/privacidade`
+4. **Resumo e envio** — distância, lote, kit, total exibido → `POST /inscricoes`
+5. **Confirmação** — `/inscricao/confirmada` com código, status "Pendente" e valores da resposta; orientar a guardar o código. Pagamento entra aqui quando o backend expuser o endpoint.
 
-Máscaras de input para CPF, telefone e data. Botão "Copiar código Pix" e polling do status do pagamento na tela do Pix.
+Campos que a API **ainda não aceita** (sexo, equipe/assessoria, contato de emergência): não exibir até o backend suportar (§15).
 
 ---
 
-## 8. Estrutura de diretórios
+## 8. Integração com a API (padrão BFF)
+
+O navegador **nunca** chama a API diretamente nem vê tokens. Todo acesso passa por código de servidor do Next (Server Components, server actions, `proxy.ts`).
+
+### Estrutura
+```
+src/server/api/
+├── api-client.ts          # apiFetch<T>(): base URL, JSON, timeout, X-Forwarded-For, parse de erro → ApiError
+├── api-error.ts           # class ApiError { status, codigo, mensagem }
+├── admin-session.ts       # leitura/gravação dos cookies de sessão, getAccessToken(), clearSession()
+├── admin-fetch.ts         # adminFetch<T>(): apiFetch + Bearer; em 401 → redireciona ao login
+├── set-cookie-parser.ts   # extrai vm_admin_rt / vm_admin_csrf dos Set-Cookie do backend
+└── endpoints/             # uma função por rota, tipada (events.ts, distances.ts, price-tiers.ts, kits.ts,
+                           #   shirt-sizes.ts, documents.ts, registrations.ts, admin-auth.ts, audit.ts)
+```
+Tudo em `src/server/` importa `server-only`.
+
+### Sessão do admin
+Cookies no domínio do Next, todos `HttpOnly`, `Secure`, `SameSite=Lax`, `path=/`:
+- `vm_admin_at` — access token, `maxAge = expiresIn` (900 s)
+- `vm_admin_rt` — refresh token copiado do `Set-Cookie` do backend (mesmo `Max-Age`)
+- `vm_admin_csrf` — csrf token (HttpOnly aqui: só o servidor do Next o envia como header)
+
+Fluxos:
+- **Login** (server action `loginAdmin`): `POST /admin/auth/login` → grava os três cookies → `redirect('/admin')`. Tratar `401` e `403 MFA_NECESSARIO`.
+- **Renovação** no `proxy.ts`, para rotas `/admin/*`: se `vm_admin_at` ausente/expirando (< 60 s) e houver `vm_admin_rt`, chamar `POST /admin/auth/refresh` com `Cookie: vm_admin_rt=…; vm_admin_csrf=…` e `X-CSRF-Token`, e regravar os cookies na resposta. Se o refresh falhar → limpar cookies e redirecionar a `/admin/login`. Ignorar requisições de prefetch para não disparar refresh concorrente (o refresh rotaciona e reuso pode revogar a família).
+- **Chamadas admin**: Server Components e actions usam `adminFetch` com o token de `vm_admin_at`. Server Components não gravam cookies — por isso a renovação fica no `proxy.ts`.
+- **Logout** (server action): `POST /admin/auth/logout` com csrf → limpar cookies → `redirect('/admin/login')`.
+- O `admin` retornado no login/`me` alimenta header e permissões por `papel`.
+
+### Cache
+- `GET /eventos` e `GET /eventos/:slug`: cacheáveis (revalidação curta, ~60 s) com tag `events` / `event:<slug>`; seguir o mecanismo de cache do Next 16 descrito em `node_modules/next/dist/docs/` (`'use cache'` + `cacheTag`/`cacheLife` se Cache Components estiver ativo).
+- Mutações no admin chamam `revalidateTag('events')` / `revalidateTag('event:<slug>')`.
+- Inscrição, consulta e todo o admin: `cache: 'no-store'`.
+
+---
+
+## 9. Estrutura de diretórios
 
 ```
 src/
 ├── app/
-│   ├── (public)/               # Rotas públicas
-│   │   ├── corridas/[slug]/
-│   │   │   ├── components/
-│   │   │   └── inscricao/
+│   ├── (public)/
+│   │   ├── corridas/
+│   │   │   ├── encerradas/
+│   │   │   └── [slug]/
+│   │   │       ├── components/
+│   │   │       └── inscricao/
 │   │   ├── consulta/
-│   │   ├── inscricao/[code]/
-│   │   ├── loja/               # Catálogo, produto, carrinho, checkout
-│   │   └── pedido/[code]/
-│   ├── admin/                  # Área protegida
-│   ├── actions/                # Server actions por domínio (events, registrations, payments, coupons, admin)
-│   └── api/                    # Webhooks e NextAuth
+│   │   ├── inscricao/
+│   │   │   ├── confirmada/
+│   │   │   └── [code]/
+│   │   ├── corridas-parceiras/
+│   │   ├── loja/
+│   │   ├── pedido/[code]/
+│   │   ├── sobre/
+│   │   ├── parceiros/
+│   │   └── contato/
+│   ├── admin/
+│   │   ├── login/
+│   │   ├── eventos/
+│   │   ├── tamanhos-camisa/
+│   │   └── auditoria/
+│   └── actions/                # Server actions por domínio (events, distances, price-tiers, kits,
+│                               #   shirt-sizes, documents, registrations, admin-auth)
+├── proxy.ts                    # Proteção de /admin e renovação do token
 ├── components/
 │   ├── ui/                     # shadcn/ui
 │   ├── brand/                  # Logo, chevron, eyebrow
 │   └── layout/                 # Header, footer
-├── server/                     # Acesso a dados e integrações (somente servidor)
-│   ├── db.ts                   # Prisma client
-│   ├── services/               # Regras de negócio (pricing, capacity, registration)
-│   └── payments/               # Cliente do gateway
+├── server/
+│   └── api/                    # Cliente HTTP, sessão e endpoints (ver §8)
 ├── lib/
-│   ├── utils/                  # Helpers (formatCurrency, formatDate, maskCpf, isValidCpf, calcAge...)
-│   └── validations/            # Schemas Zod
-├── types/                      # *.interface.ts
-├── enums/                      # *.enum.ts
+│   ├── env.ts                  # Validação das variáveis com Zod
+│   ├── utils/                  # formatCurrency, formatDate, formatDistance, maskCpf, normalizeCpf,
+│   │                           #   isValidCpf, toE164Phone, maskPhone, getApiErrorMessage, query-keys...
+│   └── validations/            # Schemas Zod dos formulários
+├── types/
+│   └── api/                    # *.interface.ts espelhando o contrato da API
+├── enums/                      # *.enum.ts (EVENT_STATUS, REGISTRATION_STATUS, DOCUMENT_TYPE, API_ERROR_CODE)
 ├── hooks/
 │   └── data/                   # Hooks de TanStack Query
-├── stores/                     # Zustand (registration-form-store, admin-filters-store...)
-├── emails/                     # Templates React Email
+├── stores/                     # Zustand (registration-form-store, admin-events-filters-store, cart-store...)
 └── animations/                 # Variants do Framer Motion
-prisma/
-└── schema.prisma
 public/
-└── brand/                      # Logos e favicon
+└── brand/
 ```
 
 ---
 
-## 9. Convenções de código (obrigatórias)
+## 10. Convenções de código (obrigatórias)
 
 ### Nomenclatura
 - Arquivos: kebab-case (`event-card.tsx`, `use-event.ts`)
@@ -238,43 +371,75 @@ public/
 - Enums: SCREAMING_SNAKE_CASE em arquivos `.enum.ts`
 - Hooks: prefixo `use`; stores: `use<Nome>Store`
 
+### Tipos da API
+- Interfaces em `src/types/api/` com **nome em inglês** e **chaves exatamente como a API** (português), sem tradução nem camada de mapeamento:
+```ts
+// src/types/api/event.interface.ts
+export interface PublicEvent {
+  slug: string
+  nome: string
+  descricao: string
+  dataEvento: string // YYYY-MM-DD
+  horarioLargada: string // HH:mm
+  localizacao: EventLocation
+  imagemCapaUrl: string | null
+}
+
+// src/types/api/cursor-page.interface.ts
+export interface CursorPage<T> {
+  items: T[]
+  nextCursor: string | null
+}
+
+// src/types/api/api-error-body.interface.ts
+export interface ApiErrorBody {
+  error: { codigo: string; mensagem: string }
+}
+```
+- Valores de status/enum da API em minúsculas (`'rascunho'`, `'pendente'`) — os enums do front mapeiam esses literais: `EVENT_STATUS.DRAFT = 'rascunho'`.
+- Labels e cores de badge por status em `src/lib/utils/` (`getEventStatusLabel`, `getRegistrationStatusLabel`).
+
 ### Componentes
 - **Um componente por arquivo. Nunca** criar dois componentes no mesmo arquivo.
 - Itens renderizados em `.map()` **sempre** extraídos para componente próprio (`event-list.tsx` → `event-list-item.tsx`).
 - Funções auxiliares **sempre** em `src/lib/utils/`, nunca inline no componente.
 - `'use client'` só quando houver interatividade. Server Components por padrão.
 - Props tipadas com `interface`. Sem `any` (exceto em `catch` quando inevitável).
-- Composição em vez de herança; compound components para UIs complexas.
 - Cada página/feature tem sua própria pasta `components/` com `index.ts`.
 
 ### Busca de dados — os 4 estados são obrigatórios
 Todo componente que busca dados implementa: **loading** (Skeleton com o mesmo layout final), **erro** (`ServerError`), **vazio** (mensagem + ícone + CTA quando fizer sentido) e **sucesso** (transformações com `useMemo`).
-- RSC: cada seção dentro de `<Suspense>` com skeleton correspondente; seções carregam de forma independente.
-- Client: TanStack Query com `queryKey` vinda de `src/lib/utils/query-keys.ts`, `staleTime` de 5 min.
-- Filtros/ordenação/paginação server-side (ex.: tabela de inscritos no admin): estado em **Zustand**, nunca em search params; incluir o estado dos filtros na query key; debounce na busca.
+- RSC: cada seção dentro de `<Suspense>` com skeleton correspondente; chamada à API via `src/server/api/endpoints`; `ApiError` 404 → `notFound()`, demais → `ServerError`.
+- Client: TanStack Query chamando **server actions** (nunca a API direto), `queryKey` de `src/lib/utils/query-keys.ts`, `staleTime` de 5 min (exceto consulta/admin: `staleTime: 0`).
+- Paginação server-side: a API usa **cursor**. Guardar no Zustand o filtro e a pilha de cursores (`cursorStack`) para "Anterior/Próxima"; nunca em search params; filtro + cursor na query key; debounce na busca.
 
 ### Server actions
-- Sempre `'use server'`, validar entrada com Zod e, nas actions de admin, checar sessão primeiro.
-- Retornar sempre `HttpResponse<T>`:
+- Sempre `'use server'`, validar entrada com Zod e, nas de admin, usar `adminFetch` (que exige sessão).
+- Chamam as funções de `src/server/api/endpoints/`; não montam URL nem headers à mão.
+- Retornar sempre `HttpResponse<T>`, convertendo `ApiError`:
 ```ts
 export interface HttpResponse<T = unknown> {
   status: number
   data?: T
-  error?: string
+  error?: string   // mensagem amigável (getApiErrorMessage)
+  code?: string    // error.codigo da API, para a UI decidir o fluxo
   title?: string
 }
 ```
-- Regras de negócio ficam em `src/server/services/`; a action orquestra e trata erros.
-- Após mutações, `revalidatePath`/`revalidateTag` nas páginas afetadas.
+- Após mutações no admin, `revalidateTag`/`revalidatePath` das páginas afetadas.
+- **Nunca** devolver tokens ou PII completa para o client.
 
 ### Formulários
 - React Hook Form + `zodResolver`, todos os `defaultValues` definidos.
+- Schemas espelham os campos da API (mesmas chaves) para enviar sem remapear.
 - Mensagens de validação em português.
-- Feedback com `toast.success` / `toast.error` usando o `title` retornado pela action.
+- Feedback com `toast.success` / `toast.error` usando o `title`/`error` da action.
+- Erros `422` com campo identificável → `setError` no campo; demais → toast.
 
 ### Dialogs, drawers e popovers
 - Todos fecham na troca de rota com `useCloseOnRouteChange(() => setIsOpen(false), isOpen)`.
 - Padrão responsivo: Dialog no desktop, Drawer no mobile.
+- Ações destrutivas do admin (excluir, cancelar, encerrar evento) sempre com confirmação.
 
 ### Estilo
 - Tokens do tema em vez de valores arbitrários; `cn()` para classes; `cva` para variantes.
@@ -283,79 +448,90 @@ export interface HttpResponse<T = unknown> {
 
 ---
 
-## 10. SEO, performance e acessibilidade
+## 11. SEO, performance e acessibilidade
 
-- `generateMetadata` em cada página de evento (título, descrição, OG image com banner do evento).
-- JSON-LD `SportsEvent` nas páginas de evento.
-- `sitemap.ts` e `robots.ts`; admin com `noindex`.
-- `next/image` para todas as imagens; banners otimizados.
+- `generateMetadata` em cada página de evento (título, descrição, OG com `imagemCapaUrl`).
+- JSON-LD `SportsEvent` nas páginas de evento (`localizacao`, `latitude`/`longitude`).
+- `sitemap.ts` (slugs de `GET /eventos`) e `robots.ts`; admin com `noindex`.
+- `next/image` para todas as imagens.
 - HTML semântico, foco visível, labels em todos os inputs, contraste AA (atenção ao verde da marca).
 - Meta: Lighthouse ≥ 90 em mobile nas páginas públicas.
 
 ---
 
-## 11. LGPD e segurança
+## 12. LGPD e segurança
 
-- Coletar só os dados necessários; checkbox de consentimento com link para `/privacidade`.
-- CPF e telefone mascarados em qualquer tela pública; nunca em URLs ou query strings.
-- Rate limit nas actions de consulta e inscrição.
-- Senhas do admin com hash (bcrypt/argon2).
-- Variáveis secretas apenas no servidor; nunca com prefixo `NEXT_PUBLIC_`.
+- Coletar só os dados que a API aceita; consentimento com link para `/privacidade`.
+- CPF e telefone mascarados em qualquer tela pública; **nunca** em URLs, query strings ou logs. Consulta usa `POST`.
+- Tokens apenas em cookies HttpOnly do Next; nada em `localStorage`.
+- `API_URL` e demais segredos só no servidor; nunca com prefixo `NEXT_PUBLIC_`.
+- Não logar corpos de request/response de inscrição, consulta ou login.
+- Headers de segurança no `next.config` (CSP, `Referrer-Policy: no-referrer` nas páginas de inscrição/consulta).
 
 ---
 
-## 12. Variáveis de ambiente
+## 13. Variáveis de ambiente
 
 ```
-DATABASE_URL=
-AUTH_SECRET=
-AUTH_URL=
-PAYMENT_ACCESS_TOKEN=
-PAYMENT_WEBHOOK_SECRET=
-RESEND_API_KEY=
-EMAIL_FROM=
-BLOB_READ_WRITE_TOKEN=
+API_URL=http://localhost:3000        # Backend VertexMove (sem /api/v1)
+API_TIMEOUT_MS=10000
 NEXT_PUBLIC_SITE_URL=
 NEXT_PUBLIC_WHATSAPP_NUMBER=
 NEXT_PUBLIC_INSTAGRAM_URL=
 ```
-
-Validar as variáveis obrigatórias na inicialização (`src/lib/env.ts` com Zod).
+Rodar o Next em outra porta no dev (ex.: `next dev -p 3001`), já que a API usa a 3000. Validar as variáveis em `src/lib/env.ts` com Zod.
 
 ---
 
-## 13. Comandos
+## 14. Comandos
 
 ```bash
-npm run dev          # Desenvolvimento
+npm run dev          # Desenvolvimento (porta 3001)
 npm run lint         # ESLint
 npm run typecheck    # tsc --noEmit
 npm run build        # Build de produção
-npx prisma migrate dev
-npx prisma studio
 ```
+Backend local: no repositório da API, `npm run db:migrate` e `npm run db:seed`. Contas de dev: `admin@example.com` e `operador@example.com`, senha `Vertex@Dev12345`. Use a collection Postman para criar evento → distância → lote vigente → documentos → publicar antes de testar a inscrição no front.
 
 Antes de cada commit: `lint`, `typecheck` e `build` passando. Commits no padrão Conventional Commits.
 
 ---
 
-## 14. Fases de entrega
+## 15. Fases de entrega
 
-1. **MVP** — Home, página do evento, inscrição com Pix, consulta por WhatsApp/CPF, e-mail de confirmação, admin com CRUD de eventos e lista/exportação de inscritos.
-2. **Fase 2** — Cartão de crédito, cupons, **loja de camisas e medalhas** (retirada presencial), check-in de retirada de kit e de pedidos (busca rápida por CPF/código no admin).
-3. **Fase 3** — Resultados/classificação por evento, galeria de fotos, notificações por WhatsApp.
+1. **MVP (API já disponível)** — Home e página do evento (catálogo público), formulário de inscrição + confirmação, consulta por WhatsApp/CPF, login/logout/renovação do admin, CRUD de eventos, distâncias, lotes, kits, tamanhos e documentos, ciclo de vida do evento, auditoria.
+2. **MVP (depende do backend)** — Pagamento Pix na inscrição e página `/inscricao/[code]`, lista/exportação de inscritos no admin, e-mail de confirmação.
+3. **Fase 2** — Cartão, cupons, loja de camisas e medalhas, check-in de retirada de kit e de pedidos.
+4. **Fase 3** — Resultados/classificação, galeria de fotos (`galeriaUrl`), notificações por WhatsApp.
 
 ---
 
-## 15. Decisões em aberto (confirmar com o cliente)
+## 16. Pendências e decisões em aberto
 
-- [ ] Gateway de pagamento (Mercado Pago, Asaas, Pagar.me, outro?) e quem arca com as taxas
+### Backend (combinar com o time da API)
+- [ ] O detalhe público `GET /eventos/:slug` precisa expor: distâncias (com `id`), preço do lote vigente e vagas/esgotado, kits ativos (com `id` e fotos), tamanhos de camisa disponíveis e **IDs dos documentos vigentes** (regulamento e termo) — sem eles o front não consegue montar `documentosAceitos`, `kitId` e `tamanhoCamisaId`.
+- [ ] Endpoint para buscar inscrição por código (status/pagamento) — hoje a consulta não devolve código.
+- [ ] Pagamento (gateway, criação de cobrança Pix, polling de status, webhook) e expiração de pendentes.
+- [ ] Listagem/exportação de inscrições no admin e marcação de retirada de kit.
+- [ ] Campos extras na inscrição: sexo, equipe/assessoria, contato de emergência.
+- [ ] Lista exata de `status` de evento e inscrição; matriz de permissões por `papel`.
+- [ ] MFA/TOTP para super admin.
+- [ ] Qual header de IP do cliente o rate limit confia (`X-Forwarded-For`?) e como o Next se autentica como proxy confiável.
+- [ ] Domínio/`SameSite` dos cookies em produção e CORS (se algum dia o browser chamar a API direto).
+- [ ] Loja (produtos, variantes, pedidos, estoque).
+- [ ] Listagem pública de corridas encerradas (histórico) e, depois, resultados/galeria.
+- [ ] Corridas parceiras (nome, data, distâncias, cupom, link externo, imagem) com CRUD no admin.
+
+### Cliente
+- [ ] Gateway de pagamento e quem arca com as taxas
 - [ ] Hex exatos e arquivo vetorial da logo
 - [ ] Domínio do site
 - [ ] Número de WhatsApp e @ do Instagram oficiais
 - [ ] Regras do desconto 60+ e de outros descontos (assessorias, PCD)
 - [ ] Política de cancelamento, reembolso e transferência de inscrição
 - [ ] Número de peito: automático ou manual
-- [ ] Haverá eventos virtuais (como na referência) além das corridas presenciais?
-- [ ] Fotos oficiais e textos institucionais do Vertex
-- [ ] Loja: catálogo inicial (camisas, tamanhos, medalhas de quais edições), preços, estoque e locais/horários de retirada
+- [ ] Haverá eventos virtuais além das corridas presenciais?
+- [ ] Fotos oficiais e textos institucionais do Vertex (história, missão, frase do hero, 4 selos de "Mais que corrida")
+- [ ] Lista de parceiros/apoiadores e de corridas parceiras com cupons
+- [ ] O Vertex tem treinos coletivos para divulgar (como os "encontros" da referência)?
+- [ ] Loja: catálogo inicial, preços, estoque e locais/horários de retirada
