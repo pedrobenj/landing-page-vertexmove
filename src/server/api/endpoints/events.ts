@@ -1,0 +1,87 @@
+import "server-only"
+
+import { cacheLife, cacheTag } from "next/cache"
+
+import type { CursorPage } from "@/types/api/cursor-page.interface"
+import type { PublicEvent } from "@/types/api/event.interface"
+import type { PublicEventDetail } from "@/types/api/public-event-detail.interface"
+
+import { apiFetch } from "../api-client"
+import { type CachedResult, toCachedFailure, unwrapCached } from "./cached-result"
+
+const PUBLIC_LIMIT = 50
+const EMPTY_PAGE: CursorPage<PublicEvent> = { items: [], nextCursor: null }
+
+// Dentro de "use cache" não há headers() da request: por isso `forwardClient: false`.
+// Sucesso e 404 seguem o cacheLife normal; falhas transitórias (timeout, 5xx) ficam só alguns segundos.
+
+async function fetchPublicEvents(cursor: string | undefined): Promise<CachedResult<CursorPage<PublicEvent>>> {
+  "use cache"
+  cacheTag("events")
+  try {
+    const data = await apiFetch<CursorPage<PublicEvent>>("/eventos", {
+      query: { cursor, limit: PUBLIC_LIMIT },
+      forwardClient: false,
+    })
+    cacheLife({ stale: 60, revalidate: 60, expire: 300 })
+    return { ok: true, data }
+  } catch (error) {
+    cacheLife("seconds")
+    return toCachedFailure(error)
+  }
+}
+
+async function fetchPublicEvent(slug: string): Promise<CachedResult<PublicEventDetail>> {
+  "use cache"
+  cacheTag("events", `event:${slug}`)
+  try {
+    const data = await apiFetch<PublicEventDetail>(`/eventos/${encodeURIComponent(slug)}`, { forwardClient: false })
+    cacheLife({ stale: 60, revalidate: 60, expire: 300 })
+    return { ok: true, data }
+  } catch (error) {
+    const failure = toCachedFailure(error)
+    if (failure.status === 404) cacheLife({ stale: 60, revalidate: 60, expire: 300 })
+    else cacheLife("seconds")
+    return failure
+  }
+}
+
+/**
+ * `GET /eventos/encerrados` — rota PROPOSTA, ainda pendente no backend (§16 do CLAUDE.md).
+ * Enquanto o backend real não tiver a rota, o 404 vira lista vazia.
+ */
+async function fetchPastEvents(): Promise<CachedResult<CursorPage<PublicEvent>>> {
+  "use cache"
+  cacheTag("events")
+  try {
+    const data = await apiFetch<CursorPage<PublicEvent>>("/eventos/encerrados", {
+      query: { limit: PUBLIC_LIMIT },
+      forwardClient: false,
+    })
+    cacheLife({ stale: 300, revalidate: 300, expire: 900 })
+    return { ok: true, data }
+  } catch (error) {
+    const failure = toCachedFailure(error)
+    if (failure.status === 404) {
+      cacheLife({ stale: 300, revalidate: 300, expire: 900 })
+      return { ok: true, data: EMPTY_PAGE }
+    }
+    cacheLife("seconds")
+    return failure
+  }
+}
+
+/** Corridas publicadas (`GET /eventos`). Lança `ApiError`. */
+export async function listPublicEvents(cursor?: string): Promise<CursorPage<PublicEvent>> {
+  return unwrapCached(await fetchPublicEvents(cursor))
+}
+
+/** Detalhe público (`GET /eventos/:slug`). Lança `ApiError` — 404 quando não publicado. */
+export async function getPublicEvent(slug: string): Promise<PublicEventDetail> {
+  return unwrapCached(await fetchPublicEvent(slug))
+}
+
+/** Corridas encerradas (histórico). Lista vazia se a rota ainda não existir no backend. */
+export async function listPastEvents(): Promise<CursorPage<PublicEvent>> {
+  return unwrapCached(await fetchPastEvents())
+}
