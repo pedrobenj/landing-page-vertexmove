@@ -15,6 +15,8 @@ test.describe("SEO", () => {
     const body = await response.text()
     expect(body).toContain("/consulta")
     expect(body).toContain("/sobre")
+    // Com o mock (USE_MOCK_API=true) a loja está disponível e entra no sitemap.
+    expect(body).toContain("/loja")
     expect(body).toContain("/corridas/corrida-vertex-beira-mar-2026")
     expect(body).not.toContain("/corridas/corrida-de-natal-vertex-2026")
     expect(body).not.toContain("/admin")

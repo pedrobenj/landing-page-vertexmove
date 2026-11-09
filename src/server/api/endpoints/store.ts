@@ -15,13 +15,22 @@ import { ApiError } from "../api-error"
 import { requireAdminSession } from "../require-admin-session"
 
 /**
+ * A loja tem de onde ler? Hoje só com o mock; quando o backend expuser a loja, passa a `true` (ou a
+ * uma flag de ambiente). Permite às páginas mostrar "Loja em breve" sem depender de uma chamada —
+ * ex.: carrinho vazio, em que o client não precifica nada — e ao sitemap não listar /loja.
+ */
+export function isStoreEnabled(): boolean {
+  return env.USE_MOCK_API
+}
+
+/**
  * Loja — PENDENTE no backend VertexMove (§16 do CLAUDE.md). Este é o único ponto de entrada do front:
  * com `USE_MOCK_API=true` delega ao backend falso em `mocks/store/` (estado em `globalThis`); sem o
  * mock, toda chamada lança `503 LOJA_INDISPONIVEL` e as páginas mostram "A loja estará disponível em breve.".
  * Quando a API expuser a loja, só este arquivo troca para `apiFetch`/`adminFetch`.
  */
 async function loadMockStore() {
-  if (!env.USE_MOCK_API) throw new ApiError(503, API_ERROR_CODE.STORE_UNAVAILABLE, "Loja em breve")
+  if (!isStoreEnabled()) throw new ApiError(503, API_ERROR_CODE.STORE_UNAVAILABLE, "Loja em breve")
   // Import dinâmico: o mock fica fora do bundle de produção (como o `mockFetch` do transport).
   return import("../mocks/store/mock-store-api")
 }

@@ -7,7 +7,7 @@ import { toast } from "sonner"
 import { validateCartAction } from "@/app/actions/store"
 import { API_ERROR_CODE } from "@/enums/api-error-code.enum"
 import { useCartHydrated } from "@/hooks/use-cart-hydrated"
-import { isStoreUnavailableError, queryKeys, StoreUnavailableError } from "@/lib/utils"
+import { getCartIssueToastId, isStoreUnavailableError, queryKeys, StoreUnavailableError } from "@/lib/utils"
 import { useCartStore } from "@/stores/cart-store"
 
 /** Carrinho precificado pelo servidor. Aplica automaticamente os avisos (esgotado, estoque menor). */
@@ -36,7 +36,7 @@ export function usePricedCart() {
   const issues = query.data?.issues
   useEffect(() => {
     if (!issues || issues.length === 0) return
-    for (const issue of issues) toast.warning(issue.message)
+    for (const issue of issues) toast.warning(issue.message, { id: getCartIssueToastId(issue) })
     applyIssues(issues)
   }, [issues, applyIssues])
 

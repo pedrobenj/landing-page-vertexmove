@@ -4,23 +4,22 @@ import { notFound, unstable_rethrow } from "next/navigation"
 import { ServerError } from "@/components/feedback"
 import { SectionBand } from "@/components/sections"
 import { StoreUnavailable } from "@/components/store"
+import { isOrderCode } from "@/lib/utils"
 import { isApiError } from "@/server/api/api-error"
 import { getStoreOrder } from "@/server/api/endpoints/store"
 import { isStoreUnavailable } from "@/server/api/is-store-unavailable"
 import type { OrderSummary } from "@/types/order.interface"
 
-import { ClearCartOnMount, OrderDetails } from "./components"
+import { FinishCheckoutOnMount, OrderDetails } from "./components"
 
 export const metadata: Metadata = { title: "Meu pedido", robots: { index: false } }
 
 /** Bloqueia (sem <Suspense>) para que o notFound() rode antes do streaming e devolva 404 de verdade. */
 export const instant = false
 
-const ORDER_CODE_PATTERN = /^VTX-P-[2-9A-Z]{4}$/
-
 export default async function OrderPage({ params }: PageProps<"/pedido/[code]">) {
   const code = (await params).code.toUpperCase()
-  if (!ORDER_CODE_PATTERN.test(code)) notFound()
+  if (!isOrderCode(code)) notFound()
 
   let order: OrderSummary | null = null
   let failure: "unavailable" | "error" | null = null
@@ -40,7 +39,7 @@ export default async function OrderPage({ params }: PageProps<"/pedido/[code]">)
     <SectionBand className="border-t-0" containerClassName="max-w-2xl">
       {order && (
         <>
-          <ClearCartOnMount code={order.code} />
+          <FinishCheckoutOnMount code={order.code} />
           <OrderDetails order={order} />
         </>
       )}

@@ -45,7 +45,7 @@ describe("endpoints da loja", () => {
 
   it("sem o mock, toda chamada responde 503 LOJA_INDISPONIVEL", async () => {
     mockEnv.USE_MOCK_API = false
-    for (const call of [store.listStoreProducts(), store.getStoreOrder("VTX-P-AAAA"), store.listAdminProducts()]) {
+    for (const call of [store.listStoreProducts(), store.getStoreOrder("VTX-P-AAAAA-AAAAA"), store.listAdminProducts()]) {
       expect(await catchError(call)).toMatchObject({ name: "ApiError", status: 503, codigo: "LOJA_INDISPONIVEL" })
     }
   })

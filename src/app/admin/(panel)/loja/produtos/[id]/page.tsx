@@ -5,6 +5,7 @@ import { connection } from "next/server"
 import { ServerError } from "@/components/feedback"
 import { StoreUnavailable } from "@/components/store/store-unavailable"
 import { canManageStore } from "@/lib/utils/admin-permissions"
+import { isOpaqueIdParam } from "@/lib/utils/is-opaque-id-param"
 import { isApiError } from "@/server/api/api-error"
 import { getAdminProduct } from "@/server/api/endpoints/store"
 import { isStoreUnavailable } from "@/server/api/is-store-unavailable"
@@ -26,6 +27,8 @@ export default async function EditProductPage({ params }: PageProps<"/admin/loja
   // Autorização aqui, e não só no proxy (pulado em prefetch). Fora do try/catch: o redirect sobe.
   const admin = await requireAdminSession()
   const { id } = await params
+  // Ids de produto são strings opacas (não numéricas como os da API de corridas): valida o formato.
+  if (!isOpaqueIdParam(id)) notFound()
 
   let product: StoreProduct
   try {

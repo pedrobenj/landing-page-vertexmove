@@ -1,6 +1,8 @@
 import type { Metadata } from "next"
 
 import { SectionBand, SectionHeading } from "@/components/sections"
+import { StoreUnavailable } from "@/components/store"
+import { isStoreEnabled } from "@/server/api/endpoints/store"
 
 import { CheckoutView } from "./components"
 
@@ -16,7 +18,8 @@ export default function CheckoutPage() {
         title="Finalizar compra"
         description="Informe seus dados para reservar os itens. O estoque fica reservado por 30 minutos."
       />
-      <CheckoutView />
+      {/* Sem backend da loja: avisa já, mesmo com o carrinho vazio (sem itens o client não consulta nada). */}
+      {isStoreEnabled() ? <CheckoutView /> : <StoreUnavailable />}
     </SectionBand>
   )
 }

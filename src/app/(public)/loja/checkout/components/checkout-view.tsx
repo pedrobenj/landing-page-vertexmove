@@ -15,6 +15,8 @@ import { CheckoutOrderLine } from "./checkout-order-line"
 export function CheckoutView() {
   const { data, isPending, isError, isEmpty, hydrated, isPlaceholderData, isStoreUnavailable } = usePricedCart()
 
+  // Loja indisponível vem antes do vazio (com itens no carrinho a precificação devolve o 503).
+  if (isStoreUnavailable) return <StoreUnavailable />
   if (isEmpty) {
     return (
       <EmptyState
@@ -28,7 +30,6 @@ export function CheckoutView() {
       />
     )
   }
-  if (isStoreUnavailable) return <StoreUnavailable />
   if (!hydrated || (isPending && !data)) return <CartSkeleton />
   if (isError || !data) return <ServerError title="Não foi possível carregar o resumo do pedido" />
 

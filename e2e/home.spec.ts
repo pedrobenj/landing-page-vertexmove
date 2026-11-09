@@ -1,5 +1,9 @@
 import { expect, test } from "@playwright/test"
 
+// Corridas abertas do seed do mock. Specs do admin publicam corridas temporárias em paralelo (outro
+// worker), então a home confere as do seed e nunca uma contagem exata.
+const SEED_OPEN_EVENTS = ["Corrida Vertex Beira-Mar 2026", "Night Run Vertex", "Desafio Vertex Parque do Cocó"]
+
 const SECTION_HEADINGS = [
   "Destaques",
   "Corridas que já vivemos",
@@ -39,7 +43,10 @@ test.describe("Home", () => {
   test("os 3 cards de destaque têm os links certos", async ({ page }) => {
     const highlights = page.getByRole("region", { name: "Destaques" })
     await expect(highlights.getByRole("article")).toHaveCount(3)
-    await expect(highlights.getByText("3 corridas abertas")).toBeVisible()
+    // Selo com a contagem real (≥ as do seed), não um número fixo: ver SEED_OPEN_EVENTS.
+    const badge = highlights.getByText(/^\d+ corridas? abertas?$/)
+    await expect(badge).toBeVisible()
+    expect(Number.parseInt((await badge.textContent()) ?? "", 10)).toBeGreaterThanOrEqual(SEED_OPEN_EVENTS.length)
     await expect(highlights.getByRole("link", { name: "Garantir minha vaga" })).toHaveAttribute("href", "#corridas")
     await expect(highlights.getByRole("link", { name: "Consultar", exact: true })).toHaveAttribute("href", "/consulta")
     await expect(highlights.getByRole("link", { name: "Acessar a loja" })).toHaveAttribute("href", "/loja")
@@ -61,8 +68,7 @@ test.describe("Home", () => {
     const section = page.locator("#corridas")
     await expect(section.getByRole("heading", { name: "Escolha seu próximo desafio" })).toBeVisible()
 
-    await expect(section.getByRole("article")).toHaveCount(3)
-    for (const name of ["Corrida Vertex Beira-Mar 2026", "Night Run Vertex", "Desafio Vertex Parque do Cocó"]) {
+    for (const name of SEED_OPEN_EVENTS) {
       await expect(section.getByRole("heading", { level: 3, name, exact: true })).toBeVisible()
     }
     await expect(section.getByText("06/12/2026 · Largada 05:30")).toBeVisible()

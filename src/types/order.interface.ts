@@ -2,35 +2,6 @@ import type { ORDER_STATUS } from "@/enums/order-status.enum"
 
 import type { PricedCart } from "@/types/cart.interface"
 
-export interface Buyer {
-  name: string
-  cpf: string
-  whatsapp: string
-  email: string
-}
-
-export interface NewOrderLine {
-  variantId: string
-  quantity: number
-  /** centavos */
-  unitPrice: number
-  productName: string
-  variantLabel: string
-}
-
-export interface NewOrderData {
-  buyer: Buyer
-  /** centavos */
-  amount: number
-  expiresAt: Date
-  privacyAcceptedAt: Date
-  lines: NewOrderLine[]
-}
-
-export type CreatePendingOrderResult =
-  | { ok: true; code: string }
-  | { ok: false; outOfStockVariantIds: string[] }
-
 export interface OrderSummaryLine {
   productName: string
   variantLabel: string

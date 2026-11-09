@@ -30,6 +30,7 @@ export async function generateMetadata({ params }: PageProps<"/loja/[slug]">): P
   try {
     product = await getStoreProduct(slug)
   } catch (error) {
+    unstable_rethrow(error)
     if (isApiError(error) && error.status === 404) notFound()
     // A página trata os demais erros (loja em breve, ServerError); aqui só caímos no título padrão.
     return { title: "Loja" }

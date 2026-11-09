@@ -1,10 +1,11 @@
 import type { ProductFormData } from "@/lib/validations/product.schema"
-import type { CreatePendingOrderResult, NewOrderData, OrderSummary } from "@/types/order.interface"
+import type { OrderSummary } from "@/types/order.interface"
 import type { StoreProduct } from "@/types/store-product.interface"
+
+import type { CreatePendingOrderResult, NewOrderData } from "./new-order.interface"
 
 export interface StoreRepository {
   listActiveProducts(): Promise<StoreProduct[]>
-  listFeaturedProducts(limit: number): Promise<StoreProduct[]>
   getActiveProductBySlug(slug: string): Promise<StoreProduct | null>
   /** Produtos (ativos ou não) que contêm alguma das variantes. */
   getProductsByVariantIds(variantIds: string[]): Promise<StoreProduct[]>

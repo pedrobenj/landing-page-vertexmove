@@ -53,10 +53,10 @@ export function CheckoutForm() {
       }
 
       if (response.status === 201 && response.data?.code) {
-        // O carrinho é esvaziado na página do pedido (ClearCartOnMount), depois da navegação.
+        // Carrinho esvaziado e "Pedido criado!" na página do pedido (FinishCheckoutOnMount), depois da
+        // navegação: um toast aqui expirava enquanto a página do pedido (bloqueante) ainda carregava.
         setIsRedirecting(true)
         markLastOrder(response.data.code)
-        toast.success(response.title ?? "Pedido criado!")
         router.push(`/pedido/${response.data.code}`)
         return
       }

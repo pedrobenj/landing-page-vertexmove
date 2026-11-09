@@ -1,6 +1,8 @@
 import type { Metadata } from "next"
 
 import { SectionBand, SectionHeading } from "@/components/sections"
+import { StoreUnavailable } from "@/components/store"
+import { isStoreEnabled } from "@/server/api/endpoints/store"
 
 import { CartView } from "./components"
 
@@ -16,7 +18,8 @@ export default function CartPage() {
         title="Carrinho"
         description="Confira os itens antes de finalizar. Pagamento via Pix e retirada presencial."
       />
-      <CartView />
+      {/* Sem backend da loja: avisa já, mesmo com o carrinho vazio (sem itens o client não consulta nada). */}
+      {isStoreEnabled() ? <CartView /> : <StoreUnavailable />}
     </SectionBand>
   )
 }

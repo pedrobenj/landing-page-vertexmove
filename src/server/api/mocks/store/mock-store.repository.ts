@@ -11,9 +11,10 @@ import {
   StockChangedError,
   VariantNotOwnedError,
 } from "./store-errors"
-import type { NewOrderData, OrderSummary } from "@/types/order.interface"
+import type { OrderSummary } from "@/types/order.interface"
 import type { StoreProduct } from "@/types/store-product.interface"
 
+import type { NewOrderData } from "./new-order.interface"
 import type { StoreRepository } from "./store-repository.interface"
 
 interface MockOrder extends OrderSummary {
@@ -38,10 +39,6 @@ export function createMockStoreRepository(seed: StoreProduct[]): StoreRepository
   return {
     async listActiveProducts() {
       return clone(products.filter((p) => p.isActive))
-    },
-
-    async listFeaturedProducts(limit) {
-      return clone(products.filter((p) => p.isActive && p.isFeatured).slice(0, limit))
     },
 
     async getActiveProductBySlug(slug) {

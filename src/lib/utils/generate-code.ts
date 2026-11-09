@@ -2,17 +2,21 @@ import { randomInt } from "node:crypto"
 
 // Sem 0/O, 1/I/L para leitura fácil no WhatsApp e na retirada.
 const ALPHABET = "23456789ABCDEFGHJKMNPQRSTUVWXYZ"
+const BLOCK_LENGTH = 5
 
-/** Somente servidor (usa node:crypto). */
-function generateCode(prefix: string, length = 4): string {
-  let code = ""
-  for (let i = 0; i < length; i++) {
-    code += ALPHABET[randomInt(ALPHABET.length)]
+function generateBlock(): string {
+  let block = ""
+  for (let i = 0; i < BLOCK_LENGTH; i++) {
+    block += ALPHABET[randomInt(ALPHABET.length)]
   }
-  return `${prefix}-${code}`
+  return block
 }
 
-/** Pedido da loja, ex: VTX-P-7K3P */
+/**
+ * Pedido da loja, ex: VTX-P-7K3PQ-M9X2D. Somente servidor (usa node:crypto).
+ * 10 caracteres de 31 símbolos (~49 bits): /pedido/[code] é público e mostra
+ * primeiro nome, itens e valor, então o código não pode ser enumerável.
+ */
 export function generateOrderCode(): string {
-  return generateCode("VTX-P")
+  return `VTX-P-${generateBlock()}-${generateBlock()}`
 }

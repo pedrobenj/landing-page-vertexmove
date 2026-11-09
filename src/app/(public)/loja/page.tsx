@@ -21,8 +21,8 @@ export default function StorePage({ searchParams }: PageProps<"/loja">) {
         as="h1"
         id="loja-title"
         eyebrow="Loja Vertex"
-        title="Vista o movimento"
-        description="Camisas e medalhas do Vertex. Pague com Pix e retire presencialmente — sem frete."
+        title="Camisas e medalhas"
+        description="Vista o movimento: pague com Pix e retire presencialmente — sem frete."
         actions={
           <Button asChild variant="outline" size="lg" className="w-full rounded-xl sm:w-auto">
             <Link href="/loja/carrinho">

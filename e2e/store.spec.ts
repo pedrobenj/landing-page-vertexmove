@@ -15,8 +15,8 @@ async function addToCart(page: Page, slug: string, size?: string) {
 test.describe("Loja", () => {
   test("catálogo separa camisas e medalhas e esconde produtos inativos", async ({ page }) => {
     await page.goto("/loja")
-    const shirts = page.getByRole("region", { name: "Camisas" })
-    const medals = page.getByRole("region", { name: "Medalhas" })
+    const shirts = page.getByRole("region", { name: "Camisas", exact: true })
+    const medals = page.getByRole("region", { name: "Medalhas", exact: true })
     await expect(shirts.getByRole("listitem").filter({ hasNotText: E2E_PRODUCT })).toHaveCount(3)
     await expect(medals.getByRole("listitem")).toHaveCount(2)
     for (const name of ["Camisa Oficial Vertex 2026", "Camisa Treino Dry-Fit", "Regata Vertex Run"]) {
@@ -80,7 +80,7 @@ test.describe("Loja", () => {
     await page.getByLabel(/Li e aceito/).check()
     await page.getByRole("button", { name: "Ir para o pagamento" }).click()
 
-    await expect(page).toHaveURL(/\/pedido\/VTX-P-[2-9A-Z]{4}$/, { timeout: 20_000 })
+    await expect(page).toHaveURL(/\/pedido\/VTX-P-[2-9A-HJKMNP-Z]{5}-[2-9A-HJKMNP-Z]{5}$/, { timeout: 20_000 })
     await expect(page.getByText("Pedido criado!")).toBeVisible()
     await expect(page.getByText("Aguardando pagamento")).toBeVisible()
     await expect(page.getByText("Olá, Maria!")).toBeVisible()
@@ -94,8 +94,8 @@ test.describe("Loja", () => {
   test("/medalhas redireciona para a loja filtrada por medalhas", async ({ page }) => {
     await page.goto("/medalhas")
     await expect(page).toHaveURL(/\/loja\?tipo=medalhas$/)
-    await expect(page.getByRole("region", { name: "Medalhas" }).getByRole("listitem")).toHaveCount(2)
-    await expect(page.getByRole("region", { name: "Camisas" })).toHaveCount(0)
+    await expect(page.getByRole("region", { name: "Medalhas", exact: true }).getByRole("listitem")).toHaveCount(2)
+    await expect(page.getByRole("region", { name: "Camisas", exact: true })).toHaveCount(0)
     const filters = page.getByRole("navigation", { name: "Categorias da loja" })
     await expect(filters.getByRole("link", { name: "Medalhas" })).toHaveAttribute("aria-current", "page")
   })
@@ -107,16 +107,16 @@ test.describe("Loja", () => {
 
     await filters.getByRole("link", { name: "Camisas" }).click()
     await expect(page).toHaveURL(/\/loja\?tipo=camisas$/)
-    await expect(page.getByRole("region", { name: "Medalhas" })).toHaveCount(0)
-    await expect(page.getByRole("region", { name: "Camisas" })).toBeVisible()
+    await expect(page.getByRole("region", { name: "Medalhas", exact: true })).toHaveCount(0)
+    await expect(page.getByRole("region", { name: "Camisas", exact: true })).toBeVisible()
 
     await filters.getByRole("link", { name: "Todos" }).click()
     await expect(page).toHaveURL(/\/loja$/)
-    await expect(page.getByRole("region", { name: "Medalhas" })).toBeVisible()
+    await expect(page.getByRole("region", { name: "Medalhas", exact: true })).toBeVisible()
   })
 
   test("pedido inexistente retorna 404", async ({ page }) => {
-    const response = await page.goto("/pedido/VTX-P-ZZZZ")
+    const response = await page.goto("/pedido/VTX-P-ZZZZZ-ZZZZZ")
     expect(response?.status()).toBe(404)
   })
 

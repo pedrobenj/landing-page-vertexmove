@@ -4,13 +4,13 @@ import { connection } from "next/server"
 import { publicEnv } from "@/lib/public-env"
 import { isApiError } from "@/server/api/api-error"
 import { listPublicEvents } from "@/server/api/endpoints/events"
+import { isStoreEnabled } from "@/server/api/endpoints/store"
 import type { PublicEvent } from "@/types/api/event.interface"
 
 type SitemapEntry = MetadataRoute.Sitemap[number]
 
 const STATIC_PAGES: Array<Pick<SitemapEntry, "changeFrequency" | "priority"> & { path: string }> = [
   { path: "", changeFrequency: "daily", priority: 1 },
-  { path: "/loja", changeFrequency: "weekly", priority: 0.7 },
   { path: "/consulta", changeFrequency: "monthly", priority: 0.6 },
   { path: "/sobre", changeFrequency: "monthly", priority: 0.5 },
   { path: "/parceiros", changeFrequency: "monthly", priority: 0.4 },
@@ -19,6 +19,9 @@ const STATIC_PAGES: Array<Pick<SitemapEntry, "changeFrequency" | "priority"> & {
   { path: "/corridas/encerradas", changeFrequency: "monthly", priority: 0.4 },
   { path: "/privacidade", changeFrequency: "yearly", priority: 0.2 },
 ]
+
+// A loja ainda não tem backend (§16): sem o mock, /loja só mostra "em breve" e não entra no sitemap.
+const STORE_PAGE: (typeof STATIC_PAGES)[number] = { path: "/loja", changeFrequency: "weekly", priority: 0.7 }
 
 /** Corridas publicadas; sem API (build, backend fora do ar) → nenhuma. */
 async function loadEvents(): Promise<PublicEvent[]> {
@@ -41,7 +44,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const events = await loadEvents()
 
   return [
-    ...STATIC_PAGES.map(({ path, ...entry }) => ({ url: `${base}${path}`, ...entry })),
+    ...[...STATIC_PAGES, ...(isStoreEnabled() ? [STORE_PAGE] : [])].map(({ path, ...entry }) => ({ url: `${base}${path}`, ...entry })),
     ...events.map((event) => ({
       url: `${base}/corridas/${event.slug}`,
       changeFrequency: "daily" as const,
