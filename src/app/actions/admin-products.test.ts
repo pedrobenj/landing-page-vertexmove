@@ -10,9 +10,11 @@ import { saveProductAction } from "./admin-products"
 const mocks = vi.hoisted(() => ({
   saveProduct: vi.fn(),
   revalidatePath: vi.fn(),
+  getMe: vi.fn(),
 }))
 
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }))
+vi.mock("@/server/api/endpoints/admin-auth", () => ({ getMe: mocks.getMe }))
 vi.mock("@/server/repositories/store.repository", () => ({
   getStoreRepository: () => ({ saveProduct: mocks.saveProduct }),
 }))
@@ -32,6 +34,12 @@ const input: ProductFormInput = {
 describe("saveProductAction", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+  })
+
+  it("exige sessão do admin antes de validar", async () => {
+    mocks.getMe.mockRejectedValueOnce(new Error("REDIRECT:/admin/login"))
+    await expect(saveProductAction(input)).rejects.toThrow("REDIRECT:/admin/login")
+    expect(mocks.saveProduct).not.toHaveBeenCalled()
   })
 
   it("entrada inválida → 400", async () => {

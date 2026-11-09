@@ -10,7 +10,7 @@ test.describe("Navegação pública", () => {
     for (const label of ["Início", "Corridas", "Loja", "Corridas Parceiras", "Conheça o Vertex", "Parceiros", "Contato"]) {
       await expect(menu.getByRole("link", { name: label, exact: true })).toBeVisible()
     }
-    await expect(menu.getByRole("link", { name: "Área administrativa" })).toHaveAttribute("href", "/admin/login")
+    await expect(menu.getByRole("link", { name: "Área administrativa" })).toHaveAttribute("href", "/admin")
 
     await menu.getByRole("link", { name: "Consultar inscrição" }).click()
     await expect(page).toHaveURL("/consulta")

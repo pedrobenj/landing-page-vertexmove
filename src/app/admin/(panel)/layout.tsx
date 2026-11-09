@@ -1,23 +1,36 @@
 import Link from "next/link"
+import { Suspense } from "react"
 
-import { VertexLogo } from "@/components/brand"
+import { VertexLogoPlate } from "@/components/brand"
 
-import { LogoutButton } from "./components"
+import { AdminNav, AdminUserBadge, AdminUserBadgeSkeleton, LogoutButton } from "./components"
 
-// TODO(migracao): Task 7 — acesso volta a ser protegido pelo proxy.ts com a sessão da API.
+/** Painel do admin. O acesso é protegido pelo `proxy.ts` e, em cada chamada à API, pelo `adminFetch`. */
 export default function AdminPanelLayout({ children }: LayoutProps<"/admin">) {
   return (
     <>
-      <header className="bg-brand-navy text-white">
-        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-4">
-          <Link href="/admin" aria-label="Dashboard">
-            <VertexLogo variant="white" className="w-28" />
+      <header className="sticky top-0 z-40 bg-brand-navy-deep text-white shadow-sm">
+        {/* Mobile: logo e usuário na 1ª linha, menu rolável na 2ª. Desktop: tudo numa linha. */}
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
+          <Link
+            href="/admin"
+            aria-label="Painel do admin"
+            className="flex items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-green"
+          >
+            <VertexLogoPlate priority />
+            <span className="hidden text-xs font-bold tracking-[0.2em] text-brand-green uppercase lg:inline">Admin</span>
           </Link>
-          <nav aria-label="Admin" className="flex items-center gap-4 text-sm">
-            <Link href="/admin/eventos" className="hover:text-brand-green">Eventos</Link>
-            <Link href="/admin/loja/produtos" className="hover:text-brand-green">Loja</Link>
+
+          <div className="order-last w-full md:order-none md:w-auto md:flex-1">
+            <AdminNav />
+          </div>
+
+          <div className="ml-auto flex items-center gap-2 md:ml-0">
+            <Suspense fallback={<AdminUserBadgeSkeleton />}>
+              <AdminUserBadge />
+            </Suspense>
             <LogoutButton />
-          </nav>
+          </div>
         </div>
       </header>
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8">{children}</main>

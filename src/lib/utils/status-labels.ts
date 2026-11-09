@@ -1,3 +1,4 @@
+import { ADMIN_ROLE } from "@/enums/admin-role.enum"
 import { EVENT_STATUS } from "@/enums/event-status.enum"
 import { REGISTRATION_STATUS } from "@/enums/registration-status.enum"
 
@@ -53,4 +54,14 @@ export function getRegistrationStatusLabel(status: REGISTRATION_STATUS | string)
 
 export function getRegistrationStatusBadgeClass(status: REGISTRATION_STATUS | string): string {
   return lookup(REGISTRATION_STATUS_BADGES, status) ?? FALLBACK_BADGE
+}
+
+const ADMIN_ROLE_LABELS: Record<ADMIN_ROLE, string> = {
+  [ADMIN_ROLE.ORGANIZATION]: "Organização",
+  [ADMIN_ROLE.OPERATOR]: "Operador",
+  [ADMIN_ROLE.SUPER_ADMIN]: "Super admin",
+}
+
+export function getAdminRoleLabel(role: ADMIN_ROLE | string): string {
+  return lookup(ADMIN_ROLE_LABELS, role) ?? role
 }

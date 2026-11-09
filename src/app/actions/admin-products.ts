@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { z } from "zod"
 
 import { productFormSchema, type ProductFormInput } from "@/lib/validations/product.schema"
+import { getMe } from "@/server/api/endpoints/admin-auth"
 import { isStoreConflictErrorName, type StoreConflictErrorName } from "@/server/errors"
 import { getStoreRepository } from "@/server/repositories/store.repository"
 import type { HttpResponse } from "@/types/http-response.interface"
@@ -23,7 +24,9 @@ const CONFLICT_ERROR_CODES: Record<StoreConflictErrorName, string> = {
 }
 
 export async function saveProductAction(input: ProductFormInput, id?: string): Promise<HttpResponse<{ id: string }>> {
-  // TODO(migracao): Task 7 — voltar a checar a sessão do admin (agora via API) antes de tudo.
+  // Sessão válida antes de tudo (o proxy não basta: actions são POSTs e o matcher pode mudar).
+  // Sem sessão, `getMe` redireciona ao login — fora do try/catch para o redirect não ser engolido.
+  await getMe()
 
   const parsedId = productIdSchema.safeParse(id)
   if (!parsedId.success) return { status: 400, error: "INVALID_INPUT", title: "Produto inválido" }

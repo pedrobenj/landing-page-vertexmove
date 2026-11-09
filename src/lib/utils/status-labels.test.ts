@@ -4,6 +4,7 @@ import { EVENT_STATUS } from "@/enums/event-status.enum"
 import { REGISTRATION_STATUS } from "@/enums/registration-status.enum"
 
 import {
+  getAdminRoleLabel,
   getEventStatusBadgeClass,
   getEventStatusLabel,
   getRegistrationStatusBadgeClass,
@@ -48,5 +49,11 @@ describe("status-labels", () => {
     expect(getRegistrationStatusLabel("novo_status")).toBe("novo_status")
     expect(getRegistrationStatusBadgeClass("novo_status")).toBe("bg-muted text-muted-foreground")
     expect(getEventStatusBadgeClass("novo_status")).toBe("bg-muted text-muted-foreground")
+  })
+
+  it("rotula os papéis do admin e devolve o valor para papel desconhecido", () => {
+    expect(getAdminRoleLabel("organizacao")).toBe("Organização")
+    expect(getAdminRoleLabel("operador")).toBe("Operador")
+    expect(getAdminRoleLabel("auditor")).toBe("auditor")
   })
 })

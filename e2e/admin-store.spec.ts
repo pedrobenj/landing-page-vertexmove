@@ -6,11 +6,11 @@ test.describe("Admin da loja", () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto("/admin/login")
-    await page.getByLabel("E-mail").fill("admin@vertex.dev")
-    await page.getByLabel("Senha").fill("vertex-admin-123")
+    await page.getByLabel("E-mail").fill("admin@example.com")
+    await page.getByLabel("Senha").fill("Vertex@Dev12345")
     await page.getByRole("button", { name: "Entrar" }).click()
-    // O login mock é só uma comparação; o que demora é compilar o /admin e o redirect no dev server
-    // quando a suíte roda em paralelo.
+    // O login vai ao mock da API VertexMove; o que demora é compilar o /admin e o redirect no dev server
+    // quando a suíte roda em paralelo. A loja do admin continua sobre o mock antigo até a Task 20.
     await expect(page).toHaveURL("/admin", { timeout: 20_000 })
   })
 

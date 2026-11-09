@@ -9,12 +9,20 @@ import { mockRoutes } from "./mock-routes"
 
 const API_PREFIX = "/api/v1"
 const MIN_DELAY_MS = 150
-const MAX_DELAY_MS = 300
+const DELAY_STEP_MS = 50
+const DELAY_STEPS = 4
+let latencyCounter = 0
 
-/** Atraso de rede simulado, para os skeletons aparecerem. Pulado nos testes. */
+/**
+ * Atraso de rede simulado, para os skeletons aparecerem. Pulado nos testes.
+ *
+ * Sem `Math.random()`: com Cache Components, o Next acusa erro ao ver valores aleatórios durante o
+ * prerender (ex.: o `getMe` do header do admin) e o overlay de erro do dev cobria botões nos e2e.
+ */
 async function simulateLatency(signal: AbortSignal | null | undefined): Promise<void> {
   if (env.NODE_ENV === "test") return
-  const delay = MIN_DELAY_MS + Math.random() * (MAX_DELAY_MS - MIN_DELAY_MS)
+  latencyCounter = (latencyCounter + 1) % DELAY_STEPS
+  const delay = MIN_DELAY_MS + latencyCounter * DELAY_STEP_MS
   await new Promise<void>((resolve, reject) => {
     const timer = setTimeout(resolve, delay)
     signal?.addEventListener(
