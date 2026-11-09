@@ -32,8 +32,9 @@ export function KitCard({ eventId, kit, canManage }: KitCardProps) {
         </p>
         {photos.length > 0 && (
           <ul className="flex flex-col gap-1">
-            {photos.map((photo) => (
-              <KitPhotoLink key={`${photo.ordem}-${photo.url}`} photo={photo} />
+            {photos.map((photo, index) => (
+              // A API não dá id às fotos: posição + URL é estável dentro do kit (fotos repetidas mudam de posição).
+              <KitPhotoLink key={`${index}-${photo.url}`} photo={photo} />
             ))}
           </ul>
         )}

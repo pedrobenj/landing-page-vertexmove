@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest"
 
-import { getEmptyKitPhoto, toKitFormValues } from "./kit-form-values"
+import { kitFormSchema } from "@/lib/validations/kit.schema"
 
-describe("kit form values", () => {
-  it("ordena as fotos e converte a ordem em texto", () => {
+import { toKitFormValues } from "./kit-form-values"
+
+describe("toKitFormValues", () => {
+  it("ordena as fotos pela ordem da API e a ida e volta renumera a partir de 1", () => {
     const values = toKitFormValues({
       id: 1,
       eventoId: 4,
@@ -11,17 +13,15 @@ describe("kit form values", () => {
       descricao: null,
       ativo: false,
       fotos: [
-        { url: "https://a.example/2.jpg", alt: "B", ordem: 2 },
-        { url: "https://a.example/1.jpg", alt: "A", ordem: 1 },
+        { url: "https://a.example/2.jpg", alt: "B", ordem: 20 },
+        { url: "https://a.example/1.jpg", alt: "A", ordem: 10 },
       ],
     })
     expect(values.descricao).toBe("")
-    expect(values.fotos.map((photo) => photo.alt)).toEqual(["A", "B"])
-    expect(values.fotos[0].ordem).toBe("1")
-  })
-
-  it("foto nova vai depois das existentes", () => {
-    expect(getEmptyKitPhoto([]).ordem).toBe("1")
-    expect(getEmptyKitPhoto([{ ordem: "3" }, { ordem: "x" }]).ordem).toBe("4")
+    expect(values.fotos).toEqual([
+      { url: "https://a.example/1.jpg", alt: "A" },
+      { url: "https://a.example/2.jpg", alt: "B" },
+    ])
+    expect(kitFormSchema.parse(values).fotos.map((photo) => photo.ordem)).toEqual([1, 2])
   })
 })

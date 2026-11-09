@@ -85,7 +85,7 @@ export async function updateAdminEventAction(id: number, input: AdminEventFormIn
   try {
     const previous = await getAdminEvent(parsedId.data)
     const data = await updateAdminEvent(parsedId.data, parsed.data)
-    revalidateEventTags(previous.slug, data.slug)
+    revalidateEventTags([previous.slug, data.slug])
     return { status: 200, data, title: "Corrida atualizada" }
   } catch (error) {
     return toErrorResponse(error, { title: SAVE_ERROR_TITLE, context: "updateAdminEventAction", fieldByCode: SAVE_FIELD_BY_CODE })

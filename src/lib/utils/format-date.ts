@@ -13,3 +13,11 @@ export function formatDate(date: Date | string, pattern = "d 'de' MMMM 'de' yyyy
 export function formatDateTime(date: Date | string): string {
   return formatDate(date, "dd/MM/yyyy 'às' HH:mm")
 }
+
+/**
+ * Como `formatDateTime`, mas sem lançar erro: instante inválido vindo da API vira `fallback` (a página
+ * não cai por um dado ruim).
+ */
+export function formatDateTimeSafe(date: Date | string, fallback = "data inválida"): string {
+  return Number.isNaN(new Date(date).getTime()) ? fallback : formatDateTime(date)
+}

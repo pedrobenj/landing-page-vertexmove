@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { type BaseSyntheticEvent, useRef, useTransition } from "react"
+import { type BaseSyntheticEvent, useEffect, useRef, useTransition } from "react"
 import type { FieldValues, UseFormReturn } from "react-hook-form"
 import { toast } from "sonner"
 
@@ -14,8 +14,12 @@ interface UseAdminFormSubmitOptions<TValues extends FieldValues, TData> {
   /** `defaultValues` do formulário: decide se o campo de um erro da API existe no form. */
   defaults: TValues
   errorTitle: string
-  /** Depois do sucesso (ex.: fechar o diálogo). Em seguida a página é atualizada (`router.refresh()`). */
-  onSuccess?: (data: TData) => void
+  /** Depois do sucesso (ex.: fechar o diálogo, navegar). Pode ser assíncrono: o envio espera. */
+  onSuccess?: (data: TData) => void | Promise<void>
+  /** Atualiza a página (`router.refresh()`) depois do sucesso. Padrão `true`; `false` quando `onSuccess` navega. */
+  refreshOnSuccess?: boolean
+  /** Avisa quando o envio começa e termina (ex.: travar o fechamento do FormDialog). */
+  onBusyChange?: (busy: boolean) => void
 }
 
 /**
@@ -24,7 +28,7 @@ interface UseAdminFormSubmitOptions<TValues extends FieldValues, TData> {
  */
 export function useAdminFormSubmit<TValues extends FieldValues, TOutput, TData>(
   form: UseFormReturn<TValues, unknown, TOutput>,
-  { submit, defaults, errorTitle, onSuccess }: UseAdminFormSubmitOptions<TValues, TData>,
+  { submit, defaults, errorTitle, onSuccess, refreshOnSuccess = true, onBusyChange }: UseAdminFormSubmitOptions<TValues, TData>,
 ) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -54,17 +58,26 @@ export function useAdminFormSubmit<TValues extends FieldValues, TOutput, TData>(
         }
 
         toast.success(response.title ?? "Salvo")
-        onSuccess?.(response.data)
-        router.refresh()
+        await onSuccess?.(response.data)
+        if (refreshOnSuccess) router.refresh()
       } finally {
         submittingRef.current = false
       }
     })
   }
 
+  const isBusy = form.formState.isSubmitting || isPending
+  const onBusyChangeRef = useRef(onBusyChange)
+  useEffect(() => {
+    onBusyChangeRef.current = onBusyChange
+  }, [onBusyChange])
+  useEffect(() => {
+    onBusyChangeRef.current?.(isBusy)
+  }, [isBusy])
+
   return {
     // Wrapper chamado só no evento (o handleSubmit não roda no render: o callback usa a ref).
     onSubmit: (event?: BaseSyntheticEvent) => form.handleSubmit(onSubmit)(event),
-    isBusy: form.formState.isSubmitting || isPending,
+    isBusy,
   }
 }

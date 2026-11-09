@@ -30,25 +30,24 @@ export async function DistanceList({ eventId, canManage }: DistanceListProps) {
     <DistanceFormDialog eventId={eventId} defaultValues={getEmptyDistanceForm(getNextOrder(distances))} />
   ) : undefined
 
-  if (distances.length === 0) {
-    return (
-      <EmptyState
-        icon={Route}
-        title="Nenhuma distância cadastrada."
-        description={canManage ? "Cadastre as distâncias (ex.: 5 km, 10 km) e os lotes de preço de cada uma." : undefined}
-        action={newDistance}
-      />
-    )
-  }
-
+  // O botão fica sempre no mesmo lugar (fora do estado vazio): depois do primeiro cadastro ele não é
+  // desmontado e o foco volta para ele ao fechar o diálogo, em vez de cair no <body>.
   return (
     <div className="flex flex-col gap-4">
       {newDistance && <div className="flex justify-end">{newDistance}</div>}
-      <ul className="flex flex-col gap-4">
-        {distances.map((distance) => (
-          <DistanceCard key={distance.id} eventId={eventId} distance={distance} canManage={canManage} />
-        ))}
-      </ul>
+      {distances.length === 0 ? (
+        <EmptyState
+          icon={Route}
+          title="Nenhuma distância cadastrada."
+          description={canManage ? "Cadastre as distâncias (ex.: 5 km, 10 km) e os lotes de preço de cada uma." : undefined}
+        />
+      ) : (
+        <ul className="flex flex-col gap-4">
+          {distances.map((distance) => (
+            <DistanceCard key={distance.id} eventId={eventId} distance={distance} canManage={canManage} />
+          ))}
+        </ul>
+      )}
     </div>
   )
 }

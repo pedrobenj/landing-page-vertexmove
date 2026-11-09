@@ -6,7 +6,7 @@ const valid: KitFormInput = {
   nome: "Kit completo",
   descricao: "",
   ativo: true,
-  fotos: [{ url: "https://cdn.example.com/kit.jpg", alt: "Camisa e medalha", ordem: "1" }],
+  fotos: [{ url: "https://cdn.example.com/kit.jpg", alt: "Camisa e medalha" }],
 }
 
 const errorPaths = (input: KitFormInput) => {
@@ -24,20 +24,30 @@ describe("kitFormSchema", () => {
     })
   })
 
+  it("a ordem é a posição na lista", () => {
+    const parsed = kitFormSchema.parse({
+      ...valid,
+      fotos: [
+        { url: "https://cdn.example.com/b.jpg", alt: "B" },
+        { url: "https://cdn.example.com/a.jpg", alt: "A" },
+      ],
+    })
+    expect(parsed.fotos.map((photo) => [photo.alt, photo.ordem])).toEqual([
+      ["B", 1],
+      ["A", 2],
+    ])
+  })
+
   it("aceita kit sem fotos", () => {
     expect(kitFormSchema.parse({ ...valid, fotos: [] }).fotos).toEqual([])
   })
 
   it("valida cada foto no próprio campo", () => {
-    expect(errorPaths({ ...valid, fotos: [{ url: "kit.jpg", alt: "", ordem: "x" }] })).toEqual([
-      "fotos.0.url",
-      "fotos.0.alt",
-      "fotos.0.ordem",
-    ])
+    expect(errorPaths({ ...valid, fotos: [{ url: "kit.jpg", alt: "" }] })).toEqual(["fotos.0.url", "fotos.0.alt"])
   })
 
   it("limita a quantidade de fotos", () => {
-    const fotos = Array.from({ length: MAX_KIT_PHOTOS + 1 }, (_, index) => ({ ...valid.fotos[0], ordem: String(index) }))
+    const fotos = Array.from({ length: MAX_KIT_PHOTOS + 1 }, () => ({ ...valid.fotos[0] }))
     expect(errorPaths({ ...valid, fotos })).toEqual(["fotos"])
   })
 })

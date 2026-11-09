@@ -17,7 +17,10 @@ export interface DocumentTypeGroup {
   label: string
   /** Versões da mais nova (vigência mais recente) para a mais antiga. */
   documents: EventDocument[]
-  /** Versão em vigor agora: a de vigência mais recente que já começou. `null` se nenhuma começou. */
+  /**
+   * Versão mais recente já em vigor (vigência mais recente que já começou); `null` se nenhuma começou.
+   * Só um indicativo no admin: quem decide qual versão o atleta aceita é o backend (critério a confirmar, §16).
+   */
   currentId: number | null
 }
 

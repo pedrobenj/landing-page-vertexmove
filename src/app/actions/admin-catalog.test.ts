@@ -50,7 +50,8 @@ describe("documentos e tamanhos de camisa", () => {
     expect(mocks.createDocument).toHaveBeenCalledWith(
       expect.objectContaining({ eventoId: 4, tipo: DOCUMENT_TYPE.LIABILITY_TERM, vigenteEm: "2026-11-10T00:00:00-03:00" }),
     )
-    expect(tags()).toEqual(["events", "event:corrida-x"])
+    // Documentos só aparecem na página da corrida: a lista não é invalidada.
+    expect(tags()).toEqual(["event:corrida-x"])
   })
 
   it("hash inválido → 422 no campo", async () => {
@@ -65,6 +66,13 @@ describe("documentos e tamanhos de camisa", () => {
     expect(response.status).toBe(201)
     expect(mocks.createShirtSize).toHaveBeenCalledWith({ codigo: "XXGG", descricao: null, ordem: 7, ativo: true })
     expect(tags()).toEqual(["events"])
+  })
+
+  it("código duplicado (409) aponta para o campo codigo", async () => {
+    const { ApiError } = await import("@/server/api/api-error")
+    mocks.createShirtSize.mockRejectedValue(new ApiError(409, "CODIGO_DUPLICADO", "duplicado"))
+    const response = await createShirtSizeAction({ codigo: "GG", descricao: "", ordem: "1", ativo: true })
+    expect(response).toMatchObject({ status: 409, field: "codigo", error: "Já existe um tamanho com este código." })
   })
 
   it("operador não altera tamanhos", async () => {

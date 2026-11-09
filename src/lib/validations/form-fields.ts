@@ -34,14 +34,20 @@ export const optionalTimeField = z
   .refine((value) => value === "" || HH_MM_PATTERN.test(value), "Informe um horário válido")
   .transform((value) => value || null)
 
+/** `"12"` → `12`, ou `null` se não for inteiro dentro do intervalo. */
+function parseIntInRange(value: string, min: number, max: number): number | null {
+  const number = /^\d+$/.test(value) ? Number(value) : Number.NaN
+  return Number.isSafeInteger(number) && number >= min && number <= max ? number : null
+}
+
 /** Inteiro digitado como texto, entre `min` e `max`. */
 export function intField(message: string, { min = 0, max = 1_000_000 }: { min?: number; max?: number } = {}) {
   return z
     .string()
     .trim()
     .transform((value, ctx) => {
-      const number = /^\d+$/.test(value) ? Number(value) : Number.NaN
-      if (!Number.isSafeInteger(number) || number < min || number > max) {
+      const number = parseIntInRange(value, min, max)
+      if (number === null) {
         ctx.addIssue({ code: "custom", message })
         return z.NEVER
       }
@@ -49,9 +55,23 @@ export function intField(message: string, { min = 0, max = 1_000_000 }: { min?: 
     })
 }
 
-/** Inteiro opcional: vazio vira `null`. */
-export function optionalIntField(message: string, options?: { min?: number; max?: number }) {
-  return z.union([z.string().trim().length(0).transform(() => null), intField(message, options)])
+/**
+ * Inteiro opcional: vazio vira `null`. Um só transform (e não `z.union`): no Zod 4 a união devolve
+ * `invalid_union` com a mensagem genérica em inglês em vez da nossa.
+ */
+export function optionalIntField(message: string, { min = 0, max = 1_000_000 }: { min?: number; max?: number } = {}) {
+  return z
+    .string()
+    .trim()
+    .transform((value, ctx) => {
+      if (value === "") return null
+      const number = parseIntInRange(value, min, max)
+      if (number === null) {
+        ctx.addIssue({ code: "custom", message })
+        return z.NEVER
+      }
+      return number
+    })
 }
 
 /** Preço em reais ("89,90", "89.90", "1.234,56") → centavos. Aceita zero (cortesia). */

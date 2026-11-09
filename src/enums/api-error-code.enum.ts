@@ -12,6 +12,8 @@ export enum API_ERROR_CODE {
   DUPLICATE_SLUG = "SLUG_DUPLICADO",
   INVALID_TRANSITION = "TRANSICAO_INVALIDA",
   SOLD_OUT = "DISTANCIA_ESGOTADA",
+  // Presumido (o mock não valida duplicidade de tamanho); confirmar com o backend.
+  DUPLICATE_SHIRT_SIZE = "CODIGO_DUPLICADO",
   // Gerados pelo BFF (não vêm da API).
   TIMEOUT = "TIMEOUT",
   UNAVAILABLE = "INDISPONIVEL",

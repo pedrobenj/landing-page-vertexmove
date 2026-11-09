@@ -1,24 +1,16 @@
 import type { KitFormInput, KitPhotoFormInput } from "@/lib/validations/kit.schema"
 import type { Kit } from "@/types/api/kit.interface"
 
-import { getNextOrder } from "./next-order"
-
 export const EMPTY_KIT_FORM: KitFormInput = { nome: "", descricao: "", ativo: true, fotos: [] }
 
-/** Foto nova no formulário, com a ordem depois das existentes. */
-export function getEmptyKitPhoto(photos: ReadonlyArray<{ ordem: string }>): KitPhotoFormInput {
-  const orders = photos.map((photo) => ({ ordem: Number(photo.ordem) || 0 }))
-  return { url: "", alt: "", ordem: String(getNextOrder(orders)) }
-}
+export const EMPTY_KIT_PHOTO: KitPhotoFormInput = { url: "", alt: "" }
 
-/** Kit da API → valores do formulário. */
+/** Kit da API → valores do formulário: fotos na ordem da API (a posição vira a `ordem` ao salvar). */
 export function toKitFormValues(kit: Kit): KitFormInput {
   return {
     nome: kit.nome,
     descricao: kit.descricao ?? "",
     ativo: kit.ativo,
-    fotos: [...kit.fotos]
-      .sort((a, b) => a.ordem - b.ordem)
-      .map((photo) => ({ url: photo.url, alt: photo.alt, ordem: String(photo.ordem) })),
+    fotos: [...kit.fotos].sort((a, b) => a.ordem - b.ordem).map((photo) => ({ url: photo.url, alt: photo.alt })),
   }
 }

@@ -33,7 +33,7 @@ export function DistanceFormDialog({ eventId, distance, defaultValues }: Distanc
         )
       }
     >
-      {(close) => <DistanceForm eventId={eventId} distanceId={distance?.id} defaultValues={defaultValues} onSaved={close} />}
+      {({ close, setBusy }) => <DistanceForm eventId={eventId} distanceId={distance?.id} defaultValues={defaultValues} onSaved={close} onBusyChange={setBusy} />}
     </FormDialog>
   )
 }

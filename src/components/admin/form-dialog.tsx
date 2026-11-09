@@ -16,8 +16,17 @@ interface FormDialogProps extends VariantProps<typeof buttonVariants> {
   triggerAriaLabel?: string
   title: string
   description?: string
-  /** O formulário; chama `close()` depois de salvar. */
-  children: (close: () => void) => ReactNode
+  /**
+   * O formulário. Recebe `close()` (chamar depois de salvar) e `setBusy()` (avisar que o envio está em
+   * andamento: enquanto ocupado, o diálogo ignora Esc, clique fora e o "X", para não ser fechado e
+   * reaberto no meio do envio e reenviado em duplicidade).
+   */
+  children: (controls: FormDialogControls) => ReactNode
+}
+
+export interface FormDialogControls {
+  close: () => void
+  setBusy: (busy: boolean) => void
 }
 
 /**
@@ -26,9 +35,17 @@ interface FormDialogProps extends VariantProps<typeof buttonVariants> {
  */
 export function FormDialog({ triggerLabel, triggerAriaLabel, title, description, variant = "outline", size, children }: FormDialogProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [isBusy, setBusy] = useState(false)
   const isDesktop = useIsDesktop()
-  const close = () => setIsOpen(false)
+  const close = () => {
+    setBusy(false)
+    setIsOpen(false)
+  }
   useCloseOnRouteChange(close, isOpen)
+  const handleOpenChange = (open: boolean) => {
+    if (open || !isBusy) setIsOpen(open)
+  }
+  const controls: FormDialogControls = { close, setBusy }
 
   const trigger = (
     <Button
@@ -48,23 +65,23 @@ export function FormDialog({ triggerLabel, triggerAriaLabel, title, description,
     <>
       {trigger}
       {isDesktop ? (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <Dialog open={isOpen} onOpenChange={handleOpenChange}>
           <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
             <DialogHeader>
               <DialogTitle>{title}</DialogTitle>
               {description && <DialogDescription>{description}</DialogDescription>}
             </DialogHeader>
-            {isOpen && children(close)}
+            {isOpen && children(controls)}
           </DialogContent>
         </Dialog>
       ) : (
-        <Drawer open={isOpen} onOpenChange={setIsOpen}>
+        <Drawer open={isOpen} onOpenChange={handleOpenChange}>
           <DrawerContent>
             <DrawerHeader>
               <DrawerTitle>{title}</DrawerTitle>
               {description && <DrawerDescription>{description}</DrawerDescription>}
             </DrawerHeader>
-            <div className="overflow-y-auto px-4 pb-6">{isOpen && children(close)}</div>
+            <div className="overflow-y-auto px-4 pb-6">{isOpen && children(controls)}</div>
           </DrawerContent>
         </Drawer>
       )}

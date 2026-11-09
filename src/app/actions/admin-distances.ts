@@ -20,7 +20,8 @@ const PRICE_TIER_ERROR_TITLE = "Não foi possível salvar o lote"
 
 /*
  * O slug para revalidar a página pública vem do servidor (`GET /admin/eventos/:id`), não do client.
- * Distâncias e lotes mudam preço e vagas exibidos no site: toda mutação revalida `event:<slug>`.
+ * Distâncias e lotes mudam preço e distâncias exibidos também nos cards da lista ("a partir de"):
+ * toda mutação revalida `events` e `event:<slug>`.
  */
 
 /** `POST /admin/eventos/:eventoId/distancias` */
@@ -105,16 +106,20 @@ export async function updatePriceTierAction(
   const denied = await ensureCanManageEvents(PRICE_TIER_ERROR_TITLE, "updatePriceTierAction")
   if (denied) return denied
 
-  const ids = [eventId, distanceId, priceTierId].map((id) => apiIdSchema.safeParse(id))
-  if (ids.some((id) => !id.success)) return invalidInputResponse(PRICE_TIER_ERROR_TITLE)
+  const parsedEventId = apiIdSchema.safeParse(eventId)
+  const parsedDistanceId = apiIdSchema.safeParse(distanceId)
+  const parsedPriceTierId = apiIdSchema.safeParse(priceTierId)
+  if (!parsedEventId.success || !parsedDistanceId.success || !parsedPriceTierId.success) {
+    return invalidInputResponse(PRICE_TIER_ERROR_TITLE)
+  }
   const parsed = priceTierFormSchema.safeParse(input)
   if (!parsed.success) return invalidInputResponse(PRICE_TIER_ERROR_TITLE, parsed.error.issues[0])
 
   try {
-    const event = await getAdminEvent(eventId)
-    await assertDistanceInEvent(event.id, distanceId)
-    await assertPriceTierInDistance(distanceId, priceTierId)
-    const data = await updatePriceTier(priceTierId, parsed.data)
+    const event = await getAdminEvent(parsedEventId.data)
+    await assertDistanceInEvent(event.id, parsedDistanceId.data)
+    await assertPriceTierInDistance(parsedDistanceId.data, parsedPriceTierId.data)
+    const data = await updatePriceTier(parsedPriceTierId.data, parsed.data)
     revalidateEventTags(event.slug)
     return { status: 200, data, title: "Lote atualizado" }
   } catch (error) {

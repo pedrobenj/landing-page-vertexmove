@@ -26,7 +26,7 @@ const kit: KitFormInput = {
   nome: "Kit completo",
   descricao: "",
   ativo: true,
-  fotos: [{ url: "https://cdn.example.com/kit.jpg", alt: "Camisa", ordem: "1" }],
+  fotos: [{ url: "https://cdn.example.com/kit.jpg", alt: "Camisa" }],
 }
 
 describe("admin kits actions", () => {
@@ -42,11 +42,11 @@ describe("admin kits actions", () => {
     const response = await createKitAction(4, kit)
     expect(response.status).toBe(201)
     expect(mocks.createKit).toHaveBeenCalledWith(4, expect.objectContaining({ fotos: [expect.objectContaining({ ordem: 1 })] }))
-    expect(mocks.updateTag).toHaveBeenCalledWith("event:corrida-x")
+    expect(mocks.updateTag.mock.calls.map(([tag]) => tag)).toEqual(["event:corrida-x"])
   })
 
   it("foto inválida → 422 com o caminho do campo", async () => {
-    const response = await createKitAction(4, { ...kit, fotos: [{ url: "kit.jpg", alt: "A", ordem: "1" }] })
+    const response = await createKitAction(4, { ...kit, fotos: [{ url: "kit.jpg", alt: "A" }] })
     expect(response).toMatchObject({ status: 422, field: "fotos.0.url" })
   })
 

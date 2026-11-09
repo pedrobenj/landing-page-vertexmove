@@ -32,7 +32,7 @@ export function ShirtSizeFormDialog({ shirtSize, defaultValues }: ShirtSizeFormD
         )
       }
     >
-      {(close) => <ShirtSizeForm shirtSizeId={shirtSize?.id} defaultValues={defaultValues} onSaved={close} />}
+      {({ close, setBusy }) => <ShirtSizeForm shirtSizeId={shirtSize?.id} defaultValues={defaultValues} onSaved={close} onBusyChange={setBusy} />}
     </FormDialog>
   )
 }

@@ -9,7 +9,7 @@ import { FormCheckboxField, FormTextField } from "@/components/admin"
 import { Button } from "@/components/ui/button"
 import { FieldError, FieldLegend, FieldSet } from "@/components/ui/field"
 import { useAdminFormSubmit } from "@/hooks/use-admin-form-submit"
-import { getEmptyKitPhoto } from "@/lib/utils/kit-form-values"
+import { EMPTY_KIT_PHOTO } from "@/lib/utils/kit-form-values"
 import { kitFormSchema, type KitFormData, type KitFormInput, MAX_KIT_PHOTOS } from "@/lib/validations/kit.schema"
 
 import { KitPhotoFieldRow } from "./kit-photo-field-row"
@@ -20,9 +20,11 @@ interface KitFormProps {
   kitId?: number
   defaultValues: KitFormInput
   onSaved: () => void
+  /** Envio em andamento (o FormDialog não fecha enquanto `true`). */
+  onBusyChange?: (busy: boolean) => void
 }
 
-export function KitForm({ eventId, kitId, defaultValues, onSaved }: KitFormProps) {
+export function KitForm({ eventId, kitId, defaultValues, onSaved, onBusyChange }: KitFormProps) {
   const form = useForm<KitFormInput, unknown, KitFormData>({
     resolver: zodResolver(kitFormSchema),
     defaultValues,
@@ -33,6 +35,7 @@ export function KitForm({ eventId, kitId, defaultValues, onSaved }: KitFormProps
     defaults: defaultValues,
     errorTitle: "Não foi possível salvar o kit",
     onSuccess: onSaved,
+    onBusyChange,
   })
   const idPrefix = `kit-${kitId ?? "new"}`
   const photosError = form.formState.errors.fotos
@@ -46,7 +49,7 @@ export function KitForm({ eventId, kitId, defaultValues, onSaved }: KitFormProps
 
         <FieldSet>
           <FieldLegend>Fotos</FieldLegend>
-          <p className="text-sm text-muted-foreground">Informe a URL de cada foto (o envio de arquivos ainda não está disponível).</p>
+          <p className="text-sm text-muted-foreground">Informe a URL de cada foto (o envio de arquivos ainda não está disponível). A ordem da lista é a ordem no site.</p>
           {photos.fields.length > 0 && (
             <ul className="flex flex-col gap-3">
               {photos.fields.map((photo, index) => (
@@ -54,7 +57,10 @@ export function KitForm({ eventId, kitId, defaultValues, onSaved }: KitFormProps
                   key={photo.id}
                   control={form.control}
                   index={index}
+                  total={photos.fields.length}
                   idPrefix={idPrefix}
+                  onMoveUp={() => photos.move(index, index - 1)}
+                  onMoveDown={() => photos.move(index, index + 1)}
                   onRemove={() => photos.remove(index)}
                 />
               ))}
@@ -66,7 +72,7 @@ export function KitForm({ eventId, kitId, defaultValues, onSaved }: KitFormProps
               type="button"
               variant="outline"
               className="w-fit"
-              onClick={() => photos.append(getEmptyKitPhoto(form.getValues("fotos")))}
+              onClick={() => photos.append({ ...EMPTY_KIT_PHOTO })}
             >
               <Plus aria-hidden="true" /> Adicionar foto
             </Button>

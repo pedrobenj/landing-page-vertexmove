@@ -1,7 +1,6 @@
 "use client"
 
 import { CalendarX } from "lucide-react"
-import { useEffect } from "react"
 
 import { CursorPagination } from "@/components/admin"
 import { EmptyState, ServerError } from "@/components/feedback"
@@ -26,12 +25,9 @@ export function EventsList({ canManage }: EventsListProps) {
   const setStatus = useAdminEventsFiltersStore((state) => state.setStatus)
   const nextPage = useAdminEventsFiltersStore((state) => state.nextPage)
   const prevPage = useAdminEventsFiltersStore((state) => state.prevPage)
-  const reset = useAdminEventsFiltersStore((state) => state.reset)
 
-  // Ao sair da lista, filtro e cursor voltam ao início: a próxima visita abre na primeira página
-  // (um cursor antigo pode apontar para uma página que ficou vazia depois de excluir corridas).
-  useEffect(() => reset, [reset])
-
+  // Filtro e página são mantidos ao voltar de "Editar". A exclusão reinicia o store (o cursor podia
+  // apontar para uma página que ficou vazia); se mesmo assim uma página vier vazia, há o atalho abaixo.
   const isFirstPage = cursor === null
 
   return (

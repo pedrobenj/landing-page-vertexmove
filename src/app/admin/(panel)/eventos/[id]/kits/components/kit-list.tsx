@@ -27,25 +27,23 @@ export async function KitList({ eventId, canManage }: KitListProps) {
 
   const newKit = canManage ? <KitFormDialog eventId={eventId} defaultValues={EMPTY_KIT_FORM} /> : undefined
 
-  if (kits.length === 0) {
-    return (
-      <EmptyState
-        icon={Package}
-        title="Nenhum kit cadastrado."
-        description={canManage ? "Sem kit, a inscrição segue só com a distância." : undefined}
-        action={newKit}
-      />
-    )
-  }
-
+  // O botão fica sempre no mesmo lugar (fora do estado vazio): o foco volta para ele ao fechar o diálogo.
   return (
     <div className="flex flex-col gap-4">
       {newKit && <div className="flex justify-end">{newKit}</div>}
-      <ul className="grid gap-4 md:grid-cols-2">
-        {kits.map((kit) => (
-          <KitCard key={kit.id} eventId={eventId} kit={kit} canManage={canManage} />
-        ))}
-      </ul>
+      {kits.length === 0 ? (
+        <EmptyState
+          icon={Package}
+          title="Nenhum kit cadastrado."
+          description={canManage ? "Sem kit, a inscrição segue só com a distância." : undefined}
+        />
+      ) : (
+        <ul className="grid gap-4 md:grid-cols-2">
+          {kits.map((kit) => (
+            <KitCard key={kit.id} eventId={eventId} kit={kit} canManage={canManage} />
+          ))}
+        </ul>
+      )}
     </div>
   )
 }

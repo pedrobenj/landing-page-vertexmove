@@ -41,6 +41,16 @@ describe("priceTierFormSchema", () => {
     expect(errorPaths({ ...valid, quantidadeTotal: "0" })).toEqual(["quantidadeTotal"])
   })
 
+  it("quantidade inválida mostra a mensagem em português (não o invalid_union do Zod)", () => {
+    for (const quantidadeTotal of ["0", "abc", "1,5"]) {
+      const result = priceTierFormSchema.safeParse({ ...valid, quantidadeTotal })
+      expect(result.success).toBe(false)
+      expect(result.error?.issues.map((issue) => issue.message)).toEqual([
+        "Quantidade deve ser um número inteiro maior que zero",
+      ])
+    }
+  })
+
   it("fim depois do início", () => {
     expect(errorPaths({ ...valid, fimEm: "2026-10-31T23:59" })).toEqual(["fimEm"])
     expect(errorPaths({ ...valid, inicioEm: "" })).toEqual(["inicioEm"])

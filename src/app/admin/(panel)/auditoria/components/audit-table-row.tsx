@@ -1,6 +1,6 @@
 import { TableCell, TableRow } from "@/components/ui/table"
 import { formatAuditEntity, getAuditActionLabel } from "@/lib/utils/audit-labels"
-import { formatDateTime } from "@/lib/utils/format-date"
+import { formatDateTimeSafe } from "@/lib/utils/format-date"
 import type { AuditEntry } from "@/types/api/audit-entry.interface"
 
 interface AuditTableRowProps {
@@ -13,7 +13,7 @@ export function AuditTableRow({ entry }: AuditTableRowProps) {
   return (
     <TableRow>
       <TableCell className="align-top text-xs whitespace-nowrap text-muted-foreground tabular-nums sm:text-sm">
-        <time dateTime={entry.criadoEm}>{formatDateTime(entry.criadoEm)}</time>
+        <time dateTime={entry.criadoEm}>{formatDateTimeSafe(entry.criadoEm)}</time>
       </TableCell>
       <TableCell className="whitespace-normal">
         <p className="font-semibold text-foreground">{getAuditActionLabel(entry.acao)}</p>

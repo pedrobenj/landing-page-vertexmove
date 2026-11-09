@@ -29,7 +29,7 @@ export async function createDocumentAction(eventId: number, input: DocumentFormI
   try {
     const event = await getAdminEvent(parsedEventId.data)
     const data = await createDocument({ ...parsed.data, eventoId: event.id })
-    revalidateEventTags(event.slug)
+    revalidateEventTags(event.slug, { includeList: false })
     return { status: 201, data, title: "Nova versão publicada" }
   } catch (error) {
     return toErrorResponse(error, { title: DOCUMENT_ERROR_TITLE, context: "createDocumentAction" })

@@ -14,6 +14,7 @@ const MESSAGES: Partial<Record<string, string>> = {
   [API_ERROR_CODE.DOCUMENT_ACCEPTANCE_REQUIRED]: "Aceite o regulamento e o termo de responsabilidade para continuar.",
   [API_ERROR_CODE.INVALID_DATA]: "Confira os dados informados e tente novamente.",
   [API_ERROR_CODE.DUPLICATE_SLUG]: "Já existe um evento com este endereço (slug).",
+  [API_ERROR_CODE.DUPLICATE_SHIRT_SIZE]: "Já existe um tamanho com este código.",
   [API_ERROR_CODE.INVALID_TRANSITION]: "Esta ação não é permitida no status atual do evento.",
   [API_ERROR_CODE.SOLD_OUT]: "As vagas desta distância esgotaram.",
   [API_ERROR_CODE.TIMEOUT]: "A conexão demorou demais. Tente novamente.",

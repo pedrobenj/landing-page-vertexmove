@@ -14,9 +14,11 @@ interface ShirtSizeFormProps {
   shirtSizeId?: number
   defaultValues: ShirtSizeFormInput
   onSaved: () => void
+  /** Envio em andamento (o FormDialog não fecha enquanto `true`). */
+  onBusyChange?: (busy: boolean) => void
 }
 
-export function ShirtSizeForm({ shirtSizeId, defaultValues, onSaved }: ShirtSizeFormProps) {
+export function ShirtSizeForm({ shirtSizeId, defaultValues, onSaved, onBusyChange }: ShirtSizeFormProps) {
   const form = useForm<ShirtSizeFormInput, unknown, ShirtSizeFormData>({
     resolver: zodResolver(shirtSizeFormSchema),
     defaultValues,
@@ -26,6 +28,7 @@ export function ShirtSizeForm({ shirtSizeId, defaultValues, onSaved }: ShirtSize
     defaults: defaultValues,
     errorTitle: "Não foi possível salvar o tamanho",
     onSuccess: onSaved,
+    onBusyChange,
   })
   const idPrefix = `shirt-size-${shirtSizeId ?? "new"}`
 

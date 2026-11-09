@@ -35,10 +35,18 @@ test.describe("Admin — kits", () => {
       "https://cdn.example.com/kits/camisa.jpg",
     )
 
-    // Edição traz a foto salva no formulário.
+    // Edição traz a foto salva; uma segunda foto sobe para o 1º lugar (a ordem é a posição na lista).
     await card.getByRole("button", { name: `Editar kit ${nome}` }).click()
-    await expect(page.getByRole("dialog", { name: `Editar ${nome}` }).getByLabel("Descrição da foto")).toHaveValue(
-      "Camisa oficial azul",
-    )
+    const editDialog = page.getByRole("dialog", { name: `Editar ${nome}` })
+    await expect(editDialog.getByLabel("Descrição da foto")).toHaveValue("Camisa oficial azul")
+    await editDialog.getByRole("button", { name: "Adicionar foto" }).click()
+    await editDialog.getByLabel("URL da foto").nth(1).fill("https://cdn.example.com/kits/medalha.jpg")
+    await editDialog.getByLabel("Descrição da foto").nth(1).fill("Medalha de finisher")
+    await editDialog.getByRole("button", { name: "Subir foto 2" }).click()
+    await expect(editDialog.getByLabel("Descrição da foto").first()).toHaveValue("Medalha de finisher")
+    await editDialog.getByRole("button", { name: "Salvar kit" }).click()
+
+    await expect(card.getByText("2 fotos")).toBeVisible({ timeout: 20_000 })
+    await expect(card.getByRole("link")).toHaveText([/Medalha de finisher/, /Camisa oficial azul/])
   })
 })

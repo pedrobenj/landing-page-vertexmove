@@ -15,9 +15,11 @@ interface DistanceFormProps {
   distanceId?: number
   defaultValues: DistanceFormInput
   onSaved: () => void
+  /** Envio em andamento (o FormDialog não fecha enquanto `true`). */
+  onBusyChange?: (busy: boolean) => void
 }
 
-export function DistanceForm({ eventId, distanceId, defaultValues, onSaved }: DistanceFormProps) {
+export function DistanceForm({ eventId, distanceId, defaultValues, onSaved, onBusyChange }: DistanceFormProps) {
   const form = useForm<DistanceFormInput, unknown, DistanceFormData>({
     resolver: zodResolver(distanceFormSchema),
     defaultValues,
@@ -28,6 +30,7 @@ export function DistanceForm({ eventId, distanceId, defaultValues, onSaved }: Di
     defaults: defaultValues,
     errorTitle: "Não foi possível salvar a distância",
     onSuccess: onSaved,
+    onBusyChange,
   })
   const idPrefix = `distance-${distanceId ?? "new"}`
 

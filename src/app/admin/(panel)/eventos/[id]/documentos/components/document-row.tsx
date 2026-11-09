@@ -1,7 +1,7 @@
 import { ExternalLink } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
-import { formatDateTime } from "@/lib/utils/format-date"
+import { formatDateTimeSafe } from "@/lib/utils/format-date"
 import type { EventDocument } from "@/types/api/document.interface"
 
 interface DocumentRowProps {
@@ -16,9 +16,9 @@ export function DocumentRow({ document, isCurrent }: DocumentRowProps) {
         <div className="flex flex-wrap items-center gap-2">
           <p className="font-semibold text-foreground">{document.titulo}</p>
           <Badge variant="outline">v{document.versao}</Badge>
-          {isCurrent && <Badge className="bg-cta text-cta-foreground">Vigente</Badge>}
+          {isCurrent && <Badge className="bg-cta text-cta-foreground">Mais recente em vigor</Badge>}
         </div>
-        <p className="text-xs text-muted-foreground tabular-nums">Vale a partir de {formatDateTime(document.vigenteEm)}</p>
+        <p className="text-xs text-muted-foreground tabular-nums">Vale a partir de {formatDateTimeSafe(document.vigenteEm)}</p>
         <p className="font-mono text-[0.7rem] break-all text-muted-foreground">SHA-256 {document.hashSha256}</p>
       </div>
       <a

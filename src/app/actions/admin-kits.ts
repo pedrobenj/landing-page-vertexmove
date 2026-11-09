@@ -14,7 +14,7 @@ import type { HttpResponse } from "@/types/http-response.interface"
 
 const KIT_ERROR_TITLE = "Não foi possível salvar o kit"
 
-/** `POST /admin/eventos/:eventoId/kits`. Os kits aparecem na página pública: revalida `event:<slug>`. */
+/** `POST /admin/eventos/:eventoId/kits`. Os kits só aparecem na página da corrida: revalida `event:<slug>`. */
 export async function createKitAction(eventId: number, input: KitFormInput): Promise<HttpResponse<Kit>> {
   const denied = await ensureCanManageEvents(KIT_ERROR_TITLE, "createKitAction")
   if (denied) return denied
@@ -27,7 +27,7 @@ export async function createKitAction(eventId: number, input: KitFormInput): Pro
   try {
     const event = await getAdminEvent(parsedEventId.data)
     const data = await createKit(event.id, parsed.data)
-    revalidateEventTags(event.slug)
+    revalidateEventTags(event.slug, { includeList: false })
     return { status: 201, data, title: "Kit cadastrado" }
   } catch (error) {
     return toErrorResponse(error, { title: KIT_ERROR_TITLE, context: "createKitAction" })
@@ -49,7 +49,7 @@ export async function updateKitAction(eventId: number, kitId: number, input: Kit
     const event = await getAdminEvent(parsedEventId.data)
     await assertKitInEvent(event.id, parsedKitId.data)
     const data = await updateKit(parsedKitId.data, parsed.data)
-    revalidateEventTags(event.slug)
+    revalidateEventTags(event.slug, { includeList: false })
     return { status: 200, data, title: "Kit atualizado" }
   } catch (error) {
     return toErrorResponse(error, { title: KIT_ERROR_TITLE, context: "updateKitAction" })

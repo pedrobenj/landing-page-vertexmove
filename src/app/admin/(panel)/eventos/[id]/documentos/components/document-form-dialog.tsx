@@ -27,7 +27,7 @@ export function DocumentFormDialog({ eventId, typeLabel, defaultValues }: Docume
         </>
       }
     >
-      {(close) => <DocumentForm eventId={eventId} defaultValues={defaultValues} onSaved={close} />}
+      {({ close, setBusy }) => <DocumentForm eventId={eventId} defaultValues={defaultValues} onSaved={close} onBusyChange={setBusy} />}
     </FormDialog>
   )
 }

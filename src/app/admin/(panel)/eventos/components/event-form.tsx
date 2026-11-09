@@ -3,15 +3,14 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useQueryClient } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
-import { useRef, useState, useTransition } from "react"
+import { useRef } from "react"
 import { useForm } from "react-hook-form"
-import { toast } from "sonner"
 
 import { createAdminEventAction, updateAdminEventAction } from "@/app/actions/admin-events"
 import { FormTextField } from "@/components/admin"
 import { Button } from "@/components/ui/button"
+import { useAdminFormSubmit } from "@/hooks/use-admin-form-submit"
 import { toAdminEventFormValues } from "@/lib/utils/admin-event-form-values"
-import { isFormField } from "@/lib/utils/is-form-field"
 import { queryKeys } from "@/lib/utils/query-keys"
 import { slugify } from "@/lib/utils/slugify"
 import { adminEventFormSchema, type AdminEventFormData, type AdminEventFormInput } from "@/lib/validations/admin-event.schema"
@@ -29,16 +28,26 @@ interface EventFormProps {
 export function EventForm({ defaultValues, eventId, readOnly = false }: EventFormProps) {
   const router = useRouter()
   const queryClient = useQueryClient()
-  const [isPending, startTransition] = useTransition()
-  const [isRedirecting, setIsRedirecting] = useState(false)
-  // Trava síncrona contra duplo envio (o estado do React só atualiza no próximo render).
-  const submittingRef = useRef(false)
   // Na edição o slug já existe e não muda sozinho; no cadastro segue o nome até ser editado à mão.
   const slugEditedRef = useRef(eventId !== undefined)
 
   const form = useForm<AdminEventFormInput, unknown, AdminEventFormData>({
     resolver: zodResolver(adminEventFormSchema),
     defaultValues,
+  })
+
+  const { onSubmit, isBusy } = useAdminFormSubmit(form, {
+    submit: (values) => (eventId === undefined ? createAdminEventAction(values) : updateAdminEventAction(eventId, values)),
+    defaults: defaultValues,
+    errorTitle: "Não foi possível salvar a corrida",
+    // Cadastro navega para a edição (a transição segura o "Salvando..." até a nova página);
+    // edição reinicia o form com o que a API devolveu e atualiza a página.
+    refreshOnSuccess: eventId !== undefined,
+    onSuccess: async (event) => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.admin.all })
+      if (eventId === undefined) router.push(`/admin/eventos/${event.id}`)
+      else form.reset(toAdminEventFormValues(event))
+    },
   })
 
   function handleNameChange(nome: string) {
@@ -51,50 +60,9 @@ export function EventForm({ defaultValues, eventId, readOnly = false }: EventFor
     slugEditedRef.current = slug !== ""
   }
 
-  function onSubmit() {
-    if (submittingRef.current) return
-    submittingRef.current = true
-
-    startTransition(async () => {
-      let response: Awaited<ReturnType<typeof createAdminEventAction>>
-      try {
-        // Valores crus do formulário: o servidor valida e converte de novo.
-        const values = form.getValues()
-        response = eventId === undefined ? await createAdminEventAction(values) : await updateAdminEventAction(eventId, values)
-      } catch {
-        submittingRef.current = false
-        toast.error("Não foi possível salvar a corrida. Verifique sua conexão e tente de novo.")
-        return
-      }
-
-      if (!response.data) {
-        submittingRef.current = false
-        if (response.field && isFormField(defaultValues, response.field)) {
-          form.setError(response.field, { message: response.error }, { shouldFocus: true })
-        }
-        toast.error(response.title ?? "Não foi possível salvar a corrida", { description: response.error })
-        return
-      }
-
-      toast.success(response.title ?? "Corrida salva")
-      await queryClient.invalidateQueries({ queryKey: queryKeys.admin.all })
-
-      if (eventId === undefined) {
-        setIsRedirecting(true)
-        router.push(`/admin/eventos/${response.data.id}`)
-        return
-      }
-      submittingRef.current = false
-      form.reset(toAdminEventFormValues(response.data))
-      router.refresh()
-    })
-  }
-
-  const isBusy = form.formState.isSubmitting || isPending || isRedirecting
-
   return (
     <form
-      onSubmit={(event) => form.handleSubmit(onSubmit)(event)}
+      onSubmit={onSubmit}
       noValidate
       aria-label="Dados da corrida"
       className="flex max-w-4xl flex-col gap-6"

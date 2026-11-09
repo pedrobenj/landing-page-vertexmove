@@ -33,7 +33,7 @@ export function KitFormDialog({ eventId, kit, defaultValues }: KitFormDialogProp
         )
       }
     >
-      {(close) => <KitForm eventId={eventId} kitId={kit?.id} defaultValues={defaultValues} onSaved={close} />}
+      {({ close, setBusy }) => <KitForm eventId={eventId} kitId={kit?.id} defaultValues={defaultValues} onSaved={close} onBusyChange={setBusy} />}
     </FormDialog>
   )
 }

@@ -34,8 +34,8 @@ export function PriceTierFormDialog({ eventId, distance, priceTier, defaultValue
         )
       }
     >
-      {(close) => (
-        <PriceTierForm eventId={eventId} distanceId={distance.id} priceTierId={priceTier?.id} defaultValues={defaultValues} onSaved={close} />
+      {({ close, setBusy }) => (
+        <PriceTierForm eventId={eventId} distanceId={distance.id} priceTierId={priceTier?.id} defaultValues={defaultValues} onSaved={close} onBusyChange={setBusy} />
       )}
     </FormDialog>
   )

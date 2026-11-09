@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge"
 import { formatCurrency } from "@/lib/utils/format-currency"
-import { formatDateTime } from "@/lib/utils/format-date"
+import { formatDateTimeSafe } from "@/lib/utils/format-date"
 import { toPriceTierFormValues } from "@/lib/utils/price-tier-form-values"
 import type { Distance } from "@/types/api/distance.interface"
 import type { PriceTier } from "@/types/api/price-tier.interface"
@@ -24,7 +24,7 @@ export function PriceTierRow({ eventId, distance, tier, canManage }: PriceTierRo
           {!tier.ativo && <Badge variant="outline">Inativo</Badge>}
         </div>
         <p className="text-xs text-muted-foreground tabular-nums">
-          {formatDateTime(tier.inicioEm)} até {formatDateTime(tier.fimEm)}
+          {formatDateTimeSafe(tier.inicioEm)} até {formatDateTimeSafe(tier.fimEm)}
           {" · "}
           {tier.quantidadeTotal === null ? "sem limite próprio" : `${tier.quantidadeTotal} inscrições`}
         </p>

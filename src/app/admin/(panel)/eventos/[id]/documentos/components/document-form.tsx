@@ -18,10 +18,12 @@ interface DocumentFormProps {
   eventId: number
   defaultValues: DocumentFormInput
   onSaved: () => void
+  /** Envio em andamento (o FormDialog não fecha enquanto `true`). */
+  onBusyChange?: (busy: boolean) => void
 }
 
 /** Nova versão de regulamento ou termo (não há edição: documentos são imutáveis). */
-export function DocumentForm({ eventId, defaultValues, onSaved }: DocumentFormProps) {
+export function DocumentForm({ eventId, defaultValues, onSaved, onBusyChange }: DocumentFormProps) {
   const form = useForm<DocumentFormInput, unknown, DocumentFormData>({
     resolver: zodResolver(documentFormSchema),
     defaultValues,
@@ -31,6 +33,7 @@ export function DocumentForm({ eventId, defaultValues, onSaved }: DocumentFormPr
     defaults: defaultValues,
     errorTitle: "Não foi possível publicar a nova versão",
     onSuccess: onSaved,
+    onBusyChange,
   })
   const idPrefix = "document-new"
 
@@ -43,12 +46,28 @@ export function DocumentForm({ eventId, defaultValues, onSaved }: DocumentFormPr
           render={({ field, fieldState }) => (
             <FieldSet className="sm:col-span-2" data-invalid={fieldState.invalid}>
               <FieldLegend variant="label">Tipo</FieldLegend>
-              <RadioGroup name={field.name} value={field.value} onValueChange={field.onChange} className="flex flex-col gap-2 sm:flex-row sm:gap-6">
+              <RadioGroup
+                // O setError foca o campo: leva o foco ao rádio marcado (ou ao primeiro).
+                ref={(element) =>
+                  field.ref({
+                    focus: () =>
+                      element?.querySelector<HTMLButtonElement>('[role="radio"][data-state="checked"], [role="radio"]')?.focus(),
+                  })
+                }
+                name={field.name}
+                value={field.value}
+                onValueChange={field.onChange}
+                onBlur={field.onBlur}
+                aria-invalid={fieldState.invalid}
+                aria-describedby={fieldState.invalid ? `${idPrefix}-tipo-error` : undefined}
+                aria-label="Tipo"
+                className="flex flex-col gap-2 sm:flex-row sm:gap-6"
+              >
                 {DOCUMENT_TYPE_OPTIONS.map((option) => (
                   <DocumentTypeOption key={option.value} idPrefix={idPrefix} value={option.value} label={option.label} />
                 ))}
               </RadioGroup>
-              <FieldError errors={[fieldState.error]} />
+              <FieldError id={`${idPrefix}-tipo-error`} errors={[fieldState.error]} />
             </FieldSet>
           )}
         />

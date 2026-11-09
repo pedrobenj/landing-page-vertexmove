@@ -16,9 +16,11 @@ interface PriceTierFormProps {
   priceTierId?: number
   defaultValues: PriceTierFormInput
   onSaved: () => void
+  /** Envio em andamento (o FormDialog não fecha enquanto `true`). */
+  onBusyChange?: (busy: boolean) => void
 }
 
-export function PriceTierForm({ eventId, distanceId, priceTierId, defaultValues, onSaved }: PriceTierFormProps) {
+export function PriceTierForm({ eventId, distanceId, priceTierId, defaultValues, onSaved, onBusyChange }: PriceTierFormProps) {
   const form = useForm<PriceTierFormInput, unknown, PriceTierFormData>({
     resolver: zodResolver(priceTierFormSchema),
     defaultValues,
@@ -31,6 +33,7 @@ export function PriceTierForm({ eventId, distanceId, priceTierId, defaultValues,
     defaults: defaultValues,
     errorTitle: "Não foi possível salvar o lote",
     onSuccess: onSaved,
+    onBusyChange,
   })
   const idPrefix = `tier-${distanceId}-${priceTierId ?? "new"}`
 
