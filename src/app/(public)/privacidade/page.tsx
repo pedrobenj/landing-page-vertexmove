@@ -1,9 +1,27 @@
 import type { Metadata } from "next"
 
-import { PagePlaceholder } from "@/components/layout"
+import { SectionBand, SectionHeading } from "@/components/sections"
+import { formatApiDate, PRIVACY_POLICY_UPDATED_AT } from "@/lib/utils"
 
-export const metadata: Metadata = { title: "Política de privacidade" }
+import { PrivacyPolicyContent } from "./components"
+
+export const metadata: Metadata = {
+  title: "Política de privacidade",
+  description: "Como o Vertex Grupo de Corrida coleta, usa e protege seus dados pessoais, conforme a LGPD.",
+  alternates: { canonical: "/privacidade" },
+}
 
 export default function PrivacyPage() {
-  return <PagePlaceholder title="Política de privacidade" description="Como coletamos e tratamos seus dados, conforme a LGPD." />
+  return (
+    <SectionBand aria-labelledby="privacidade-title" className="border-t-0" containerClassName="max-w-3xl">
+      <SectionHeading
+        as="h1"
+        id="privacidade-title"
+        eyebrow="LGPD"
+        title="Política de privacidade"
+        description={`Seus dados são tratados com cuidado e só para o que é necessário. Última atualização: ${formatApiDate(PRIVACY_POLICY_UPDATED_AT)}.`}
+      />
+      <PrivacyPolicyContent />
+    </SectionBand>
+  )
 }
