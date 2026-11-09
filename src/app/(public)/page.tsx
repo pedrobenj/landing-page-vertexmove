@@ -1,22 +1,32 @@
 import {
-  FeaturedProductsSection,
-  FinalCtaSection,
+  CommunityStatsSection,
   HeroSection,
+  HighlightCardsSection,
   HowItWorksSection,
-  LookupSection,
+  MoreThanRunningSection,
   OpenEventsSection,
+  PartnerRacesSection,
+  PartnersStripSection,
+  PastEventsSection,
+  StoreBandSection,
+  TrackRegistrationBand,
 } from "./components"
 
-// TODO: seções "Sobre o Vertex" e FAQ (aguardando textos do cliente).
+/** Home na ordem da referência (CLAUDE.md §2). */
 export default function HomePage() {
   return (
     <>
       <HeroSection />
-      <LookupSection />
+      <HighlightCardsSection />
+      <PastEventsSection />
       <OpenEventsSection />
       <HowItWorksSection />
-      <FeaturedProductsSection />
-      <FinalCtaSection />
+      <TrackRegistrationBand />
+      <PartnersStripSection />
+      <StoreBandSection />
+      <MoreThanRunningSection />
+      <PartnerRacesSection />
+      <CommunityStatsSection />
     </>
   )
 }

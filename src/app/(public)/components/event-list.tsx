@@ -1,18 +1,17 @@
-// TODO(migracao): Task 9
-import type { OpenEvent } from "@/types/open-event.interface"
+import type { PublicEvent } from "@/types/api/event.interface"
 
-import { EventListItem } from "./event-list-item"
+import { EventCard } from "./event-card"
 
 interface EventListProps {
-  events: OpenEvent[]
+  events: PublicEvent[]
 }
 
 export function EventList({ events }: EventListProps) {
   return (
-    <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {events.map((event) => (
-        <li key={event.id}>
-          <EventListItem event={event} />
+        <li key={event.slug}>
+          <EventCard event={event} />
         </li>
       ))}
     </ul>

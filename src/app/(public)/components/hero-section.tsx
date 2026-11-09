@@ -1,28 +1,37 @@
+import { ArrowRight } from "lucide-react"
 import Link from "next/link"
 
 import { Chevron } from "@/components/brand"
+import { PillBadge } from "@/components/sections"
 import { Button } from "@/components/ui/button"
 
+// TODO(cliente): confirmar a frase do hero e a linha sobre o grupo.
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden bg-brand-navy text-white">
-      <Chevron className="pointer-events-none absolute -right-16 -bottom-10 w-80 opacity-15 sm:w-[28rem]" />
-      <div className="relative mx-auto flex max-w-6xl flex-col gap-6 px-4 py-16 sm:py-24">
-        <p className="text-xs font-semibold uppercase tracking-widest text-brand-green">
-          Vertex Grupo de Corrida · Fortaleza/CE
-        </p>
-        <h1 className="max-w-2xl text-4xl leading-tight font-extrabold uppercase sm:text-5xl">
-          Sua próxima corrida começa aqui
+    <section aria-labelledby="hero-title" className="relative overflow-hidden bg-background">
+      <Chevron className="pointer-events-none absolute top-1/2 -right-24 w-[30rem] -translate-y-1/2 opacity-[0.08] sm:-right-16 lg:w-[38rem]" />
+      <div className="relative mx-auto flex max-w-6xl flex-col items-start gap-7 px-4 py-16 sm:py-24 lg:py-28">
+        <PillBadge tone="soft" dot>
+          Vertex Grupo de Corrida
+        </PillBadge>
+        <h1
+          id="hero-title"
+          className="font-heading text-5xl leading-[0.95] font-black tracking-tight text-brand-navy-deep sm:text-7xl lg:text-8xl"
+        >
+          Corra. Conecte-se. Evolua.
         </h1>
-        <p className="max-w-xl text-white/80">
-          Escolha a prova, a distância e o kit, pague com Pix e acompanhe sua inscrição pelo WhatsApp ou CPF.
+        <p className="max-w-xl text-lg text-muted-foreground">
+          Corridas de rua em Fortaleza, abertas a todos os ritmos. Vem correr com a gente!
         </p>
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Button asChild variant="cta" size="xl">
-            <Link href="#corridas">Quero me inscrever</Link>
+        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+          <Button asChild variant="cta" size="xl" className="normal-case tracking-normal">
+            <Link href="#corridas">
+              Quero me inscrever
+              <ArrowRight aria-hidden="true" />
+            </Link>
           </Button>
-          <Button asChild variant="outline" size="xl" className="border-white/40 bg-transparent text-white hover:bg-white/10 hover:text-white">
-            <Link href="/consulta">Consultar minha inscrição</Link>
+          <Button asChild variant="outline" size="xl" className="shadow-sm">
+            <Link href="/sobre">Conheça nossa história</Link>
           </Button>
         </div>
       </div>

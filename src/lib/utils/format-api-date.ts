@@ -21,6 +21,13 @@ export function formatApiDateLong(value: string): string {
   return format(parseApiDate(value), "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR })
 }
 
+/** `"2026-09-06" → "06 DE SET. DE 2026"` (rótulo curto em caixa alta). Lança erro se a data for inválida. */
+export function formatApiDateShort(value: string): string {
+  const date = parseApiDate(value)
+  const month = format(date, "MMM", { locale: ptBR }).replace(/\.$/, "")
+  return `${format(date, "dd")} de ${month}. de ${format(date, "yyyy")}`.toUpperCase()
+}
+
 /** `"06/12/2026" → "2026-12-06"`. Lança erro se a data não existir. */
 export function toApiDate(value: string): string {
   const date = parse(value, BR_DATE, new Date(2000, 0, 1))

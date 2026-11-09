@@ -7,17 +7,12 @@ interface HowItWorksItemProps {
 
 export function HowItWorksItem({ step, position }: HowItWorksItemProps) {
   return (
-    <li className="flex gap-4">
-      <span
-        aria-hidden="true"
-        className="flex size-10 shrink-0 items-center justify-center rounded-full bg-cta font-heading font-extrabold text-cta-foreground"
-      >
-        {position}
+    <li className="flex flex-col gap-3 rounded-2xl border bg-card p-6 shadow-sm">
+      <span aria-hidden="true" className="font-heading text-5xl leading-none font-black text-brand-green-text">
+        {String(position).padStart(2, "0")}
       </span>
-      <div>
-        <h3 className="font-bold text-brand-navy">{step.title}</h3>
-        <p className="text-sm text-muted-foreground">{step.description}</p>
-      </div>
+      <h3 className="font-heading text-lg font-black text-brand-navy-deep">{step.title}</h3>
+      <p className="text-sm text-muted-foreground">{step.description}</p>
     </li>
   )
 }

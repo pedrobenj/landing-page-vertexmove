@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { formatApiDate, formatApiDateLong, toApiDate } from "./format-api-date"
+import { formatApiDate, formatApiDateLong, formatApiDateShort, toApiDate } from "./format-api-date"
 
 describe("format-api-date", () => {
   it("formata data da API como dd/MM/yyyy sem deslocar o fuso", () => {
@@ -10,6 +10,13 @@ describe("format-api-date", () => {
 
   it("formata por extenso com dia da semana", () => {
     expect(formatApiDateLong("2026-12-06")).toBe("domingo, 6 de dezembro de 2026")
+  })
+
+  it("formata no rótulo curto em caixa alta", () => {
+    expect(formatApiDateShort("2026-09-06")).toBe("06 DE SET. DE 2026")
+    expect(formatApiDateShort("2026-05-10")).toBe("10 DE MAI. DE 2026")
+    expect(formatApiDateShort("2025-12-07")).toBe("07 DE DEZ. DE 2025")
+    expect(() => formatApiDateShort("2026-13-01")).toThrow(Error)
   })
 
   it("converte dd/MM/yyyy para YYYY-MM-DD", () => {
