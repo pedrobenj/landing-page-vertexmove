@@ -12,6 +12,8 @@
   --font-heading: var(--font-montserrat);
   --color-brand-navy: var(--brand-navy);
   --color-brand-green: var(--brand-green);
+  --color-brand-navy-deep: var(--brand-navy-deep);
+  --color-brand-green-text: var(--brand-green-text);
   --color-cta: var(--cta);
   --color-cta-foreground: var(--cta-foreground);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -56,6 +58,10 @@
   /* Marca — hex aproximados da logo (confirmar com arquivo vetorial) */
   --brand-navy: #0b3275;
   --brand-green: #7ac21e;
+  /* Navy mais profundo: header, rodapé e faixas escuras. */
+  --brand-navy-deep: #071f4a;
+  /* Verde escurecido (~5.2:1 sobre branco, AA): eyebrows e ícones sobre fundo claro. */
+  --brand-green-text: #4d7a12;
 
   --background: #ffffff;
   --foreground: var(--color-slate-900);

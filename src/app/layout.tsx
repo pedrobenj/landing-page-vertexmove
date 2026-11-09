@@ -12,7 +12,7 @@ const inter = Inter({ variable: "--font-inter", subsets: ["latin"] })
 const montserrat = Montserrat({
   variable: "--font-montserrat",
   subsets: ["latin"],
-  weight: ["700", "800"],
+  weight: ["700", "800", "900"],
 })
 
 export const metadata: Metadata = {
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: "#0b3275",
+  themeColor: "#071f4a",
 }
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

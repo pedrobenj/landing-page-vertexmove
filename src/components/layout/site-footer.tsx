@@ -1,47 +1,70 @@
-import { Camera, MessageCircle, ShoppingBag } from "lucide-react"
+import { AtSign, Mail, MessageCircle } from "lucide-react"
 import Link from "next/link"
 
-import { VertexLogo } from "@/components/brand"
-import { publicEnv } from "@/lib/public-env"
-import { whatsappLink } from "@/lib/utils"
+import { VertexLogoPlate } from "@/components/brand"
+import {
+  ADMIN_NAV_ITEM,
+  CONTACT_INFO,
+  formatInstagramHandle,
+  formatPhoneDisplay,
+  SITE_NAV_ITEMS,
+  SITE_TAGLINE,
+  whatsappLink,
+} from "@/lib/utils"
 
 import { CurrentYear } from "./current-year"
+import { FooterContactItem } from "./footer-contact-item"
+import { FooterNavLink } from "./footer-nav-link"
 
 export function SiteFooter() {
-  return (
-    <footer className="mt-auto bg-brand-navy text-white">
-      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-10 sm:flex-row sm:items-center sm:justify-between">
-        <VertexLogo variant="white" className="w-36" />
+  const { whatsappNumber, instagramUrl, email } = CONTACT_INFO
 
-        <ul className="flex flex-col gap-3 text-sm sm:flex-row sm:gap-6">
-          {publicEnv.whatsappNumber && (
-            <li>
-              <a href={whatsappLink(publicEnv.whatsappNumber)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 hover:text-brand-green">
-                <MessageCircle className="size-4" aria-hidden="true" /> WhatsApp
-              </a>
-            </li>
-          )}
-          {publicEnv.instagramUrl && (
-            <li>
-              <a href={publicEnv.instagramUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 hover:text-brand-green">
-                <Camera className="size-4" aria-hidden="true" /> Instagram
-              </a>
-            </li>
-          )}
-          <li>
-            <Link href="/loja" className="inline-flex items-center gap-2 hover:text-brand-green">
-              <ShoppingBag className="size-4" aria-hidden="true" /> Loja
-            </Link>
-          </li>
-          <li>
-            <Link href="/privacidade" className="hover:text-brand-green">Privacidade</Link>
-          </li>
-        </ul>
+  return (
+    <footer className="mt-auto bg-brand-navy-deep text-white">
+      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 text-sm sm:grid-cols-2 lg:grid-cols-3">
+        <div className="flex flex-col items-start gap-4">
+          <VertexLogoPlate className="h-12 text-lg" />
+          <p className="text-white/80">Vertex Grupo de Corrida — {SITE_TAGLINE}</p>
+        </div>
+
+        <div className="flex flex-col gap-4">
+          <h2 className="font-heading text-xs font-bold uppercase tracking-widest text-brand-green">Contato</h2>
+          <ul className="flex flex-col gap-3">
+            <FooterContactItem
+              icon={MessageCircle}
+              label="WhatsApp"
+              value={whatsappNumber ? formatPhoneDisplay(whatsappNumber) : ""}
+              href={whatsappNumber ? whatsappLink(whatsappNumber) : undefined}
+              external
+            />
+            <FooterContactItem icon={Mail} label="E-mail" value={email} href={`mailto:${email}`} />
+            <FooterContactItem
+              icon={AtSign}
+              label="Instagram"
+              value={formatInstagramHandle(instagramUrl)}
+              href={instagramUrl || undefined}
+              external
+            />
+          </ul>
+        </div>
+
+        <nav aria-label="Navegação do rodapé" className="flex flex-col gap-4">
+          <h2 className="font-heading text-xs font-bold uppercase tracking-widest text-brand-green">Navegação</h2>
+          <ul className="flex flex-col gap-2.5">
+            {SITE_NAV_ITEMS.map((item) => (
+              <FooterNavLink key={item.href} item={item} />
+            ))}
+            <FooterNavLink item={ADMIN_NAV_ITEM} />
+          </ul>
+        </nav>
       </div>
 
       <div className="border-t border-white/10">
-        <p className="mx-auto max-w-6xl px-4 py-4 text-center text-xs text-white/70">
-          © <CurrentYear /> Vertex Grupo de Corrida · Fortaleza/CE · Desenvolvido por Pedro Benjamin
+        <p className="mx-auto max-w-6xl px-4 py-5 text-center text-xs leading-relaxed text-white/70">
+          © <CurrentYear /> Vertex Grupo de Corrida. Todos os direitos reservados. · Desenvolvido por Pedro Benjamin ·{" "}
+          <Link href="/privacidade" className="underline-offset-4 hover:text-brand-green hover:underline">
+            Privacidade
+          </Link>
         </p>
       </div>
     </footer>

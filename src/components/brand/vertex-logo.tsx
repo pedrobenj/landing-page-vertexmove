@@ -1,4 +1,7 @@
+"use client"
+
 import Image from "next/image"
+import { useState } from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -14,9 +17,30 @@ const LOGO_SOURCES = {
   symbol: { src: "/brand/vertex-symbol.png", width: 40, height: 40 },
 } as const
 
-/** Logo oficial — nunca distorcer, recolorir ou aplicar sombra (CLAUDE.md §3). */
+/**
+ * Logo oficial — nunca distorcer, recolorir ou aplicar sombra (CLAUDE.md §3).
+ * Enquanto os arquivos de `public/brand/` não chegarem do cliente, cai para o nome em texto.
+ */
 export function VertexLogo({ variant = "full", className, priority }: VertexLogoProps) {
+  const [hasError, setHasError] = useState(false)
   const logo = LOGO_SOURCES[variant]
+
+  if (hasError) {
+    return (
+      <span
+        role="img"
+        aria-label="Vertex Grupo de Corrida"
+        className={cn(
+          "inline-flex items-center justify-center font-heading font-black uppercase leading-none tracking-tight",
+          variant === "white" ? "text-white" : "text-brand-navy",
+          className,
+        )}
+      >
+        {variant === "symbol" ? "V" : "Vertex"}
+      </span>
+    )
+  }
+
   return (
     <Image
       src={logo.src}
@@ -24,6 +48,7 @@ export function VertexLogo({ variant = "full", className, priority }: VertexLogo
       height={logo.height}
       alt="Vertex Grupo de Corrida"
       priority={priority}
+      onError={() => setHasError(true)}
       className={cn("h-auto object-contain", className)}
     />
   )
