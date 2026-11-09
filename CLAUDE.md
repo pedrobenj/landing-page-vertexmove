@@ -316,6 +316,9 @@ Fluxos:
 - **Chamadas admin**: Server Components e actions usam `adminFetch` com o token de `vm_admin_at`. Server Components não gravam cookies — por isso a renovação fica no `proxy.ts`.
 - **Logout** (server action): `POST /admin/auth/logout` com csrf → limpar cookies → `redirect('/admin/login')`.
 - O `admin` retornado no login/`me` alimenta header e permissões por `papel`.
+- **Autorização na camada de dados:** o `proxy.ts` só renova a sessão (ele é pulado em prefetch). Toda página, componente ou action do admin que leia ou altere dados chama `requireAdminSession()` (ou usa `adminFetch`) — nunca confiar só no proxy.
+- **Refresh concorrente:** o proxy usa single-flight por refresh token dentro da instância; entre instâncias, o backend deve tolerar reuso do refresh anterior por alguns segundos (§16).
+- `Secure` nos cookies só em produção (em `http://localhost` o navegador recusaria).
 
 ### Cache
 - `GET /eventos` e `GET /eventos/:slug`: cacheáveis (revalidação curta, ~60 s) com tag `events` / `event:<slug>`; seguir o mecanismo de cache do Next 16 descrito em `node_modules/next/dist/docs/` (`'use cache'` + `cacheTag`/`cacheLife` se Cache Components estiver ativo).
@@ -531,6 +534,8 @@ Antes de cada commit: `lint`, `typecheck` e `build` passando. Commits no padrão
 - [ ] Campos extras na inscrição: sexo, equipe/assessoria, contato de emergência.
 - [ ] Lista exata de `status` de evento e inscrição; matriz de permissões por `papel`.
 - [ ] MFA/TOTP para super admin.
+- [ ] Janela de tolerância ao reuso do refresh token (ex.: aceitar o anterior por 10–30 s devolvendo o mesmo par), para o Next em várias instâncias não deslogar o admin em requisições concorrentes.
+- [ ] Código/status de bloqueio por tentativas no login (429/423) para a UI mostrar "aguarde".
 - [ ] Qual header de IP do cliente o rate limit confia (`X-Forwarded-For`?) e como o Next se autentica como proxy confiável.
 - [ ] Domínio/`SameSite` dos cookies em produção e CORS (se algum dia o browser chamar a API direto).
 - [ ] Loja (produtos, variantes, pedidos, estoque).
