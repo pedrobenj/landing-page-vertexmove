@@ -5,8 +5,7 @@ import { z } from "zod"
 import { API_ERROR_CODE } from "@/enums/api-error-code.enum"
 import { EVENT_ACTION } from "@/enums/event-action.enum"
 import { EVENT_STATUS } from "@/enums/event-status.enum"
-import { canManageEvents } from "@/lib/utils/admin-permissions"
-import { getApiErrorMessage } from "@/lib/utils/api-errors"
+import { invalidInputResponse } from "@/lib/utils/invalid-input-response"
 import { adminEventFormSchema, type AdminEventFormInput } from "@/lib/validations/admin-event.schema"
 import {
   createAdminEvent,
@@ -16,7 +15,7 @@ import {
   runEventAction,
   updateAdminEvent,
 } from "@/server/api/endpoints/admin-events"
-import { requireAdminSession } from "@/server/api/require-admin-session"
+import { ensureCanManageEvents } from "@/server/api/ensure-can-manage-events"
 import { revalidateEventTags } from "@/server/api/revalidate-event-tags"
 import { toErrorResponse } from "@/server/api/to-error-response"
 import type { AdminEvent } from "@/types/api/admin-event.interface"
@@ -40,24 +39,10 @@ const eventActionSchema = z.enum(EVENT_ACTION)
 
 export type ListAdminEventsInput = z.input<typeof listAdminEventsSchema>
 
-function invalidInput(title: string, error = getApiErrorMessage(API_ERROR_CODE.INVALID_DATA), field?: string): HttpResponse<never> {
-  return { status: 422, code: API_ERROR_CODE.INVALID_DATA, error, title, ...(field && { field }) }
-}
-
-/**
- * Sessão obrigatória e papel que pode alterar corridas (o operador só lê; matriz a confirmar, §16).
- * Chamada FORA de `try/catch`: sem sessão, o redirect ao login precisa subir.
- */
-async function ensureCanManageEvents(title: string): Promise<HttpResponse<never> | null> {
-  const admin = await requireAdminSession()
-  if (canManageEvents(admin.papel)) return null
-  return { status: 403, code: API_ERROR_CODE.ACCESS_DENIED, error: getApiErrorMessage(API_ERROR_CODE.ACCESS_DENIED), title }
-}
-
 /** `GET /admin/eventos?status&cursor` (o `adminFetch` exige a sessão). */
 export async function listAdminEventsAction(input: ListAdminEventsInput): Promise<HttpResponse<CursorPage<AdminEvent>>> {
   const parsed = listAdminEventsSchema.safeParse(input)
-  if (!parsed.success) return invalidInput(LIST_ERROR_TITLE)
+  if (!parsed.success) return invalidInputResponse(LIST_ERROR_TITLE)
 
   const { status, cursor } = parsed.data
   try {
@@ -70,14 +55,11 @@ export async function listAdminEventsAction(input: ListAdminEventsInput): Promis
 
 /** `POST /admin/eventos`: a corrida nasce em rascunho (fora do site, sem revalidação pública). */
 export async function createAdminEventAction(input: AdminEventFormInput): Promise<HttpResponse<AdminEvent>> {
-  const denied = await ensureCanManageEvents(SAVE_ERROR_TITLE)
+  const denied = await ensureCanManageEvents(SAVE_ERROR_TITLE, "createAdminEventAction")
   if (denied) return denied
 
   const parsed = adminEventFormSchema.safeParse(input)
-  if (!parsed.success) {
-    const issue = parsed.error.issues[0]
-    return invalidInput(SAVE_ERROR_TITLE, issue?.message, issue?.path.join("."))
-  }
+  if (!parsed.success) return invalidInputResponse(SAVE_ERROR_TITLE, parsed.error.issues[0])
 
   try {
     const data = await createAdminEvent(parsed.data)
@@ -92,16 +74,13 @@ export async function createAdminEventAction(input: AdminEventFormInput): Promis
  * também precisa sair do cache.
  */
 export async function updateAdminEventAction(id: number, input: AdminEventFormInput): Promise<HttpResponse<AdminEvent>> {
-  const denied = await ensureCanManageEvents(SAVE_ERROR_TITLE)
+  const denied = await ensureCanManageEvents(SAVE_ERROR_TITLE, "updateAdminEventAction")
   if (denied) return denied
 
   const parsedId = eventIdSchema.safeParse(id)
-  if (!parsedId.success) return invalidInput(SAVE_ERROR_TITLE)
+  if (!parsedId.success) return invalidInputResponse(SAVE_ERROR_TITLE)
   const parsed = adminEventFormSchema.safeParse(input)
-  if (!parsed.success) {
-    const issue = parsed.error.issues[0]
-    return invalidInput(SAVE_ERROR_TITLE, issue?.message, issue?.path.join("."))
-  }
+  if (!parsed.success) return invalidInputResponse(SAVE_ERROR_TITLE, parsed.error.issues[0])
 
   try {
     const previous = await getAdminEvent(parsedId.data)
@@ -115,11 +94,11 @@ export async function updateAdminEventAction(id: number, input: AdminEventFormIn
 
 /** `DELETE /admin/eventos/:id` (soft delete). Revalida a página pública do slug excluído. */
 export async function deleteAdminEventAction(id: number): Promise<HttpResponse> {
-  const denied = await ensureCanManageEvents(DELETE_ERROR_TITLE)
+  const denied = await ensureCanManageEvents(DELETE_ERROR_TITLE, "deleteAdminEventAction")
   if (denied) return denied
 
   const parsedId = eventIdSchema.safeParse(id)
-  if (!parsedId.success) return invalidInput(DELETE_ERROR_TITLE)
+  if (!parsedId.success) return invalidInputResponse(DELETE_ERROR_TITLE)
 
   try {
     const previous = await getAdminEvent(parsedId.data)
@@ -136,12 +115,12 @@ export async function deleteAdminEventAction(id: number): Promise<HttpResponse> 
  * Toda ação muda o que o público vê (entra ou sai do site): revalida a lista e a página do slug.
  */
 export async function runEventActionAction(id: number, action: EVENT_ACTION): Promise<HttpResponse> {
-  const denied = await ensureCanManageEvents(ACTION_ERROR_TITLE)
+  const denied = await ensureCanManageEvents(ACTION_ERROR_TITLE, "runEventActionAction")
   if (denied) return denied
 
   const parsedId = eventIdSchema.safeParse(id)
   const parsedAction = eventActionSchema.safeParse(action)
-  if (!parsedId.success || !parsedAction.success) return invalidInput(ACTION_ERROR_TITLE)
+  if (!parsedId.success || !parsedAction.success) return invalidInputResponse(ACTION_ERROR_TITLE)
 
   try {
     const previous = await getAdminEvent(parsedId.data)

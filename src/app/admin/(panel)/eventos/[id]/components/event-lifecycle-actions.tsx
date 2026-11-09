@@ -14,6 +14,7 @@ import {
   getAvailableEventActions,
 } from "@/lib/utils/event-lifecycle-actions"
 import { queryKeys } from "@/lib/utils/query-keys"
+import { useAdminEventsFiltersStore } from "@/stores/admin-events-filters-store"
 
 import { EventLifecycleActionButton } from "./event-lifecycle-action-button"
 
@@ -26,38 +27,45 @@ interface EventLifecycleActionsProps {
 export function EventLifecycleActions({ eventId, status }: EventLifecycleActionsProps) {
   const router = useRouter()
   const queryClient = useQueryClient()
-  const [isPending, startTransition] = useTransition()
+  const resetFilters = useAdminEventsFiltersStore((state) => state.reset)
+  // Transição do router.refresh(): os botões ficam travados até o novo status chegar.
+  const [isRefreshing, startTransition] = useTransition()
   const [runningAction, setRunningAction] = useState<EventLifecycleAction | null>(null)
   const actions = useMemo(() => getAvailableEventActions(status), [status])
 
-  function run(config: EventLifecycleActionConfig) {
+  /** Resolve quando a action termina: o diálogo de confirmação mantém o "Aguarde..." até lá. */
+  async function run(config: EventLifecycleActionConfig): Promise<void> {
     setRunningAction(config.action)
-    // A transição dura até o router.refresh() trazer o novo status: os botões ficam travados até lá.
-    startTransition(async () => {
-      try {
-        const response =
-          config.action === DELETE_EVENT_ACTION
-            ? await deleteAdminEventAction(eventId)
-            : await runEventActionAction(eventId, config.action)
+    try {
+      const response =
+        config.action === DELETE_EVENT_ACTION
+          ? await deleteAdminEventAction(eventId)
+          : await runEventActionAction(eventId, config.action)
 
-        if (response.error) {
-          toast.error(response.title ?? "Não foi possível alterar a corrida", { description: response.error })
-          return
-        }
-
-        toast.success(config.successMessage)
-        await queryClient.invalidateQueries({ queryKey: queryKeys.admin.all })
-        if (config.action === DELETE_EVENT_ACTION) router.push("/admin/eventos")
-        else router.refresh()
-      } catch {
-        toast.error("Não foi possível alterar a corrida. Verifique sua conexão e tente de novo.")
-      } finally {
-        setRunningAction(null)
+      if (response.error) {
+        toast.error(response.title ?? "Não foi possível alterar a corrida", { description: response.error })
+        return
       }
-    })
+
+      toast.success(config.successMessage)
+      await queryClient.invalidateQueries({ queryKey: queryKeys.admin.all })
+      if (config.action === DELETE_EVENT_ACTION) {
+        // A página de onde o admin veio pode ter ficado vazia: a lista volta à primeira página.
+        resetFilters()
+        router.push("/admin/eventos")
+      } else {
+        startTransition(() => router.refresh())
+      }
+    } catch {
+      toast.error("Não foi possível alterar a corrida. Verifique sua conexão e tente de novo.")
+    } finally {
+      setRunningAction(null)
+    }
   }
 
   if (actions.length === 0) return null
+
+  const isBusy = runningAction !== null || isRefreshing
 
   return (
     <div role="group" aria-label="Status da corrida" className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
@@ -66,7 +74,7 @@ export function EventLifecycleActions({ eventId, status }: EventLifecycleActions
           key={config.action}
           config={config}
           isPending={runningAction === config.action}
-          disabled={isPending}
+          disabled={isBusy}
           onRun={run}
         />
       ))}

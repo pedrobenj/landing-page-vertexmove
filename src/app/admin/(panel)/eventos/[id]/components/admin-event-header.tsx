@@ -27,6 +27,7 @@ export function AdminEventHeader({ event }: AdminEventHeaderProps) {
         <Link
           href={`/corridas/${event.slug}`}
           target="_blank"
+          rel="noopener noreferrer"
           className="inline-flex w-fit items-center gap-1 text-sm font-semibold text-brand-navy hover:underline"
         >
           Ver no site <ExternalLink className="size-4" aria-hidden="true" />

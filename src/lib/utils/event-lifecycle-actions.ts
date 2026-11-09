@@ -79,8 +79,10 @@ const CONFIGS: Record<EventLifecycleAction, EventLifecycleActionConfig> = {
 const { PUBLISH, UNPUBLISH, CLOSE, CANCEL, RESTORE } = EVENT_ACTION
 
 /**
- * Ações válidas por status (as transições do backend; lista de status a confirmar, §16).
- * Corrida publicada não é excluída direto: despublique, encerre ou cancele antes.
+ * Ações válidas por status (as transições do mock; lista de status a confirmar, §16).
+ * Corrida publicada não é excluída direto: despublique, encerre ou cancele antes (decisão da UI).
+ * A confirmar com o backend (§16): se excluir uma corrida encerrada (histórico público) e cancelar
+ * um rascunho (em vez de só excluí-lo) são permitidos.
  */
 const ACTIONS_BY_STATUS: Record<EVENT_STATUS, EventLifecycleAction[]> = {
   [EVENT_STATUS.DRAFT]: [PUBLISH, CANCEL, DELETE_EVENT_ACTION],

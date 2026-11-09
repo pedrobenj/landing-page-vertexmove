@@ -14,7 +14,7 @@ const mocks = vi.hoisted(() => ({
   deleteAdminEvent: vi.fn(),
   runEventAction: vi.fn(),
   requireAdminSession: vi.fn(),
-  revalidateTag: vi.fn(),
+  updateTag: vi.fn(),
 }))
 
 vi.mock("next/navigation", () => ({
@@ -22,7 +22,7 @@ vi.mock("next/navigation", () => ({
     if (error instanceof Error && error.message.startsWith("REDIRECT:")) throw error
   },
 }))
-vi.mock("next/cache", () => ({ revalidateTag: mocks.revalidateTag }))
+vi.mock("next/cache", () => ({ updateTag: mocks.updateTag }))
 vi.mock("@/server/api/require-admin-session", () => ({ requireAdminSession: mocks.requireAdminSession }))
 vi.mock("@/server/api/endpoints/admin-events", () => ({
   listAdminEvents: mocks.listAdminEvents,
@@ -55,7 +55,7 @@ const form: AdminEventFormInput = {
   galeriaUrl: "",
 }
 
-const revalidatedTags = () => mocks.revalidateTag.mock.calls.map(([tag]) => tag)
+const revalidatedTags = () => mocks.updateTag.mock.calls.map(([tag]) => tag)
 
 describe("admin events actions", () => {
   beforeEach(() => {
@@ -103,6 +103,13 @@ describe("admin events actions", () => {
       expect(mocks.createAdminEvent).not.toHaveBeenCalled()
     })
 
+    it("falha de rede no GET /admin/me vira resposta de erro, não exceção", async () => {
+      mocks.requireAdminSession.mockRejectedValueOnce(new ApiError(503, "INDISPONIVEL", "fora do ar"))
+      const response = await createAdminEventAction(form)
+      expect(response).toMatchObject({ status: 503, error: "Serviço indisponível no momento. Tente em alguns minutos." })
+      expect(mocks.createAdminEvent).not.toHaveBeenCalled()
+    })
+
     it("operador → 403 sem chamar a API", async () => {
       mocks.requireAdminSession.mockResolvedValue({ id: 2, papel: ADMIN_ROLE.OPERATOR })
       const response = await createAdminEventAction(form)
@@ -143,7 +150,6 @@ describe("admin events actions", () => {
       const response = await updateAdminEventAction(3, form)
       expect(response.status).toBe(200)
       expect(revalidatedTags()).toEqual(["events", "event:slug-antigo", "event:corrida-nova"])
-      expect(mocks.revalidateTag).toHaveBeenCalledWith("events", { expire: 0 })
     })
 
     it("id inválido → 422", async () => {
@@ -156,7 +162,7 @@ describe("admin events actions", () => {
       mocks.getAdminEvent.mockRejectedValue(new ApiError(404, "NAO_ENCONTRADO", "Evento não encontrado(a)."))
       const response = await updateAdminEventAction(99, form)
       expect(response.status).toBe(404)
-      expect(mocks.revalidateTag).not.toHaveBeenCalled()
+      expect(mocks.updateTag).not.toHaveBeenCalled()
     })
   })
 

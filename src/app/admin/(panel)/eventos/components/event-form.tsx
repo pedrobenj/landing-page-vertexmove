@@ -9,7 +9,8 @@ import { toast } from "sonner"
 
 import { createAdminEventAction, updateAdminEventAction } from "@/app/actions/admin-events"
 import { Button } from "@/components/ui/button"
-import { EMPTY_ADMIN_EVENT_FORM, toAdminEventFormValues } from "@/lib/utils/admin-event-form-values"
+import { toAdminEventFormValues } from "@/lib/utils/admin-event-form-values"
+import { isFormField } from "@/lib/utils/is-form-field"
 import { queryKeys } from "@/lib/utils/query-keys"
 import { slugify } from "@/lib/utils/slugify"
 import { adminEventFormSchema, type AdminEventFormData, type AdminEventFormInput } from "@/lib/validations/admin-event.schema"
@@ -24,8 +25,6 @@ interface EventFormProps {
   /** Operador: só leitura, sem salvar. */
   readOnly?: boolean
 }
-
-const isFormField = (field: string): field is keyof AdminEventFormInput => Object.hasOwn(EMPTY_ADMIN_EVENT_FORM, field)
 
 export function EventForm({ defaultValues, eventId, readOnly = false }: EventFormProps) {
   const router = useRouter()
@@ -70,7 +69,7 @@ export function EventForm({ defaultValues, eventId, readOnly = false }: EventFor
 
       if (!response.data) {
         submittingRef.current = false
-        if (response.field && isFormField(response.field)) {
+        if (response.field && isFormField(defaultValues, response.field)) {
           form.setError(response.field, { message: response.error }, { shouldFocus: true })
         }
         toast.error(response.title ?? "Não foi possível salvar a corrida", { description: response.error })

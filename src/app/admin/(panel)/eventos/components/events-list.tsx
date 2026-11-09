@@ -1,9 +1,11 @@
 "use client"
 
 import { CalendarX } from "lucide-react"
+import { useEffect } from "react"
 
 import { CursorPagination } from "@/components/admin"
 import { EmptyState, ServerError } from "@/components/feedback"
+import { Button } from "@/components/ui/button"
 import { useAdminEvents } from "@/hooks/data/use-admin-events"
 import { useAdminEventsFiltersStore } from "@/stores/admin-events-filters-store"
 
@@ -19,9 +21,18 @@ interface EventsListProps {
 export function EventsList({ canManage }: EventsListProps) {
   const { data, isPending, isError, isFetching, isPlaceholderData } = useAdminEvents()
   const status = useAdminEventsFiltersStore((state) => state.status)
+  const cursor = useAdminEventsFiltersStore((state) => state.cursor)
   const hasPrevious = useAdminEventsFiltersStore((state) => state.cursorStack.length > 0)
+  const setStatus = useAdminEventsFiltersStore((state) => state.setStatus)
   const nextPage = useAdminEventsFiltersStore((state) => state.nextPage)
   const prevPage = useAdminEventsFiltersStore((state) => state.prevPage)
+  const reset = useAdminEventsFiltersStore((state) => state.reset)
+
+  // Ao sair da lista, filtro e cursor voltam ao início: a próxima visita abre na primeira página
+  // (um cursor antigo pode apontar para uma página que ficou vazia depois de excluir corridas).
+  useEffect(() => reset, [reset])
+
+  const isFirstPage = cursor === null
 
   return (
     <div className="flex flex-col gap-4">
@@ -30,6 +41,16 @@ export function EventsList({ canManage }: EventsListProps) {
         <EventsTableSkeleton />
       ) : isError ? (
         <ServerError title="Não foi possível carregar as corridas" />
+      ) : data.items.length === 0 && !isFirstPage ? (
+        <EmptyState
+          icon={CalendarX}
+          title="Esta página ficou vazia."
+          action={
+            <Button type="button" variant="outline" onClick={() => setStatus(status)}>
+              Voltar à primeira página
+            </Button>
+          }
+        />
       ) : data.items.length === 0 ? (
         <EmptyState
           icon={CalendarX}

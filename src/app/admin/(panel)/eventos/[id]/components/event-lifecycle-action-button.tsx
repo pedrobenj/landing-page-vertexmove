@@ -8,7 +8,8 @@ interface EventLifecycleActionButtonProps {
   config: EventLifecycleActionConfig
   isPending: boolean
   disabled: boolean
-  onRun: (config: EventLifecycleActionConfig) => void
+  /** Promise da action: a confirmação fica aberta com "Aguarde..." até ela terminar. */
+  onRun: (config: EventLifecycleActionConfig) => Promise<void>
 }
 
 /** Botão de uma ação do ciclo de vida; as destrutivas passam pela confirmação. */
@@ -19,7 +20,7 @@ export function EventLifecycleActionButton({ config, isPending, disabled, onRun 
       type="button"
       variant={config.variant}
       disabled={disabled}
-      onClick={confirmation ? undefined : () => onRun(config)}
+      onClick={confirmation ? undefined : () => void onRun(config)}
       className="w-full sm:w-auto"
     >
       {isPending ? "Aguarde..." : config.label}

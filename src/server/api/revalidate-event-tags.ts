@@ -1,17 +1,19 @@
 import "server-only"
 
-import { revalidateTag } from "next/cache"
+import { updateTag } from "next/cache"
 
 /**
  * Invalida o catálogo público depois de uma mutação no admin: a tag `events` (lista, encerradas,
- * sitemap) e `event:<slug>` de cada slug informado — o antigo e o novo, quando o slug muda.
+ * sitemap e todos os detalhes) e `event:<slug>` de cada slug informado — o antigo e o novo, quando o
+ * slug muda.
  *
- * `{ expire: 0 }` em vez de `"max"`: uma corrida despublicada, cancelada ou excluída não pode continuar
- * sendo servida (nem stale) ao público; a próxima visita refaz a busca.
+ * `updateTag` (read-your-own-writes): só pode ser chamado de server actions — e é só delas que este
+ * helper é chamado. A próxima requisição espera os dados novos em vez de servir o cache antigo, então
+ * uma corrida despublicada, cancelada ou excluída sai do site na hora.
  */
 export function revalidateEventTags(...slugs: (string | null | undefined)[]): void {
-  revalidateTag("events", { expire: 0 })
+  updateTag("events")
   for (const slug of new Set(slugs.filter((slug): slug is string => Boolean(slug)))) {
-    revalidateTag(`event:${slug}`, { expire: 0 })
+    updateTag(`event:${slug}`)
   }
 }

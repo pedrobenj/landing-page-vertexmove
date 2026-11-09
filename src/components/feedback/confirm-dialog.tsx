@@ -1,32 +1,16 @@
 "use client"
 
-import { useState, type ReactElement } from "react"
+import { cloneElement, type MouseEvent, type ReactElement, useState } from "react"
 
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer"
 import { useCloseOnRouteChange } from "@/hooks/use-close-on-route-change"
 import { useIsDesktop } from "@/hooks/use-media-query"
 
 interface ConfirmDialogProps {
-  /** Botão que abre a confirmação. */
-  trigger: ReactElement
+  /** Botão que abre a confirmação (recebe `onClick`, `aria-haspopup` e `aria-expanded`). */
+  trigger: ReactElement<{ onClick?: (event: MouseEvent<HTMLElement>) => void }>
   title: string
   description: string
   confirmLabel: string
@@ -34,11 +18,19 @@ interface ConfirmDialogProps {
   /** `destructive` para excluir/cancelar/encerrar. */
   variant?: "default" | "destructive"
   isPending?: boolean
-  /** Fecha ao terminar (resolvida ou não); erros devem ser tratados (toast) por quem chama. */
-  onConfirm: () => void | Promise<void>
+  /**
+   * O diálogo fica aberto (com "Aguarde...") até a Promise terminar e fecha em seguida, com sucesso ou
+   * não; erros devem ser tratados (toast) por quem chama.
+   */
+  onConfirm: () => Promise<void>
 }
 
-/** Confirmação de ações destrutivas: Dialog no desktop, Drawer no mobile. Fecha na troca de rota. */
+/**
+ * Confirmação de ações destrutivas: Dialog no desktop, Drawer no mobile. Fecha na troca de rota.
+ * O gatilho fica fora do Dialog/Drawer: assim ele não é remontado quando o `useIsDesktop` troca de
+ * valor logo depois da hidratação (o servidor sempre renderiza a versão mobile), e o clique não se perde.
+ * Ao fechar, o Radix/vaul devolvem o foco ao elemento focado antes de abrir (o gatilho).
+ */
 export function ConfirmDialog({
   trigger,
   title,
@@ -50,64 +42,72 @@ export function ConfirmDialog({
   onConfirm,
 }: ConfirmDialogProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [isConfirming, setIsConfirming] = useState(false)
   const isDesktop = useIsDesktop()
   useCloseOnRouteChange(() => setIsOpen(false), isOpen)
 
+  const isBusy = isPending || isConfirming
+  const handleOpenChange = (open: boolean) => {
+    if (!isBusy) setIsOpen(open)
+  }
+
   async function handleConfirm() {
+    setIsConfirming(true)
     try {
       await onConfirm()
     } finally {
+      setIsConfirming(false)
       setIsOpen(false)
     }
   }
 
+  const triggerElement = cloneElement(trigger, {
+    onClick: () => setIsOpen(true),
+    "aria-haspopup": "dialog",
+    "aria-expanded": isOpen,
+  } as Partial<typeof trigger.props>)
+
   const confirmButton = (
-    <Button
-      type="button"
-      variant={variant === "destructive" ? "destructive" : "default"}
-      disabled={isPending}
-      onClick={handleConfirm}
-    >
-      {isPending ? "Aguarde..." : confirmLabel}
+    <Button type="button" variant={variant === "destructive" ? "destructive" : "default"} disabled={isBusy} onClick={handleConfirm}>
+      {isBusy ? "Aguarde..." : confirmLabel}
     </Button>
   )
   const cancelButton = (
-    <Button type="button" variant="outline" disabled={isPending} onClick={() => setIsOpen(false)}>
+    <Button type="button" variant="outline" disabled={isBusy} onClick={() => setIsOpen(false)}>
       {cancelLabel}
     </Button>
   )
 
-  if (isDesktop) {
-    return (
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogTrigger asChild>{trigger}</DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{title}</DialogTitle>
-            <DialogDescription>{description}</DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            {cancelButton}
-            {confirmButton}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    )
-  }
-
   return (
-    <Drawer open={isOpen} onOpenChange={setIsOpen}>
-      <DrawerTrigger asChild>{trigger}</DrawerTrigger>
-      <DrawerContent>
-        <DrawerHeader>
-          <DrawerTitle>{title}</DrawerTitle>
-          <DrawerDescription>{description}</DrawerDescription>
-        </DrawerHeader>
-        <DrawerFooter>
-          {confirmButton}
-          {cancelButton}
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
+    <>
+      {triggerElement}
+      {isDesktop ? (
+        <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{title}</DialogTitle>
+              <DialogDescription>{description}</DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              {cancelButton}
+              {confirmButton}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      ) : (
+        <Drawer open={isOpen} onOpenChange={handleOpenChange}>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle>{title}</DrawerTitle>
+              <DrawerDescription>{description}</DrawerDescription>
+            </DrawerHeader>
+            <DrawerFooter>
+              {confirmButton}
+              {cancelButton}
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
+      )}
+    </>
   )
 }

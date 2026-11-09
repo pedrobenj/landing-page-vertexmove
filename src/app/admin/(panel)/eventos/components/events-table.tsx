@@ -14,8 +14,8 @@ export function EventsTable({ events }: EventsTableProps) {
         <TableHeader>
           <TableRow>
             <TableHead>Corrida</TableHead>
-            <TableHead>Data</TableHead>
-            <TableHead>Local</TableHead>
+            <TableHead className="hidden sm:table-cell">Data</TableHead>
+            <TableHead className="hidden md:table-cell">Local</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="text-right">
               <span className="sr-only">Ações</span>

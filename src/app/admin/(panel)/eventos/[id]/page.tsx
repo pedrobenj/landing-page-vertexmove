@@ -1,15 +1,13 @@
 import type { Metadata } from "next"
-import { notFound, unstable_rethrow } from "next/navigation"
+import { notFound } from "next/navigation"
 import { connection } from "next/server"
 
 import { ServerError } from "@/components/feedback"
 import { canManageEvents } from "@/lib/utils/admin-permissions"
 import { toAdminEventFormValues } from "@/lib/utils/admin-event-form-values"
 import { parseIdParam } from "@/lib/utils/parse-id-param"
-import { isApiError } from "@/server/api/api-error"
-import { getAdminEvent } from "@/server/api/endpoints/admin-events"
+import { loadAdminEvent } from "@/server/api/load-admin-event"
 import { requireAdminSession } from "@/server/api/require-admin-session"
-import type { AdminEvent } from "@/types/api/admin-event.interface"
 
 import { EventForm } from "../components"
 
@@ -21,35 +19,28 @@ import { AdminEventHeader, EventLifecycleActions, EventSectionNav } from "./comp
  */
 export const instant = false
 
-export const metadata: Metadata = { title: "Editar corrida" }
+const FALLBACK_TITLE = "Editar corrida"
 
-type LoadResult = { event: AdminEvent } | { notFound: true } | { error: true }
-
-async function loadEvent(id: number): Promise<LoadResult> {
-  try {
-    return { event: await getAdminEvent(id) }
-  } catch (error) {
-    // Redirect do adminFetch (sessão expirada) sobe.
-    unstable_rethrow(error)
-    if (isApiError(error) && error.status === 404) return { notFound: true }
-    console.error("[AdminEventPage]", error instanceof Error ? error.name : "erro desconhecido")
-    return { error: true }
-  }
+export async function generateMetadata({ params }: PageProps<"/admin/eventos/[id]">): Promise<Metadata> {
+  const eventId = parseIdParam((await params).id)
+  if (eventId === null) return { title: FALLBACK_TITLE }
+  // Mesmo `loadAdminEvent` (memoizado) da página: um só GET por requisição.
+  const result = await loadAdminEvent(eventId)
+  return { title: "event" in result ? result.event.nome : FALLBACK_TITLE }
 }
 
 export default async function AdminEventPage({ params }: PageProps<"/admin/eventos/[id]">) {
   await connection()
-  // Autorização aqui, e não só no proxy (pulado em prefetch). Fora do try/catch: o redirect sobe.
-  const admin = await requireAdminSession()
   const eventId = parseIdParam((await params).id)
   if (eventId === null) notFound()
 
-  const result = await loadEvent(eventId)
+  // Autorização aqui, e não só no proxy (pulado em prefetch). Os dois redirects (sem sessão) sobem.
+  const [admin, result] = await Promise.all([requireAdminSession(), loadAdminEvent(eventId)])
   if ("notFound" in result) notFound()
   if ("error" in result) {
     return (
       <section className="flex flex-col gap-6">
-        <h1 className="text-2xl font-extrabold text-brand-navy">Editar corrida</h1>
+        <h1 className="text-2xl font-extrabold text-brand-navy">{FALLBACK_TITLE}</h1>
         <ServerError title="Não foi possível carregar a corrida" />
       </section>
     )

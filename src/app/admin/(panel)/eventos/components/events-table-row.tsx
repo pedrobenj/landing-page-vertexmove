@@ -11,26 +11,25 @@ interface EventsTableRowProps {
   event: AdminEvent
 }
 
+/** Um só link por linha ("Editar <nome>"), para o teclado e o leitor de tela não passarem duas vezes. */
 export function EventsTableRow({ event }: EventsTableRowProps) {
-  const href = `/admin/eventos/${event.id}`
+  const date = `${formatApiDate(event.dataEvento)} · ${event.horarioLargada}`
   return (
     <TableRow>
-      <TableCell>
-        <Link href={href} className="font-semibold text-brand-navy hover:underline">
-          {event.nome}
-        </Link>
+      <TableCell className="whitespace-normal">
+        <p className="font-semibold text-brand-navy">{event.nome}</p>
         <p className="text-xs text-muted-foreground">/{event.slug}</p>
+        {/* No celular, data e local entram aqui no lugar das colunas escondidas. */}
+        <p className="text-xs text-muted-foreground tabular-nums sm:hidden">{date}</p>
       </TableCell>
-      <TableCell className="tabular-nums">
-        {formatApiDate(event.dataEvento)} · {event.horarioLargada}
-      </TableCell>
-      <TableCell>{event.localizacaoResumo}</TableCell>
+      <TableCell className="hidden tabular-nums sm:table-cell">{date}</TableCell>
+      <TableCell className="hidden md:table-cell">{event.localizacaoResumo}</TableCell>
       <TableCell>
         <EventStatusBadge status={event.status} />
       </TableCell>
       <TableCell className="text-right">
         <Button asChild variant="outline" size="sm">
-          <Link href={href} aria-label={`Editar ${event.nome}`}>
+          <Link href={`/admin/eventos/${event.id}`} aria-label={`Editar ${event.nome}`}>
             <Pencil aria-hidden="true" /> Editar
           </Link>
         </Button>

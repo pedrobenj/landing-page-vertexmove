@@ -16,9 +16,9 @@ test.describe("Admin — lista de corridas", () => {
 
     await expect(page.getByRole("heading", { level: 1, name: "Corridas" })).toBeVisible()
     const rows = page.getByRole("table").getByRole("row")
-    await expect(page.getByRole("link", { name: SEED_PUBLISHED, exact: true })).toBeVisible({ timeout: 20_000 })
-    await expect(page.getByRole("link", { name: SEED_DRAFT, exact: true })).toBeVisible()
-    await expect(page.getByRole("link", { name: SEED_CLOSED, exact: true })).toBeVisible()
+    await expect(page.getByRole("link", { name: `Editar ${SEED_PUBLISHED}`, exact: true })).toBeVisible({ timeout: 20_000 })
+    await expect(page.getByRole("link", { name: `Editar ${SEED_DRAFT}`, exact: true })).toBeVisible()
+    await expect(page.getByRole("link", { name: `Editar ${SEED_CLOSED}`, exact: true })).toBeVisible()
     // Cabeçalho + pelo menos os 8 do seed (outros testes podem criar corridas no mock em memória).
     expect(await rows.count()).toBeGreaterThanOrEqual(9)
     await expect(page.getByRole("link", { name: "Nova corrida" })).toBeVisible()
@@ -26,8 +26,8 @@ test.describe("Admin — lista de corridas", () => {
     await page.getByLabel("Status").click()
     await page.getByRole("option", { name: "Rascunho" }).click()
 
-    await expect(page.getByRole("link", { name: SEED_PUBLISHED, exact: true })).toBeHidden()
-    await expect(page.getByRole("link", { name: SEED_DRAFT, exact: true })).toBeVisible()
+    await expect(page.getByRole("link", { name: `Editar ${SEED_PUBLISHED}`, exact: true })).toBeHidden()
+    await expect(page.getByRole("link", { name: `Editar ${SEED_DRAFT}`, exact: true })).toBeVisible()
     // Só rascunhos: toda linha do corpo tem o selo "Rascunho".
     const bodyRows = page.getByRole("table").locator("tbody tr")
     const total = await bodyRows.count()
@@ -39,7 +39,7 @@ test.describe("Admin — lista de corridas", () => {
     await loginAsAdmin(page, OPERATOR_EMAIL)
     await page.goto("/admin/eventos")
 
-    await expect(page.getByRole("link", { name: SEED_PUBLISHED, exact: true })).toBeVisible({ timeout: 20_000 })
+    await expect(page.getByRole("link", { name: `Editar ${SEED_PUBLISHED}`, exact: true })).toBeVisible({ timeout: 20_000 })
     await expect(page.getByRole("link", { name: "Nova corrida" })).toHaveCount(0)
   })
 })
@@ -69,6 +69,8 @@ test.describe("Admin — cadastro e publicação de corridas", () => {
     await expect(page.getByRole("heading", { level: 1, name: nome })).toBeVisible()
     await expect(main.getByText("Rascunho", { exact: true })).toBeVisible()
     await expect(page.getByRole("link", { name: "Distâncias e lotes" })).toBeVisible()
+    // Inscrições ainda sem endpoint: aparece como "Em breve", sem link.
+    await expect(page.getByRole("link", { name: /Inscrições/ })).toHaveCount(0)
 
     await page.getByRole("button", { name: "Publicar" }).click()
     await expect(main.getByText("Publicado", { exact: true })).toBeVisible({ timeout: 30_000 })
@@ -91,7 +93,7 @@ test.describe("Admin — cadastro e publicação de corridas", () => {
     await expect(page.getByRole("heading", { name: "Excluir esta corrida?" })).toBeVisible()
     await page.getByRole("button", { name: "Excluir corrida" }).click()
     await expect(page).toHaveURL("/admin/eventos", { timeout: 30_000 })
-    await expect(page.getByRole("link", { name: nome, exact: true })).toHaveCount(0)
+    await expect(page.getByRole("link", { name: `Editar ${nome}`, exact: true })).toHaveCount(0)
   })
 
   test("valida o formulário em português", async ({ page }) => {
