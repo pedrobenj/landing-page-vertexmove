@@ -1,6 +1,7 @@
+/** Etapas do formulário de inscrição (`/corridas/[slug]/inscricao`). */
 export enum REGISTRATION_STEP {
-  MODALITY_AND_KIT = 1,
-  PARTICIPANT = 2,
+  DISTANCE = 1,
+  ATHLETE = 2,
   TERMS = 3,
-  PAYMENT = 4,
+  SUMMARY = 4,
 }
