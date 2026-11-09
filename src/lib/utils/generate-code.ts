@@ -12,11 +12,6 @@ function generateCode(prefix: string, length = 4): string {
   return `${prefix}-${code}`
 }
 
-/** Inscrição, ex: VTX-7K3P */
-export function generateRegistrationCode(): string {
-  return generateCode("VTX")
-}
-
 /** Pedido da loja, ex: VTX-P-7K3P */
 export function generateOrderCode(): string {
   return generateCode("VTX-P")

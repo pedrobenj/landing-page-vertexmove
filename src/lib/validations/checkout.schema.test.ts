@@ -43,6 +43,11 @@ describe("checkoutSchema", () => {
   it("rejeita WhatsApp sem DDD", () => {
     const result = checkoutSchema.safeParse({ ...valid, whatsapp: "98888-7777" })
     expect(result.success).toBe(false)
-    expect(result.error?.issues[0]?.message).toBe("Informe um telefone com DDD")
+    expect(result.error?.issues[0]?.message).toBe("Informe um WhatsApp válido com DDD")
+  })
+
+  it("rejeita celular de 11 dígitos sem o 9 inicial", () => {
+    const result = checkoutSchema.safeParse({ ...valid, whatsapp: "(85) 88888-7777" })
+    expect(result.success).toBe(false)
   })
 })

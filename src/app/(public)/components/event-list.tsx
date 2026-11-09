@@ -1,3 +1,4 @@
+// TODO(migracao): Task 9
 import type { OpenEvent } from "@/types/open-event.interface"
 
 import { EventListItem } from "./event-list-item"
