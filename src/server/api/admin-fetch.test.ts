@@ -39,11 +39,11 @@ describe("adminFetch", () => {
     expect(new Headers(transport.mock.calls[0][1].headers).get("Authorization")).toBe("Bearer abc")
   })
 
-  it("redireciona ao login em 401 da API", async () => {
+  it("em 401 da API redireciona à rota que apaga a sessão", async () => {
     cookieJar.token = "expirado"
     transport.mockResolvedValue(Response.json({ error: { codigo: "NAO_AUTENTICADO", mensagem: "x" } }, { status: 401 }))
 
-    await expect(adminFetch("/admin/me")).rejects.toThrow("REDIRECT:/admin/login")
+    await expect(adminFetch("/admin/me")).rejects.toThrow("REDIRECT:/admin/sair")
   })
 
   it("relança outros erros da API", async () => {

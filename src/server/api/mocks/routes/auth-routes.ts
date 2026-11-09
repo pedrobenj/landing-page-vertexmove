@@ -3,7 +3,7 @@ import "server-only"
 import { API_ERROR_CODE } from "@/enums/api-error-code.enum"
 import type { AdminLoginResponse, AdminProfile, AdminRefreshResponse } from "@/types/api/admin-auth.interface"
 
-import { ACCESS_TOKEN_TTL_S, issueSession, readRefreshToken, REFRESH_TOKEN_TTL_S } from "../mock-auth"
+import { ACCESS_TOKEN_TTL_S, csrfMatchesRefresh, issueSession, readRefreshToken, REFRESH_TOKEN_TTL_S } from "../mock-auth"
 import { getMockDb } from "../mock-db"
 import { requireAdmin } from "../mock-guards"
 import { apiError, json, type MockContext, type MockRoute, noContent } from "../mock-http"
@@ -38,6 +38,9 @@ function requireRefreshSession(ctx: MockContext): MockAdmin | Response {
     return apiError(403, API_ERROR_CODE.ACCESS_DENIED, "Token CSRF ausente ou inválido.")
   }
   const adminId = readRefreshToken(ctx.cookies.vm_admin_rt)
+  if (adminId !== null && !csrfMatchesRefresh(csrfCookie, ctx.cookies.vm_admin_rt)) {
+    return apiError(403, API_ERROR_CODE.ACCESS_DENIED, "Token CSRF ausente ou inválido.")
+  }
   const admin = adminId === null ? undefined : getMockDb().admins.find((item) => item.id === adminId)
   return admin ?? apiError(401, API_ERROR_CODE.NOT_AUTHENTICATED, "Sessão expirada.")
 }

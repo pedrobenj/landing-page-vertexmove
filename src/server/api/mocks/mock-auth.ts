@@ -45,11 +45,19 @@ function nowSeconds(): number {
 }
 
 export function issueSession(adminId: number): MockSession {
+  const jti = randomUUID()
   return {
     accessToken: ACCESS_PREFIX + encode({ adminId, exp: nowSeconds() + ACCESS_TOKEN_TTL_S }),
-    refreshToken: REFRESH_PREFIX + encode({ adminId, exp: nowSeconds() + REFRESH_TOKEN_TTL_S, jti: randomUUID() }),
-    csrfToken: CSRF_PREFIX + randomUUID(),
+    refreshToken: REFRESH_PREFIX + encode({ adminId, exp: nowSeconds() + REFRESH_TOKEN_TTL_S, jti }),
+    // O csrf fica amarrado ao refresh token (mesmo jti): um csrf de outra sessão é recusado.
+    csrfToken: CSRF_PREFIX + jti,
   }
+}
+
+/** O csrf pertence à mesma sessão do refresh token? */
+export function csrfMatchesRefresh(csrfToken: string | null | undefined, refreshToken: string | null | undefined): boolean {
+  const jti = decode(refreshToken, REFRESH_PREFIX)?.jti
+  return Boolean(jti) && csrfToken === CSRF_PREFIX + jti
 }
 
 /** `adminId` do access token, ou `null` se inválido/expirado. */
