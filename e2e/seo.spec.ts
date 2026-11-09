@@ -14,6 +14,9 @@ test.describe("SEO", () => {
     expect(response.ok()).toBe(true)
     const body = await response.text()
     expect(body).toContain("/consulta")
+    expect(body).toContain("/sobre")
+    expect(body).toContain("/corridas/corrida-vertex-beira-mar-2026")
+    expect(body).not.toContain("/corridas/corrida-de-natal-vertex-2026")
     expect(body).not.toContain("/admin")
   })
 
