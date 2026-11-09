@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { connection } from "next/server"
 
+import { ReadOnlyNotice } from "@/components/admin"
 import { ServerError } from "@/components/feedback"
 import { canManageEvents } from "@/lib/utils/admin-permissions"
 import { toAdminEventFormValues } from "@/lib/utils/admin-event-form-values"
@@ -55,9 +56,7 @@ export default async function AdminEventPage({ params }: PageProps<"/admin/event
       {canManage ? (
         <EventLifecycleActions eventId={event.id} status={event.status} />
       ) : (
-        <p className="rounded-xl border bg-card p-4 text-sm text-muted-foreground">
-          Seu perfil tem acesso somente leitura às corridas.
-        </p>
+        <ReadOnlyNotice />
       )}
       <EventSectionNav eventId={event.id} />
       {/* key: depois de salvar/mudar status, o refresh traz dados novos e o form reinicia com eles. */}

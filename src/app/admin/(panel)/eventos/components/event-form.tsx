@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 
 import { createAdminEventAction, updateAdminEventAction } from "@/app/actions/admin-events"
+import { FormTextField } from "@/components/admin"
 import { Button } from "@/components/ui/button"
 import { toAdminEventFormValues } from "@/lib/utils/admin-event-form-values"
 import { isFormField } from "@/lib/utils/is-form-field"
@@ -16,7 +17,6 @@ import { slugify } from "@/lib/utils/slugify"
 import { adminEventFormSchema, type AdminEventFormData, type AdminEventFormInput } from "@/lib/validations/admin-event.schema"
 
 import { EventFormSection } from "./event-form-section"
-import { EventTextField } from "./event-text-field"
 
 interface EventFormProps {
   defaultValues: AdminEventFormInput
@@ -102,8 +102,9 @@ export function EventForm({ defaultValues, eventId, readOnly = false }: EventFor
       {/* fieldset desabilitado: modo leitura do operador sem duplicar o formulário. */}
       <fieldset disabled={readOnly || isBusy} className="flex min-w-0 flex-col gap-6">
         <EventFormSection legend="Informações">
-          <EventTextField control={form.control} name="nome" label="Nome da corrida" maxLength={150} onValueChange={handleNameChange} />
-          <EventTextField
+          <FormTextField idPrefix="event" control={form.control} name="nome" label="Nome da corrida" maxLength={150} onValueChange={handleNameChange} />
+          <FormTextField
+            idPrefix="event"
             control={form.control}
             name="slug"
             label="Endereço (slug)"
@@ -111,24 +112,25 @@ export function EventForm({ defaultValues, eventId, readOnly = false }: EventFor
             maxLength={120}
             onValueChange={handleSlugChange}
           />
-          <EventTextField control={form.control} name="descricao" label="Descrição" multiline className="md:col-span-2" />
+          <FormTextField idPrefix="event" control={form.control} name="descricao" label="Descrição" multiline className="md:col-span-2" />
         </EventFormSection>
 
         <EventFormSection legend="Data e largada">
-          <EventTextField control={form.control} name="dataEvento" label="Data" type="date" />
-          <EventTextField control={form.control} name="horarioLargada" label="Horário de largada" type="time" />
+          <FormTextField idPrefix="event" control={form.control} name="dataEvento" label="Data" type="date" />
+          <FormTextField idPrefix="event" control={form.control} name="horarioLargada" label="Horário de largada" type="time" />
         </EventFormSection>
 
         <EventFormSection legend="Local">
-          <EventTextField control={form.control} name="localNome" label="Local da largada" placeholder="Aterrinho da Praia de Iracema" />
-          <EventTextField control={form.control} name="endereco" label="Endereço (opcional)" />
-          <EventTextField control={form.control} name="complemento" label="Complemento (opcional)" />
-          <EventTextField control={form.control} name="bairro" label="Bairro (opcional)" />
-          <EventTextField control={form.control} name="cidade" label="Cidade" />
-          <EventTextField control={form.control} name="uf" label="UF" maxLength={2} placeholder="CE" />
-          <EventTextField control={form.control} name="cep" label="CEP (opcional)" inputMode="numeric" placeholder="60165-121" maxLength={9} />
+          <FormTextField idPrefix="event" control={form.control} name="localNome" label="Local da largada" placeholder="Aterrinho da Praia de Iracema" />
+          <FormTextField idPrefix="event" control={form.control} name="endereco" label="Endereço (opcional)" />
+          <FormTextField idPrefix="event" control={form.control} name="complemento" label="Complemento (opcional)" />
+          <FormTextField idPrefix="event" control={form.control} name="bairro" label="Bairro (opcional)" />
+          <FormTextField idPrefix="event" control={form.control} name="cidade" label="Cidade" />
+          <FormTextField idPrefix="event" control={form.control} name="uf" label="UF" maxLength={2} placeholder="CE" />
+          <FormTextField idPrefix="event" control={form.control} name="cep" label="CEP (opcional)" inputMode="numeric" placeholder="60165-121" maxLength={9} />
           <div className="hidden md:block" aria-hidden="true" />
-          <EventTextField
+          <FormTextField
+            idPrefix="event"
             control={form.control}
             name="latitude"
             label="Latitude (opcional)"
@@ -136,11 +138,12 @@ export function EventForm({ defaultValues, eventId, readOnly = false }: EventFor
             placeholder="-3.7253"
             description="Para o mapa da página da corrida."
           />
-          <EventTextField control={form.control} name="longitude" label="Longitude (opcional)" inputMode="decimal" placeholder="-38.4970" />
+          <FormTextField idPrefix="event" control={form.control} name="longitude" label="Longitude (opcional)" inputMode="decimal" placeholder="-38.4970" />
         </EventFormSection>
 
         <EventFormSection legend="Imagens">
-          <EventTextField
+          <FormTextField
+            idPrefix="event"
             control={form.control}
             name="imagemCapaUrl"
             label="URL da imagem de capa (opcional)"
@@ -148,7 +151,8 @@ export function EventForm({ defaultValues, eventId, readOnly = false }: EventFor
             inputMode="url"
             placeholder="https://"
           />
-          <EventTextField
+          <FormTextField
+            idPrefix="event"
             control={form.control}
             name="galeriaUrl"
             label="URL da galeria de fotos (opcional)"
