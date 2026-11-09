@@ -10,11 +10,11 @@ import { saveProductAction } from "./admin-products"
 const mocks = vi.hoisted(() => ({
   saveProduct: vi.fn(),
   revalidatePath: vi.fn(),
-  getMe: vi.fn(),
+  requireAdminSession: vi.fn(),
 }))
 
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }))
-vi.mock("@/server/api/endpoints/admin-auth", () => ({ getMe: mocks.getMe }))
+vi.mock("@/server/api/require-admin-session", () => ({ requireAdminSession: mocks.requireAdminSession }))
 vi.mock("@/server/repositories/store.repository", () => ({
   getStoreRepository: () => ({ saveProduct: mocks.saveProduct }),
 }))
@@ -37,7 +37,7 @@ describe("saveProductAction", () => {
   })
 
   it("exige sessão do admin antes de validar", async () => {
-    mocks.getMe.mockRejectedValueOnce(new Error("REDIRECT:/admin/login"))
+    mocks.requireAdminSession.mockRejectedValueOnce(new Error("REDIRECT:/admin/login"))
     await expect(saveProductAction(input)).rejects.toThrow("REDIRECT:/admin/login")
     expect(mocks.saveProduct).not.toHaveBeenCalled()
   })

@@ -5,7 +5,11 @@ import { VertexLogoPlate } from "@/components/brand"
 
 import { AdminNav, AdminUserBadge, AdminUserBadgeSkeleton, LogoutButton } from "./components"
 
-/** Painel do admin. O acesso é protegido pelo `proxy.ts` e, em cada chamada à API, pelo `adminFetch`. */
+/**
+ * Painel do admin. O `proxy.ts` só renova a sessão; a autorização fica na camada de dados: cada página,
+ * componente ou action que lê/altera dados chama `requireAdminSession()` (o layout não protege as páginas,
+ * que renderizam em paralelo).
+ */
 export default function AdminPanelLayout({ children }: LayoutProps<"/admin">) {
   return (
     <>

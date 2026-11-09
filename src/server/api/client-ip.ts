@@ -3,10 +3,17 @@ import "server-only"
 import { headers } from "next/headers"
 import { unstable_rethrow } from "next/navigation"
 
-/** `X-Forwarded-For` (primeiro IP) e `User-Agent` a repassar à API, lidos dos headers da request. */
+/**
+ * IP do cliente e `User-Agent` a repassar à API (como `X-Forwarded-For`), lidos dos headers da request.
+ *
+ * Premissa: o app roda atrás de um proxy confiável (Vercel), que define `x-real-ip` com o IP real e
+ * sobrescreve o que o cliente mandar. O primeiro item do `x-forwarded-for` pode vir forjado pelo cliente
+ * em outros ambientes, então só é usado sem `x-real-ip` (ex.: `next dev`/`next start` local). Se o deploy
+ * sair da Vercel, confirmar qual header o proxy da frente garante.
+ */
 export function pickForwardHeaders(incoming: Headers): Record<string, string> {
   const forwarded: Record<string, string> = {}
-  const ip = incoming.get("x-forwarded-for")?.split(",")[0]?.trim() || incoming.get("x-real-ip")?.trim()
+  const ip = incoming.get("x-real-ip")?.trim() || incoming.get("x-forwarded-for")?.split(",")[0]?.trim()
   const userAgent = incoming.get("user-agent")
   if (ip) forwarded["X-Forwarded-For"] = ip
   if (userAgent) forwarded["User-Agent"] = userAgent

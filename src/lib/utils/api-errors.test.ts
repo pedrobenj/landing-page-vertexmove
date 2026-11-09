@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { getApiErrorMessage } from "./api-errors"
+import { getApiErrorMessage, getLoginErrorMessage } from "./api-errors"
 
 describe("getApiErrorMessage", () => {
   it("mapeia os códigos do contrato", () => {
@@ -27,5 +27,15 @@ describe("getApiErrorMessage", () => {
   it("usa a mensagem padrão sem código nem fallback", () => {
     expect(getApiErrorMessage(undefined)).toBe("Algo deu errado. Tente novamente.")
     expect(getApiErrorMessage("DESCONHECIDO")).toBe("Algo deu errado. Tente novamente.")
+  })
+})
+
+describe("getLoginErrorMessage", () => {
+  it.each([429, 423])("status %i (rate limit / conta bloqueada) pede para aguardar", (status) => {
+    expect(getLoginErrorMessage(status, "QUALQUER")).toBe("Muitas tentativas. Aguarde alguns minutos e tente de novo.")
+  })
+
+  it("demais status usam a mensagem do código", () => {
+    expect(getLoginErrorMessage(401, "NAO_AUTENTICADO")).toBe("E-mail ou senha inválidos.")
   })
 })

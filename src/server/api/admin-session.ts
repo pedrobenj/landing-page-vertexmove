@@ -8,7 +8,8 @@ import type { ParsedSetCookie } from "./set-cookie-parser"
 export const SESSION_COOKIES = { access: "vm_admin_at", refresh: "vm_admin_rt", csrf: "vm_admin_csrf" } as const
 /** Renova antes de expirar: o cookie do access token vive (expiresIn - 60) s. */
 export const ACCESS_TOKEN_SAFETY_MARGIN_S = 60
-const MIN_ACCESS_COOKIE_MAX_AGE_S = 30
+/** Validade do access token quando o backend manda um `expiresIn` inválido (15 min). */
+export const DEFAULT_ACCESS_EXPIRES_IN_S = 900
 /** Validade do refresh token quando o backend não manda `Max-Age`/`Expires` (7 dias). */
 export const DEFAULT_REFRESH_MAX_AGE_S = 604_800
 
@@ -45,8 +46,19 @@ export function sessionCookieOptions(maxAge: number): SessionCookieOptions {
   return { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge }
 }
 
+/**
+ * O cookie expira antes do token para o proxy renovar a tempo. Com token curto (< 120 s), a margem de
+ * 60 s comeria quase tudo: usa a metade da validade.
+ */
 export function accessCookieMaxAge(expiresIn: number): number {
-  return Math.max(expiresIn - ACCESS_TOKEN_SAFETY_MARGIN_S, MIN_ACCESS_COOKIE_MAX_AGE_S)
+  return Math.max(expiresIn - ACCESS_TOKEN_SAFETY_MARGIN_S, Math.floor(expiresIn / 2))
+}
+
+/** `expiresIn` do backend só vale se for número finito > 0; senão, 900 s. */
+function normalizeExpiresIn(expiresIn: unknown): number {
+  return typeof expiresIn === "number" && Number.isFinite(expiresIn) && expiresIn > 0
+    ? expiresIn
+    : DEFAULT_ACCESS_EXPIRES_IN_S
 }
 
 /**
@@ -62,7 +74,7 @@ export function toSessionTokens(
   if (!body?.accessToken || !body.csrfToken || !refresh?.value || refresh.maxAge === 0) return null
   return {
     accessToken: body.accessToken,
-    expiresIn: body.expiresIn,
+    expiresIn: normalizeExpiresIn(body.expiresIn),
     refreshToken: refresh.value,
     refreshMaxAge: refresh.maxAge ?? DEFAULT_REFRESH_MAX_AGE_S,
     csrfToken: body.csrfToken,

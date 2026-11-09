@@ -7,7 +7,8 @@ import { clearSessionOnResponse } from "@/server/api/admin-session"
  * Destino do `adminFetch` quando a API responde 401 (token revogado): apaga os cookies de sessão e
  * manda ao login com o aviso de sessão expirada. Sem isso, o cookie velho continuaria no browser.
  *
- * Só apaga cookies locais (não chama a API), então um GET forjado no máximo desloga o admin.
+ * Só apaga cookies locais (não chama a API). Vindo de outro site (`Sec-Fetch-Site: cross-site`, ex.:
+ * `<img src>` forjado), não apaga: só redireciona — o redirect do `adminFetch` é sempre same-origin.
  */
 export function GET(request: NextRequest) {
   const loginUrl = new URL(ADMIN_LOGIN_PATH, request.url)
@@ -15,6 +16,6 @@ export function GET(request: NextRequest) {
 
   const response = NextResponse.redirect(loginUrl)
   response.headers.set("Cache-Control", "no-store")
-  clearSessionOnResponse(response)
+  if (request.headers.get("sec-fetch-site") !== "cross-site") clearSessionOnResponse(response)
   return response
 }

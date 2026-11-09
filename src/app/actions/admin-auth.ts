@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation"
 
 import { API_ERROR_CODE } from "@/enums/api-error-code.enum"
-import { getApiErrorMessage } from "@/lib/utils/api-errors"
+import { getApiErrorMessage, getLoginErrorMessage } from "@/lib/utils/api-errors"
 import { ADMIN_HOME_PATH, ADMIN_LOGIN_PATH } from "@/lib/utils/constants"
 import { adminLoginSchema, type AdminLoginInput } from "@/lib/validations/admin-login.schema"
 import { isApiError } from "@/server/api/api-error"
@@ -38,7 +38,12 @@ export async function loginAdmin(input: AdminLoginInput): Promise<HttpResponse> 
     await writeSession(tokens)
   } catch (error) {
     if (isApiError(error)) {
-      return { status: error.status, code: error.codigo, error: getApiErrorMessage(error.codigo), title: LOGIN_ERROR_TITLE }
+      return {
+        status: error.status,
+        code: error.codigo,
+        error: getLoginErrorMessage(error.status, error.codigo),
+        title: LOGIN_ERROR_TITLE,
+      }
     }
     // Sem o erro completo no log: pode carregar dados do request (LGPD).
     console.error("[loginAdmin]", error instanceof Error ? error.name : "erro desconhecido")

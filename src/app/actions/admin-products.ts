@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache"
 import { z } from "zod"
 
 import { productFormSchema, type ProductFormInput } from "@/lib/validations/product.schema"
-import { getMe } from "@/server/api/endpoints/admin-auth"
+import { requireAdminSession } from "@/server/api/require-admin-session"
 import { isStoreConflictErrorName, type StoreConflictErrorName } from "@/server/errors"
 import { getStoreRepository } from "@/server/repositories/store.repository"
 import type { HttpResponse } from "@/types/http-response.interface"
@@ -25,8 +25,8 @@ const CONFLICT_ERROR_CODES: Record<StoreConflictErrorName, string> = {
 
 export async function saveProductAction(input: ProductFormInput, id?: string): Promise<HttpResponse<{ id: string }>> {
   // Sessão válida antes de tudo (o proxy não basta: actions são POSTs e o matcher pode mudar).
-  // Sem sessão, `getMe` redireciona ao login — fora do try/catch para o redirect não ser engolido.
-  await getMe()
+  // Sem sessão, redireciona ao login — fora do try/catch para o redirect não ser engolido.
+  await requireAdminSession()
 
   const parsedId = productIdSchema.safeParse(id)
   if (!parsedId.success) return { status: 400, error: "INVALID_INPUT", title: "Produto inválido" }

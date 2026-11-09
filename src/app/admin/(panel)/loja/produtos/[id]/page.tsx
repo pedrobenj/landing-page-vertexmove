@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 import { connection } from "next/server"
 
 import { ServerError } from "@/components/feedback"
+import { requireAdminSession } from "@/server/api/require-admin-session"
 import { getStoreRepository } from "@/server/repositories/store.repository"
 import type { StoreProduct } from "@/types/store-product.interface"
 
@@ -18,6 +19,8 @@ export const metadata: Metadata = { title: "Editar produto" }
 
 export default async function EditProductPage({ params }: PageProps<"/admin/loja/produtos/[id]">) {
   await connection()
+  // Autorização aqui, e não só no proxy (pulado em prefetch). Fora do try/catch: o redirect sobe.
+  await requireAdminSession()
   const { id } = await params
 
   let product: StoreProduct | null

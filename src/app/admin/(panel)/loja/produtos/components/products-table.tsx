@@ -5,6 +5,7 @@ import { connection } from "next/server"
 import { EmptyState, ServerError } from "@/components/feedback"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { requireAdminSession } from "@/server/api/require-admin-session"
 import { getStoreRepository } from "@/server/repositories/store.repository"
 import type { StoreProduct } from "@/types/store-product.interface"
 
@@ -12,6 +13,8 @@ import { ProductsTableRow } from "./products-table-row"
 
 export async function ProductsTable() {
   await connection()
+  // Autorização aqui, e não só no proxy (pulado em prefetch). Fora do try/catch: o redirect sobe.
+  await requireAdminSession()
 
   let products: StoreProduct[]
   try {

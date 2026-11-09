@@ -101,6 +101,15 @@ test.describe("Área do admin", () => {
     await expect(page).toHaveURL("/admin/login")
   })
 
+  test("prefetch sem sessão (proxy pulado pelo matcher) não vaza dados do admin", async ({ request }) => {
+    for (const path of ["/admin/loja/produtos", "/admin/loja/produtos/novo"]) {
+      const response = await request.get(path, { headers: { "next-router-prefetch": "1" }, maxRedirects: 0 })
+      const body = await response.text()
+      expect(body).not.toContain("Camisa Edição Limitada 2024")
+      expect(body).not.toContain("Salvar produto")
+    }
+  })
+
   test("não é indexado por buscadores", async ({ page }) => {
     await page.goto("/admin/login")
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/)

@@ -1,9 +1,17 @@
+/**
+ * O proxy SÓ RENOVA a sessão; a autorização fica na camada de dados.
+ *
+ * Ele é pulado em prefetches (matcher abaixo) e qualquer mudança no matcher ou nas rotas pode deixar
+ * caminhos de fora. Por isso toda página, componente ou server action do admin que leia ou altere dados
+ * chama `requireAdminSession()` (src/server/api/require-admin-session.ts). O redirect daqui é só UX.
+ * Ver node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/proxy.md.
+ */
 import { type NextRequest, NextResponse } from "next/server"
 
 import { ADMIN_LOGIN_PATH, ADMIN_SESSION_EXPIRED_PATH } from "@/lib/utils/constants"
 import { applySessionToResponse, clearSessionOnResponse, SESSION_COOKIES } from "@/server/api/admin-session"
 import { pickForwardHeaders } from "@/server/api/client-ip"
-import { refreshSession } from "@/server/api/session-refresh"
+import { refreshSessionOnce } from "@/server/api/session-refresh-single-flight"
 
 /**
  * Rotas do admin que não exigem sessão.
@@ -29,8 +37,8 @@ function redirectToLogin(request: NextRequest, clearCookies: boolean): NextRespo
 }
 
 /**
- * Protege `/admin/*` e renova o access token antes de expirar (CLAUDE.md §8). Server Components não
- * gravam cookies, por isso a renovação fica aqui.
+ * Renova o access token de `/admin/*` antes de expirar (CLAUDE.md §8) e manda ao login quem não tem
+ * sessão. Server Components não gravam cookies, por isso a renovação fica aqui.
  */
 export default async function proxy(request: NextRequest) {
   if (OPEN_ADMIN_PATHS.has(request.nextUrl.pathname)) return NextResponse.next()
@@ -41,10 +49,11 @@ export default async function proxy(request: NextRequest) {
   const csrfToken = request.cookies.get(SESSION_COOKIES.csrf)?.value
   if (!refreshToken || !csrfToken) return redirectToLogin(request, Boolean(refreshToken || csrfToken))
 
-  // O refresh rotaciona o token: dois refresh concorrentes (navegação + prefetch) podem revogar a família.
+  // O refresh rotaciona o token: prefetch não renova (a página nega sem sessão via requireAdminSession).
   if (isPrefetch(request)) return NextResponse.next()
 
-  const tokens = await refreshSession(refreshToken, csrfToken, pickForwardHeaders(request.headers))
+  // Single-flight: requisições concorrentes com o mesmo cookie compartilham o mesmo par novo.
+  const tokens = await refreshSessionOnce(refreshToken, csrfToken, pickForwardHeaders(request.headers))
   if (!tokens) return redirectToLogin(request, true)
 
   // Atualiza o header `cookie` da própria requisição: o Server Component já lê o token novo agora.

@@ -24,3 +24,12 @@ const MESSAGES: Partial<Record<string, string>> = {
 export function getApiErrorMessage(codigo: string | undefined, fallback?: string): string {
   return (codigo && MESSAGES[codigo]) || fallback || DEFAULT_MESSAGE
 }
+
+const TOO_MANY_ATTEMPTS_MESSAGE = "Muitas tentativas. Aguarde alguns minutos e tente de novo."
+/** 429 = rate limit; 423 = conta bloqueada após tentativas erradas (o código varia, o status não). */
+const TOO_MANY_ATTEMPTS_STATUSES = new Set([423, 429])
+
+/** Mensagem do login: rate limit e lockout pelo status; o resto pelo código. */
+export function getLoginErrorMessage(status: number, codigo: string | undefined): string {
+  return TOO_MANY_ATTEMPTS_STATUSES.has(status) ? TOO_MANY_ATTEMPTS_MESSAGE : getApiErrorMessage(codigo)
+}

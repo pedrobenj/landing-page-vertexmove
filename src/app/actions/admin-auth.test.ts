@@ -64,6 +64,15 @@ describe("loginAdmin", () => {
     })
   })
 
+  it.each([429, 423])("status %i (rate limit / lockout) → mensagem para aguardar", async (status) => {
+    override.transport = async () => Response.json({ error: { codigo: "CONTA_BLOQUEADA", mensagem: "x" } }, { status })
+
+    const response = await loginAdmin({ email: "admin@example.com", senha: "Vertex@Dev12345" })
+
+    expect(response).toMatchObject({ status, error: "Muitas tentativas. Aguarde alguns minutos e tente de novo." })
+    expect(jar.size).toBe(0)
+  })
+
   it("entrada inválida → 422 sem chamar a API", async () => {
     override.transport = vi.fn()
 

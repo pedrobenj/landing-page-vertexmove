@@ -6,14 +6,15 @@ import { ADMIN_LOGIN_PATH, ADMIN_SESSION_EXPIRED_PATH } from "@/lib/utils/consta
 
 import { apiFetch, type ApiFetchOptions } from "./api-client"
 import { isApiError } from "./api-error"
-import { getAccessToken } from "./admin-session"
+import { clearSession, getAccessToken } from "./admin-session"
 
 /**
  * `apiFetch` com o Bearer do cookie `vm_admin_at`.
  *
  * - Sem token → `/admin/login`.
- * - `401` da API (token revogado) → `/admin/sair`, que apaga os cookies antes de ir ao login. Ir direto
- *   ao login deixaria o cookie velho no browser (Server Components não gravam cookies).
+ * - `401` da API (token revogado) → tenta apagar os cookies (só dá em server actions e route handlers) e
+ *   vai a `/admin/sair`, que apaga de novo antes do login. Ir direto ao login deixaria o cookie velho no
+ *   browser (Server Components não gravam cookies).
  * - Demais erros sobem como `ApiError`.
  *
  * `redirect()` funciona lançando um erro: server actions que chamam `adminFetch` dentro de `try/catch`
@@ -26,7 +27,14 @@ export async function adminFetch<T>(path: string, options: ApiFetchOptions = {})
   try {
     return await apiFetch<T>(path, { ...options, headers: { ...options.headers, Authorization: `Bearer ${token}` } })
   } catch (error) {
-    if (isApiError(error) && error.status === 401) redirect(ADMIN_SESSION_EXPIRED_PATH)
+    if (isApiError(error) && error.status === 401) {
+      try {
+        await clearSession()
+      } catch {
+        // Server Component: não grava cookies; o `/admin/sair` apaga.
+      }
+      redirect(ADMIN_SESSION_EXPIRED_PATH)
+    }
     throw error
   }
 }

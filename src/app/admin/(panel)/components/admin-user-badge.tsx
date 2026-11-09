@@ -1,9 +1,9 @@
 import { getAdminRoleLabel, getInitials } from "@/lib/utils"
-import { getMe } from "@/server/api/endpoints/admin-auth"
+import { requireAdminSession } from "@/server/api/require-admin-session"
 
-/** Nome e papel do admin logado (`GET /admin/me`). Sem sessão válida, `getMe` redireciona ao login. */
+/** Nome e papel do admin logado (`GET /admin/me`). Sem sessão válida, redireciona ao login. */
 export async function AdminUserBadge() {
-  const admin = await getMe()
+  const admin = await requireAdminSession()
 
   return (
     <div className="flex items-center gap-2.5" data-testid="admin-user-badge">
