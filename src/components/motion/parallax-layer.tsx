@@ -16,10 +16,12 @@ interface ParallaxLayerProps {
 export function ParallaxLayer({ children, className, distance = HERO_PARALLAX_DISTANCE }: ParallaxLayerProps) {
   const shouldReduceMotion = useReducedMotion()
   const { scrollY } = useScroll()
-  const y = useTransform(scrollY, [0, 800], [0, distance], { clamp: true })
+  // O `style` precisa ser o mesmo no SSR e no client (senão há hydration mismatch:
+  // o servidor não sabe da preferência do usuário). Com movimento reduzido, a camada só não se desloca.
+  const y = useTransform(scrollY, [0, 800], [0, shouldReduceMotion ? 0 : distance], { clamp: true })
 
   return (
-    <motion.div aria-hidden="true" className={className} style={shouldReduceMotion ? undefined : { y }}>
+    <motion.div aria-hidden="true" className={className} style={{ y }}>
       {children}
     </motion.div>
   )

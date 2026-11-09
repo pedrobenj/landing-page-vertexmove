@@ -51,6 +51,10 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: imageHosts.map((hostname) => ({ protocol: "https", hostname })),
   },
+  async redirects() {
+    // Página antiga de medalhas: agora é o filtro de medalhas da loja (§5 do CLAUDE.md).
+    return [{ source: "/medalhas", destination: "/loja?tipo=medalhas", permanent: true }]
+  },
   async headers() {
     return [
       { source: "/:path*", headers: SECURITY_HEADERS },
