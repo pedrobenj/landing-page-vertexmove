@@ -147,7 +147,7 @@ Mapear no tema do shadcn/ui (CSS variables em `globals.css`):
 | `/inscricao/confirmada` | Confirmação pós-criação com código e valores (dados vindos da resposta do `POST /inscricoes`, guardados em memória no store) | — |
 | `/inscricao/retorno` | Página de volta do Checkout Pro (`back_urls`): lê `external_reference` e consulta o status real no backend | **pendente** (status por código) |
 | `/inscricao/[code]` | Status da inscrição e botão "Pagar agora" (gera novo link do Checkout Pro se ainda pendente) | **pendente** (`GET` por código não existe) |
-| `/consulta` | Consulta por WhatsApp **ou** CPF → lista mascarada | `POST /inscricoes/consulta` |
+| `/consulta` | Consulta por WhatsApp **ou** CPF → lista mascarada; cada item tem "Ver inscrição" (confirma a data de nascimento → detalhes + "Baixar comprovante (PDF)") | `POST /inscricoes/consulta`, `POST /inscricoes/comprovante` (**proposto**) |
 | `/loja`, `/loja/[slug]`, `/loja/carrinho`, `/loja/checkout`, `/pedido/[code]` | Loja de camisas e acessórios | **pendente** |
 | `/corridas-parceiras` | Corridas de parceiros com cupom exclusivo e link externo | **pendente** (conteúdo estático até haver endpoint) |
 | `/sobre` | Conheça o Vertex: história, missão, fotos, números | estático |
@@ -230,7 +230,7 @@ Papéis vistos no seed: organização (`admin@example.com`), operador (`operador
 - **Lote** — `POST|GET /admin/distancias/:distanciaId/lotes`, `PATCH /admin/lotes/:id`.
   Campos: `nome, precoCentavos, inicioEm, fimEm, quantidadeTotal, ordem, ativo`. O lote vigente é decidido pelo backend.
 - **Kit** — `POST|GET /admin/eventos/:eventoId/kits`, `PATCH /admin/kits/:id`.
-  Campos: `nome, descricao, ativo, fotos: [{ url, alt, ordem }]`.
+  Campos: `nome, descricao, precoCentavos, ativo, fotos: [{ url, alt, ordem }]`. **`precoCentavos` é proposto** (§16): valor do kit somado ao lote na inscrição. Kits do Vertex: ex. "Kit Camisa + Medalha" e "Kit Camisa"; "Sem kit" = só o valor da corrida.
 - **Tamanho de camisa** (catálogo global) — `POST|GET /admin/tamanhos-camisa`, `PATCH /admin/tamanhos-camisa/:id`.
   Campos: `codigo ("GG"), descricao, ordem, ativo`.
 - **Documento** — `POST /admin/documentos`, `GET /admin/documentos?eventoId=`.
@@ -261,6 +261,12 @@ Papéis vistos no seed: organização (`admin@example.com`), operador (`operador
 **`POST /inscricoes/consulta`** — corpo com **exatamente um** de `{ cpf }` ou `{ whatsapp }` (os dois → 422).
 - Resposta: `{ items: [{ nomeMascarado, evento, distancia, status, inscritoEm }], nextCursor }`.
 - **Não retorna código nem valores**; CPF sem inscrições → `200` com `items: []` (não revela se o CPF existe).
+- **Proposto:** cada item traz `referencia` (opaca, não é o código) para pedir o comprovante.
+
+**`POST /inscricoes/comprovante`** (**proposto**, já no mock) — `{ referencia, dataNascimento: 'YYYY-MM-DD' }`.
+- Resposta `200`: `{ codigo, status, nomeCompleto, cpfMascarado, evento: { nome, dataEvento, horarioLargada, localizacaoResumo }, distancia, kit, tamanhoCamisa, valorBaseCentavos, valorDescontoCentavos, valorTotalCentavos, inscritoEm }`.
+- Referência inexistente **ou** nascimento errado → mesmo `404` (não revela qual falhou). Precisa de rate limit no backend.
+- O PDF do comprovante é gerado no servidor do Next (`src/server/pdf/`, `pdf-lib`) e entregue por server action em base64 — nunca por URL com dados do atleta.
 
 ---
 
@@ -269,6 +275,7 @@ Papéis vistos no seed: organização (`admin@example.com`), operador (`operador
 O backend é a autoridade. O front **valida para UX** e **nunca** calcula preço, vaga ou lote para decidir algo — exibe o que a API retorna.
 
 - **Preço/lote/vagas:** exibir o que vier do detalhe público do evento; a cobrança é o `valorTotalCentavos` devolvido por `POST /inscricoes`.
+- **Kit:** cada kit tem preço próprio (`precoCentavos`) somado ao lote; sem kit, paga só o lote. O resumo mostra a prévia (lote + kit = total); o valor cobrado é o que a API devolver. No mock, o desconto 60+ incide só sobre o lote.
 - **Normalização antes de enviar:** CPF só dígitos (`normalizeCpf`), WhatsApp em E.164 `+55DDDNÚMERO` (`toE164Phone`), datas `YYYY-MM-DD`. Máscaras apenas na UI.
 - **Validação local (Zod):** dígitos do CPF (`isValidCpf`), WhatsApp brasileiro válido, nascimento no passado, pelo menos CPF ou WhatsApp, ambos os documentos aceitos.
 - **Consulta:** campo único com seletor "WhatsApp / CPF"; enviar só o escolhido. Lista exibe nome mascarado, evento, distância, status e data — sem link para o código (a API não o devolve).
@@ -549,6 +556,8 @@ Antes de cada commit: `lint`, `typecheck` e `build` passando. Commits no padrão
 
 ### Backend (combinar com o time da API)
 - [ ] O detalhe público `GET /eventos/:slug` precisa expor: distâncias (com `id`), preço do lote vigente e vagas/esgotado, kits ativos (com `id` e fotos), tamanhos de camisa disponíveis e **IDs dos documentos vigentes** (regulamento e termo) — sem eles o front não consegue montar `documentosAceitos`, `kitId` e `tamanhoCamisaId`.
+- [ ] Preço do kit: `precoCentavos` no kit (admin e detalhe público), somado ao lote em `valorBaseCentavos`. Definir se o desconto 60+ incide sobre o kit.
+- [ ] Comprovante na consulta: `referencia` opaca em cada item de `POST /inscricoes/consulta` e `POST /inscricoes/comprovante` (`{ referencia, dataNascimento }` → dados da inscrição), com rate limit por IP/referência.
 - [ ] Endpoint para buscar inscrição por código (status/pagamento) — hoje a consulta não devolve código.
 - [ ] Pagamento via **Checkout Pro**: endpoint que cria a preferência e devolve `checkoutUrl` (`init_point`), webhook do Mercado Pago (validar assinatura `x-signature`, idempotente por `payment_id`), status da inscrição por código para a página de retorno, expiração de pendentes alinhada à preferência e novo link para "Pagar agora".
 - [ ] Listagem/exportação de inscrições no admin e marcação de retirada de kit.

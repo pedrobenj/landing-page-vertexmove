@@ -8,6 +8,7 @@ import type { PublicEvent } from "@/types/api/event.interface"
 import type { PartnerRace } from "@/types/api/partner-race.interface"
 import type { PublicEventDetail } from "@/types/api/public-event-detail.interface"
 import type { RegistrationCheckout, RegistrationDetails } from "@/types/api/registration-details.interface"
+import type { RegistrationReceipt } from "@/types/api/registration-receipt.interface"
 import type { CreatedRegistration, RegistrationLookupItem } from "@/types/api/registration.interface"
 
 import { resetMockDb } from "./mock-db"
@@ -134,7 +135,10 @@ describe("mockFetch", () => {
       expect(detail).not.toHaveProperty("id")
       expect(detail.distancias!.map((distance) => distance.nome)).toEqual(["5 km", "10 km", "Caminhada 3 km"])
       expect(detail.distancias![0].loteVigente).toEqual({ nome: "1º lote", precoCentavos: 8990 })
-      expect(detail.kits!.map((kit) => kit.nome)).toEqual(["Kit Camisa + Medalha", "Kit Camisa"])
+      expect(detail.kits!.map((kit) => [kit.nome, kit.precoCentavos])).toEqual([
+        ["Kit Camisa + Medalha", 5000],
+        ["Kit Camisa", 3000],
+      ])
       expect(detail.tamanhosCamisa!.map((size) => size.codigo)).toEqual(["PP", "P", "M", "G", "GG", "XGG"])
       expect(detail.documentosVigentes!.map((document) => document.tipo)).toEqual(["regulamento", "termo_responsabilidade"])
     })
@@ -185,6 +189,24 @@ describe("mockFetch", () => {
 
       expect(body.valorDescontoCentavos).toBe(4495)
       expect(body.valorTotalCentavos).toBe(4495)
+    })
+
+    it("soma o preço do kit ao lote", async () => {
+      const detail = await getDetail()
+      const res = await call("POST", "/inscricoes", { body: await registrationBody({ kitId: detail.kits![0].id }) })
+      const body = (await res.json()) as CreatedRegistration
+
+      expect(body).toMatchObject({ valorBaseCentavos: 13990, valorDescontoCentavos: 0, valorTotalCentavos: 13990 })
+    })
+
+    it("o desconto 60+ vale só sobre o lote, não sobre o kit", async () => {
+      const detail = await getDetail()
+      const res = await call("POST", "/inscricoes", {
+        body: await registrationBody({ kitId: detail.kits![1].id, dataNascimento: "1960-01-01" }),
+      })
+      const body = (await res.json()) as CreatedRegistration
+
+      expect(body).toMatchObject({ valorBaseCentavos: 11990, valorDescontoCentavos: 4495, valorTotalCentavos: 7495 })
     })
 
     it("recusa duplicata na mesma distância com 409", async () => {
@@ -337,11 +359,59 @@ describe("mockFetch", () => {
         status: "pendente",
       })
       expect(page.items[0]).not.toHaveProperty("codigo")
+      expect(page.items[0].referencia).toEqual(expect.any(String))
+      expect(page.items[0].referencia).not.toMatch(/^VX-/)
     })
 
     it("devolve lista vazia para CPF sem inscrições", async () => {
       const res = await call("POST", "/inscricoes/consulta", { body: { cpf: OTHER_CPF } })
       expect(await res.json()).toEqual({ items: [], nextCursor: null })
+    })
+  })
+
+  describe("POST /inscricoes/comprovante", () => {
+    async function createAndLookup(): Promise<string> {
+      const detail = await getDetail()
+      await call("POST", "/inscricoes", { body: await registrationBody({ kitId: detail.kits![0].id, tamanhoCamisaId: 3 }) })
+      const res = await call("POST", "/inscricoes/consulta", { body: { cpf: VALID_CPF } })
+      return ((await res.json()) as CursorPage<RegistrationLookupItem>).items[0].referencia
+    }
+
+    it("devolve os dados da inscrição com a data de nascimento certa", async () => {
+      const referencia = await createAndLookup()
+      const res = await call("POST", "/inscricoes/comprovante", { body: { referencia, dataNascimento: "1990-05-10" } })
+      const body = (await res.json()) as RegistrationReceipt
+
+      expect(res.status).toBe(200)
+      expect(body).toMatchObject({
+        codigo: expect.stringMatching(/^VX-\d{4}-\d{8}$/),
+        status: "pendente",
+        nomeCompleto: "Ana Maria Silva",
+        cpfMascarado: "***.982.247-**",
+        distancia: "5 km",
+        kit: "Kit Camisa + Medalha",
+        tamanhoCamisa: "M",
+        valorTotalCentavos: 13990,
+      })
+      expect(body.evento).toMatchObject({ nome: "Corrida Vertex Beira-Mar 2026" })
+      expect(JSON.stringify(body)).not.toContain(VALID_CPF)
+    })
+
+    it("responde 404 com nascimento errado ou referência inexistente (mesma resposta)", async () => {
+      const referencia = await createAndLookup()
+      for (const body of [
+        { referencia, dataNascimento: "1991-05-10" },
+        { referencia: "nao-existe", dataNascimento: "1990-05-10" },
+      ]) {
+        const res = await call("POST", "/inscricoes/comprovante", { body })
+        expect(res.status).toBe(404)
+        expect(await errorCode(res)).toBe("NAO_ENCONTRADO")
+      }
+    })
+
+    it("recusa corpo inválido com 422", async () => {
+      const res = await call("POST", "/inscricoes/comprovante", { body: { referencia: "x", dataNascimento: "10/05/1990" } })
+      expect(res.status).toBe(422)
     })
   })
 

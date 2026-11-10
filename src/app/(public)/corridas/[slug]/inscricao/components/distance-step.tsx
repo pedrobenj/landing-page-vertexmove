@@ -108,6 +108,7 @@ export function DistanceStep({ event, defaultValues, onSubmit }: DistanceStepPro
                     value={String(kit.id)}
                     name={kit.nome}
                     description={kit.descricao}
+                    priceCents={kit.precoCentavos}
                     inputRef={index === 0 ? field.ref : undefined}
                   />
                 ))}

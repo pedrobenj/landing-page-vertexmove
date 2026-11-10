@@ -19,6 +19,8 @@ export interface PublicKit {
   id: number
   nome: string
   descricao?: string | null
+  /** Valor do kit, somado ao do lote vigente (sem kit = só o lote). */
+  precoCentavos: number
   fotos: KitPhoto[]
 }
 

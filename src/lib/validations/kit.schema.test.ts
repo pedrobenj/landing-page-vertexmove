@@ -5,6 +5,7 @@ import { kitFormSchema, type KitFormInput, MAX_KIT_PHOTOS } from "./kit.schema"
 const valid: KitFormInput = {
   nome: "Kit completo",
   descricao: "",
+  precoCentavos: "50,00",
   ativo: true,
   fotos: [{ url: "https://cdn.example.com/kit.jpg", alt: "Camisa e medalha" }],
 }
@@ -19,9 +20,16 @@ describe("kitFormSchema", () => {
     expect(kitFormSchema.parse(valid)).toEqual({
       nome: "Kit completo",
       descricao: null,
+      precoCentavos: 5000,
       ativo: true,
       fotos: [{ url: "https://cdn.example.com/kit.jpg", alt: "Camisa e medalha", ordem: 1 }],
     })
+  })
+
+  it("exige um preço válido (0 é permitido)", () => {
+    expect(errorPaths({ ...valid, precoCentavos: "" })).toEqual(["precoCentavos"])
+    expect(errorPaths({ ...valid, precoCentavos: "abc" })).toEqual(["precoCentavos"])
+    expect(kitFormSchema.parse({ ...valid, precoCentavos: "0" }).precoCentavos).toBe(0)
   })
 
   it("a ordem é a posição na lista", () => {

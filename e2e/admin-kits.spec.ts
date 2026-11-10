@@ -18,6 +18,7 @@ test.describe("Admin — kits", () => {
     const dialog = page.getByRole("dialog", { name: "Novo kit" })
     await dialog.getByLabel("Nome do kit").fill(nome)
     await dialog.getByLabel("O que vem no kit (opcional)").fill("Camisa, medalha e número de peito.")
+    await dialog.getByLabel("Preço do kit (R$)").fill("50,00")
     await dialog.getByRole("button", { name: "Adicionar foto" }).click()
     await dialog.getByLabel("URL da foto").fill("foto-sem-protocolo.jpg")
     await dialog.getByLabel("Descrição da foto").fill("Camisa oficial azul")
@@ -30,6 +31,7 @@ test.describe("Admin — kits", () => {
     const card = page.getByRole("article", { name: nome })
     await expect(card).toBeVisible({ timeout: 20_000 })
     await expect(card.getByText("1 foto")).toBeVisible()
+    await expect(card.getByText("+ R$ 50,00")).toBeVisible()
     await expect(card.getByRole("link", { name: /Camisa oficial azul/ })).toHaveAttribute(
       "href",
       "https://cdn.example.com/kits/camisa.jpg",

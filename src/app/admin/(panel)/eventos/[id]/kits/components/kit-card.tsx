@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge"
+import { formatCurrency } from "@/lib/utils"
 import { toKitFormValues } from "@/lib/utils/kit-form-values"
 import { pluralize } from "@/lib/utils/pluralize"
 import type { Kit } from "@/types/api/kit.interface"
@@ -26,6 +27,7 @@ export function KitCard({ eventId, kit, canManage }: KitCardProps) {
           </div>
           {canManage && <KitFormDialog eventId={eventId} kit={{ id: kit.id, nome: kit.nome }} defaultValues={toKitFormValues(kit)} />}
         </header>
+        <p className="font-heading font-bold text-brand-navy tabular-nums">+ {formatCurrency(kit.precoCentavos)}</p>
         {kit.descricao && <p className="text-sm text-foreground">{kit.descricao}</p>}
         <p className="text-xs font-bold tracking-wide text-muted-foreground uppercase">
           {photos.length === 0 ? "Sem fotos" : pluralize(photos.length, "foto", "fotos")}

@@ -25,6 +25,7 @@ const { createKitAction, updateKitAction } = await import("./admin-kits")
 const kit: KitFormInput = {
   nome: "Kit completo",
   descricao: "",
+  precoCentavos: "50,00",
   ativo: true,
   fotos: [{ url: "https://cdn.example.com/kit.jpg", alt: "Camisa" }],
 }

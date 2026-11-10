@@ -1,6 +1,7 @@
 import { Package } from "lucide-react"
 
 import { CoverImage } from "@/components/sections"
+import { formatCurrency } from "@/lib/utils"
 import type { PublicKit } from "@/types/api/public-event-detail.interface"
 
 import { KitPhotoThumbnail } from "./kit-photo-thumbnail"
@@ -9,7 +10,7 @@ interface KitListItemProps {
   kit: PublicKit
 }
 
-/** Card do kit: foto principal (ou capa da marca), miniaturas, nome e descrição. */
+/** Card do kit: foto principal (ou capa da marca), miniaturas, nome, preço e descrição. */
 export function KitListItem({ kit }: KitListItemProps) {
   const [cover, ...extraPhotos] = [...kit.fotos].sort((a, b) => a.ordem - b.ordem)
 
@@ -24,6 +25,9 @@ export function KitListItem({ kit }: KitListItemProps) {
             <Package aria-hidden="true" className="size-5 text-brand-green-text" />
             {kit.nome}
           </h3>
+          <p className="font-heading text-lg font-black text-brand-navy-deep tabular-nums">
+            + {formatCurrency(kit.precoCentavos)} <span className="text-sm font-semibold text-muted-foreground">na inscrição</span>
+          </p>
           {kit.descricao && <p className="text-muted-foreground">{kit.descricao}</p>}
           {extraPhotos.length > 0 && (
             <ul aria-label={`Mais fotos do ${kit.nome}`} className="mt-auto flex flex-wrap gap-2 pt-2">

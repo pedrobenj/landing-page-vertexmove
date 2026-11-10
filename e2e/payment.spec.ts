@@ -23,7 +23,7 @@ test.describe("Pagamento (Checkout Pro, mock)", () => {
     // (O estado intermediário pode passar antes da primeira checagem se a rota demorar a compilar.)
     await expect(page.getByRole("heading", { name: "Pagamento confirmado!" })).toBeVisible({ timeout: 30_000 })
     await expect(page).toHaveURL(`/inscricao/${code}`)
-    await expect(page.getByText("R$ 89,90")).toBeVisible()
+    await expect(page.getByText("R$ 139,90")).toBeVisible()
   })
 
   test("pagamento recusado oferece nova tentativa", async ({ page }) => {

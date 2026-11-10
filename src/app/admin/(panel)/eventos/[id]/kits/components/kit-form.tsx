@@ -45,6 +45,15 @@ export function KitForm({ eventId, kitId, defaultValues, onSaved, onBusyChange }
       <fieldset disabled={isBusy} className="flex min-w-0 flex-col gap-4">
         <FormTextField idPrefix={idPrefix} control={form.control} name="nome" label="Nome do kit" placeholder="Kit completo" maxLength={80} />
         <FormTextField idPrefix={idPrefix} control={form.control} name="descricao" label="O que vem no kit (opcional)" multiline />
+        <FormTextField
+          idPrefix={idPrefix}
+          control={form.control}
+          name="precoCentavos"
+          label="Preço do kit (R$)"
+          description="Somado ao valor do lote na inscrição."
+          inputMode="decimal"
+          placeholder="50,00"
+        />
         <FormCheckboxField idPrefix={idPrefix} control={form.control} name="ativo" label="Ativo (aparece na inscrição)" />
 
         <FieldSet>

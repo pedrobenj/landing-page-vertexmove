@@ -1,6 +1,7 @@
 import "server-only"
 
 import type { CursorPage } from "@/types/api/cursor-page.interface"
+import type { RegistrationReceipt, RegistrationReceiptInput } from "@/types/api/registration-receipt.interface"
 import type {
   CreatedRegistration,
   CreateRegistrationInput,
@@ -23,4 +24,9 @@ export async function lookupRegistrations(
   cursor?: string,
 ): Promise<CursorPage<RegistrationLookupItem>> {
   return apiFetch("/inscricoes/consulta", { method: "POST", body: input, query: { cursor } })
+}
+
+/** `POST /inscricoes/comprovante` — referência da consulta + nascimento (contrato proposto, §16). */
+export async function getRegistrationReceipt(input: RegistrationReceiptInput): Promise<RegistrationReceipt> {
+  return apiFetch("/inscricoes/comprovante", { method: "POST", body: input })
 }

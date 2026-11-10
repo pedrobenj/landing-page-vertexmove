@@ -1,19 +1,23 @@
 import "server-only"
 
+import { randomUUID } from "node:crypto"
+
 import { API_ERROR_CODE } from "@/enums/api-error-code.enum"
 import { DOCUMENT_TYPE } from "@/enums/document-type.enum"
 import { EVENT_STATUS } from "@/enums/event-status.enum"
 import { PAYMENT_STATUS } from "@/enums/payment-status.enum"
 import { REGISTRATION_STATUS } from "@/enums/registration-status.enum"
 import { MOCK_CHECKOUT_PATH } from "@/lib/utils/checkout-url"
+import { maskCpf } from "@/lib/utils/masks"
 import type { RegistrationCheckout, RegistrationDetails } from "@/types/api/registration-details.interface"
+import type { RegistrationReceipt } from "@/types/api/registration-receipt.interface"
 import type { CreatedRegistration, RegistrationLookupItem } from "@/types/api/registration.interface"
 
 import { getMockDb, nextId } from "../mock-db"
 import { apiError, created, json, noContent, type MockRoute } from "../mock-http"
 import { findCurrentDocuments, findCurrentTier, isActiveRegistrationStatus, isSoldOut, maskName } from "../mock-mappers"
 import { paginate } from "../mock-pagination"
-import { createRegistrationSchema, lookupSchema, mockPaymentSchema, validate } from "../mock-schemas"
+import { createRegistrationSchema, lookupSchema, mockPaymentSchema, receiptSchema, validate } from "../mock-schemas"
 import { ageOn, toFortalezaIso, todayInFortaleza } from "../mock-time"
 import type { MockRegistration } from "../mock-types"
 
@@ -58,6 +62,30 @@ function toDetails(registration: MockRegistration): RegistrationDetails {
   }
 }
 
+function toReceipt(registration: MockRegistration): RegistrationReceipt {
+  const db = getMockDb()
+  const event = db.events.find((item) => item.id === registration.eventoId)
+  return {
+    codigo: registration.codigo,
+    status: registration.status,
+    nomeCompleto: registration.nomeCompleto,
+    cpfMascarado: registration.cpf ? maskCpf(registration.cpf) : null,
+    evento: {
+      nome: event?.nome ?? "",
+      dataEvento: event?.dataEvento ?? "",
+      horarioLargada: event?.horarioLargada ?? "",
+      localizacaoResumo: event ? `${event.localNome} — ${event.cidade}/${event.uf}` : "",
+    },
+    distancia: db.distances.find((item) => item.id === registration.distanciaId)?.nome ?? "",
+    kit: db.kits.find((item) => item.id === registration.kitId)?.nome ?? null,
+    tamanhoCamisa: db.shirtSizes.find((item) => item.id === registration.tamanhoCamisaId)?.codigo ?? null,
+    valorBaseCentavos: registration.valorBaseCentavos,
+    valorDescontoCentavos: registration.valorDescontoCentavos,
+    valorTotalCentavos: registration.valorTotalCentavos,
+    inscritoEm: registration.inscritoEm,
+  }
+}
+
 function sameAthleteName(a: string, b: string): boolean {
   return a.trim().toLocaleLowerCase("pt-BR") === b.trim().toLocaleLowerCase("pt-BR")
 }
@@ -83,9 +111,8 @@ export const registrationRoutes: MockRoute[] = [
       const tier = findCurrentTier(distance.id)
       if (!tier) return apiError(422, API_ERROR_CODE.INVALID_DATA, "Não há lote vigente para esta distância.")
 
-      if (input.kitId && !db.kits.some((kit) => kit.id === input.kitId && kit.eventoId === event.id && kit.ativo)) {
-        return apiError(422, API_ERROR_CODE.INVALID_DATA, "Kit inválido para este evento.")
-      }
+      const kit = input.kitId ? db.kits.find((item) => item.id === input.kitId && item.eventoId === event.id && item.ativo) : null
+      if (input.kitId && !kit) return apiError(422, API_ERROR_CODE.INVALID_DATA, "Kit inválido para este evento.")
       if (input.tamanhoCamisaId && !db.shirtSizes.some((size) => size.id === input.tamanhoCamisaId && size.ativo)) {
         return apiError(422, API_ERROR_CODE.INVALID_DATA, "Tamanho de camisa inválido.")
       }
@@ -123,14 +150,16 @@ export const registrationRoutes: MockRoute[] = [
       }
 
       const id = nextId(db.registrations)
-      const valorBaseCentavos = tier.precoCentavos
+      // Base = lote + kit. O desconto 60+ vale só sobre a inscrição (lote), não sobre o kit.
+      const valorBaseCentavos = tier.precoCentavos + (kit?.precoCentavos ?? 0)
       const valorDescontoCentavos =
         ageOn(input.dataNascimento, event.dataEvento) >= SENIOR_AGE
-          ? Math.round((valorBaseCentavos * SENIOR_DISCOUNT_PERCENT) / 100)
+          ? Math.round((tier.precoCentavos * SENIOR_DISCOUNT_PERCENT) / 100)
           : 0
       const registration: MockRegistration = {
         id,
         codigo: `VX-${todayInFortaleza().slice(0, 4)}-${String(id).padStart(8, "0")}`,
+        referencia: randomUUID(),
         eventoId: event.id,
         distanciaId: distance.id,
         kitId: input.kitId ?? null,
@@ -177,6 +206,7 @@ export const registrationRoutes: MockRoute[] = [
         .filter((item) => ("cpf" in input ? item.cpf === input.cpf : item.whatsapp === input.whatsapp))
         .sort((a, b) => b.id - a.id)
       const page = paginate(matches, query, (item) => item.id, (item): RegistrationLookupItem => ({
+        referencia: item.referencia,
         nomeMascarado: maskName(item.nomeCompleto),
         evento: db.events.find((event) => event.id === item.eventoId)?.nome ?? "",
         distancia: db.distances.find((distance) => distance.id === item.distanciaId)?.nome ?? "",
@@ -184,6 +214,21 @@ export const registrationRoutes: MockRoute[] = [
         inscritoEm: item.inscritoEm,
       }))
       return page instanceof Response ? page : json(200, page)
+    },
+  },
+  {
+    method: "POST",
+    path: "/inscricoes/comprovante",
+    handler: ({ body }) => {
+      const input = validate(receiptSchema, body)
+      if (input instanceof Response) return input
+      // Referência inexistente ou nascimento errado: mesma resposta, para não revelar qual dos dois falhou.
+      const match = getMockDb().registrations.find(
+        (item) => item.referencia === input.referencia && item.dataNascimento === input.dataNascimento,
+      )
+      const registration = match ? findRegistration(match.codigo) : undefined
+      if (!registration) return apiError(404, API_ERROR_CODE.NOT_FOUND, "Inscrição não encontrada.")
+      return json(200, toReceipt(registration))
     },
   },
   {

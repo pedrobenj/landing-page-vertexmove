@@ -60,6 +60,12 @@ export const lookupSchema = z.union([
   z.strictObject({ whatsapp: e164 }),
 ])
 
+/** `POST /inscricoes/comprovante`: referência da consulta + nascimento do atleta. */
+export const receiptSchema = z.strictObject({
+  referencia: z.string().min(1).max(100),
+  dataNascimento: z.iso.date(),
+})
+
 /** Resultado escolhido no checkout falso (faz o papel do webhook do Mercado Pago). */
 export const mockPaymentSchema = z.strictObject({ resultado: z.enum(PAYMENT_STATUS) })
 
@@ -110,6 +116,7 @@ export const priceTierSchema = z.object({
 export const kitSchema = z.object({
   nome: z.string().trim().min(1),
   descricao: nullableText.default(null),
+  precoCentavos: z.number().int().min(0).default(0),
   ativo: z.boolean().default(true),
   fotos: z.array(z.object({ url: z.url(), alt: z.string(), ordem: z.number().int().min(0) })).default([]),
 })

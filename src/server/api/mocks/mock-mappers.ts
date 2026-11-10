@@ -127,7 +127,7 @@ export function toPublicEventDetail(event: MockEvent): PublicEventDetail {
       .map(toPublicDistance),
     kits: db.kits
       .filter((kit) => kit.eventoId === event.id && kit.ativo)
-      .map(({ id, nome, descricao, fotos }) => ({ id, nome, descricao, fotos })),
+      .map(({ id, nome, descricao, precoCentavos, fotos }) => ({ id, nome, descricao, precoCentavos, fotos })),
     tamanhosCamisa: db.shirtSizes.filter((size) => size.ativo).sort((a, b) => a.ordem - b.ordem),
     documentosVigentes: findCurrentDocuments(event.id),
   }

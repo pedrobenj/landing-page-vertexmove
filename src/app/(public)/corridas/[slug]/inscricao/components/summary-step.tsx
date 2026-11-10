@@ -15,6 +15,7 @@ import type { PublicEventDetail } from "@/types/api/public-event-detail.interfac
 import type { CreatedRegistration, CreateRegistrationInput } from "@/types/api/registration.interface"
 
 import { StepHeading } from "./step-heading"
+import { SummaryPriceLine } from "./summary-price-line"
 import { SummaryRow } from "./summary-row"
 import { SummarySection } from "./summary-section"
 
@@ -33,8 +34,8 @@ interface SummaryStepProps {
 const CONFIRMATION_PATH = "/inscricao/confirmada"
 
 /**
- * Etapa 4: revisão com dados mascarados e envio para `POST /inscricoes`. O preço exibido é o do lote
- * vigente; o valor final (com descontos) vem da API na confirmação.
+ * Etapa 4: revisão com dados mascarados e envio para `POST /inscricoes`. O valor exibido (lote vigente +
+ * kit) é uma prévia; o valor final (com descontos) vem da API na confirmação.
  */
 export function SummaryStep({
   event,
@@ -52,14 +53,18 @@ export function SummaryStep({
   // Trava síncrona contra duplo envio (o estado do React só muda no próximo render).
   const submittingRef = useRef(false)
 
-  const selection = useMemo(
-    () => ({
-      distance: event.distancias?.find((item) => item.id === distance.distanciaId),
-      kit: event.kits?.find((item) => item.id === distance.kitId),
+  const selection = useMemo(() => {
+    const selectedDistance = event.distancias?.find((item) => item.id === distance.distanciaId)
+    const kit = event.kits?.find((item) => item.id === distance.kitId)
+    const tierCents = selectedDistance?.loteVigente?.precoCentavos
+    return {
+      distance: selectedDistance,
+      kit,
       size: event.tamanhosCamisa?.find((item) => item.id === distance.tamanhoCamisaId),
-    }),
-    [event, distance],
-  )
+      tierCents,
+      totalCents: tierCents === undefined ? undefined : tierCents + (kit?.precoCentavos ?? 0),
+    }
+  }, [event, distance])
 
   function handleConfirm() {
     if (submittingRef.current) return
@@ -149,15 +154,20 @@ export function SummaryStep({
           <h3 id="summary-price-title" className="sr-only">
             Valor
           </h3>
-          <div className="flex items-end justify-between gap-4">
-            <p className="flex flex-col">
-              <span className="text-xs font-bold tracking-widest text-brand-green uppercase">
-                {selection.distance?.loteVigente?.nome ?? "Lote vigente"}
-              </span>
-              <span className="text-sm text-white/75">Valor da inscrição</span>
-            </p>
-            <p className="font-heading text-3xl font-black">
-              {selection.distance?.loteVigente ? formatCurrency(selection.distance.loteVigente.precoCentavos) : "—"}
+          <dl className="flex flex-col gap-2 border-b border-white/15 pb-4">
+            <SummaryPriceLine
+              label={`Inscrição (${selection.distance?.loteVigente?.nome ?? "lote vigente"})`}
+              value={selection.tierCents === undefined ? "—" : formatCurrency(selection.tierCents)}
+            />
+            <SummaryPriceLine
+              label={selection.kit?.nome ?? "Sem kit"}
+              value={selection.kit ? formatCurrency(selection.kit.precoCentavos) : formatCurrency(0)}
+            />
+          </dl>
+          <div className="flex items-end justify-between gap-4 pt-4">
+            <span className="text-xs font-bold tracking-widest text-brand-green uppercase">Total</span>
+            <p data-testid="summary-total" className="font-heading text-3xl font-black tabular-nums">
+              {selection.totalCents === undefined ? "—" : formatCurrency(selection.totalCents)}
             </p>
           </div>
           <p className="mt-4 flex gap-2 border-t border-white/15 pt-4 text-sm text-white/80">

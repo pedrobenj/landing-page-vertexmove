@@ -11,6 +11,7 @@ describe("toKitFormValues", () => {
       eventoId: 4,
       nome: "Kit",
       descricao: null,
+      precoCentavos: 5000,
       ativo: false,
       fotos: [
         { url: "https://a.example/2.jpg", alt: "B", ordem: 20 },
@@ -18,6 +19,7 @@ describe("toKitFormValues", () => {
       ],
     })
     expect(values.descricao).toBe("")
+    expect(values.precoCentavos).toBe("50,00")
     expect(values.fotos).toEqual([
       { url: "https://a.example/1.jpg", alt: "A" },
       { url: "https://a.example/2.jpg", alt: "B" },

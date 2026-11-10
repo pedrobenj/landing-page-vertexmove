@@ -25,9 +25,13 @@ test.describe("Inscrição em etapas", () => {
 
     await expect(page.getByRole("heading", { name: "Revise sua inscrição" })).toBeVisible()
     await expect(page.getByText("5 km", { exact: true })).toBeVisible()
-    await expect(page.getByText("Kit Camisa + Medalha", { exact: true })).toBeVisible()
+    // O kit aparece na seção "Prova" e no quadro de valores (linha do kit).
+    await expect(page.getByRole("definition").filter({ hasText: /^Kit Camisa \+ Medalha$/ })).toBeVisible()
+    await expect(page.getByRole("term").filter({ hasText: /^Kit Camisa \+ Medalha$/ })).toBeVisible()
     await expect(page.getByText(`***.${cpf.slice(3, 6)}.${cpf.slice(6, 9)}-**`)).toBeVisible()
     await expect(page.getByText("R$ 89,90")).toBeVisible()
+    await expect(page.getByText("R$ 50,00")).toBeVisible()
+    await expect(page.getByTestId("summary-total")).toHaveText(/R\$\s139,90/)
     await expect(page.getByText(/O valor final é confirmado após o envio/)).toBeVisible()
 
     await page.getByRole("button", { name: "Confirmar inscrição" }).click()
@@ -35,7 +39,7 @@ test.describe("Inscrição em etapas", () => {
     await expect(page.getByRole("heading", { level: 1, name: "Inscrição realizada!" })).toBeVisible()
     await expect(page.getByTestId("registration-code")).toHaveText(/^VX-\d{4}-\d{8}$/)
     await expect(page.getByText("Status: Pendente")).toBeVisible()
-    await expect(page.getByText("R$ 89,90").first()).toBeVisible()
+    await expect(page.getByText("R$ 139,90").first()).toBeVisible()
   })
 
   test("exige a distância e o CPF ou o WhatsApp", async ({ page }) => {

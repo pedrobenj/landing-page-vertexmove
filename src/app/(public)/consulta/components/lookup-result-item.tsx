@@ -3,11 +3,16 @@ import { CalendarCheck, Route, User } from "lucide-react"
 import { cn, formatDateTime, getRegistrationStatusBadgeClass, getRegistrationStatusLabel } from "@/lib/utils"
 import type { RegistrationLookupItem } from "@/types/api/registration.interface"
 
+import { RegistrationReceiptDialog } from "./registration-receipt-dialog"
+
 interface LookupResultItemProps {
   item: RegistrationLookupItem
 }
 
-/** Inscrição encontrada: só dados mascarados/mínimos (a API não devolve CPF, WhatsApp nem e-mail). */
+/**
+ * Inscrição encontrada: só dados mascarados/mínimos (a API não devolve CPF, WhatsApp nem e-mail). O botão
+ * "Ver inscrição" libera os detalhes e o PDF após confirmar a data de nascimento.
+ */
 export function LookupResultItem({ item }: LookupResultItemProps) {
   return (
     <li>
@@ -34,6 +39,9 @@ export function LookupResultItem({ item }: LookupResultItemProps) {
             </span>
           </li>
         </ul>
+        <div className="border-t pt-4 [&>button]:w-full sm:[&>button]:w-auto">
+          <RegistrationReceiptDialog referencia={item.referencia} ariaLabel={`Ver inscrição: ${item.evento} — ${item.distancia}`} />
+        </div>
       </article>
     </li>
   )

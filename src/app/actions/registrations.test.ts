@@ -9,7 +9,8 @@ const mockEnv = vi.hoisted(() => ({ NODE_ENV: "test", API_URL: "http://api.test"
 vi.mock("@/lib/env", () => ({ env: mockEnv }))
 vi.mock("next/headers", () => ({ headers: async () => new Headers() }))
 
-const { createRegistrationAction, lookupRegistrationsAction } = await import("./registrations")
+const { createRegistrationAction, downloadRegistrationReceiptAction, getRegistrationReceiptAction, lookupRegistrationsAction } =
+  await import("./registrations")
 const { resetMockDb } = await import("@/server/api/mocks/mock-db")
 
 const input: CreateRegistrationInput = {
@@ -33,9 +34,10 @@ describe("createRegistrationAction", () => {
     expect(response.data).toMatchObject({
       codigo: expect.stringMatching(/^VX-\d{4}-\d{8}$/),
       status: REGISTRATION_STATUS.PENDING,
-      valorBaseCentavos: 8990,
+      // Lote (R$ 89,90) + Kit Camisa + Medalha (R$ 50,00).
+      valorBaseCentavos: 13990,
       valorDescontoCentavos: 0,
-      valorTotalCentavos: 8990,
+      valorTotalCentavos: 13990,
     })
   })
 
@@ -87,5 +89,42 @@ describe("lookupRegistrationsAction", () => {
   it("entrada inválida → 422 com a mensagem do schema", async () => {
     const response = await lookupRegistrationsAction({ tipo: "cpf", valor: "111.111.111-11" })
     expect(response).toMatchObject({ status: 422, code: API_ERROR_CODE.INVALID_DATA, error: "CPF inválido" })
+  })
+
+  describe("comprovante", () => {
+    async function lookupReference(): Promise<string> {
+      await createRegistrationAction(input)
+      const response = await lookupRegistrationsAction({ tipo: "cpf", valor: "529.982.247-25" })
+      return response.data!.items[0].referencia
+    }
+
+    it("libera os dados com a data de nascimento certa (DD/MM/AAAA)", async () => {
+      const referencia = await lookupReference()
+      const response = await getRegistrationReceiptAction({ referencia, dataNascimento: "06/12/1990" })
+      expect(response.status).toBe(200)
+      expect(response.data).toMatchObject({ nomeCompleto: "Maria da Silva", kit: "Kit Camisa + Medalha", valorTotalCentavos: 13990 })
+    })
+
+    it("nascimento errado → 404 com mensagem própria", async () => {
+      const referencia = await lookupReference()
+      const response = await getRegistrationReceiptAction({ referencia, dataNascimento: "07/12/1990" })
+      expect(response).toMatchObject({
+        status: 404,
+        error: "A data de nascimento não confere com a inscrição. Confira e tente de novo.",
+      })
+    })
+
+    it("data inválida → 422 sem chamar a API", async () => {
+      const response = await getRegistrationReceiptAction({ referencia: "x", dataNascimento: "31/02/1990" })
+      expect(response.status).toBe(422)
+    })
+
+    it("devolve o PDF em base64 com o nome do arquivo", async () => {
+      const referencia = await lookupReference()
+      const response = await downloadRegistrationReceiptAction({ referencia, dataNascimento: "06/12/1990" })
+      expect(response.status).toBe(200)
+      expect(response.data!.fileName).toMatch(/^comprovante-VX-\d{4}-\d{8}\.pdf$/)
+      expect(Buffer.from(response.data!.base64, "base64").subarray(0, 5).toString()).toBe("%PDF-")
+    })
   })
 })

@@ -36,6 +36,8 @@ export interface MockAdmin {
 export interface MockRegistration {
   id: number
   codigo: string
+  /** Referência opaca devolvida na consulta (pedido de comprovante). */
+  referencia: string
   eventoId: number
   distanciaId: number
   kitId: number | null

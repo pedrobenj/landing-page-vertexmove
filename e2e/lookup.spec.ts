@@ -21,6 +21,34 @@ test.describe("Consulta de inscrição", () => {
     await expect(page.getByText("Mendes")).toHaveCount(0)
   })
 
+  test("vê a inscrição e baixa o comprovante após confirmar a data de nascimento", async ({ page }) => {
+    test.slow()
+    const cpf = generateValidCpf()
+    await registerAthlete(page, { name: "Rita Souza Lima", birthDate: "14/03/1988", cpf, whatsapp: generateWhatsapp() })
+
+    await page.goto("/consulta")
+    await chooseOption(page, /^CPF$/)
+    await page.getByLabel("CPF usado na inscrição").fill(cpf)
+    await page.getByRole("button", { name: "Consultar" }).click()
+    await page.getByRole("button", { name: /^Ver inscrição: Corrida Vertex Beira-Mar 2026/ }).click()
+
+    const dialog = page.getByRole("dialog", { name: "Sua inscrição" })
+    await dialog.getByLabel("Data de nascimento do atleta").fill("15031988")
+    await dialog.getByRole("button", { name: "Ver inscrição" }).click()
+    await expect(dialog.getByText("A data de nascimento não confere com a inscrição.", { exact: false })).toBeVisible()
+
+    await dialog.getByLabel("Data de nascimento do atleta").fill("14031988")
+    await dialog.getByRole("button", { name: "Ver inscrição" }).click()
+    await expect(dialog.getByTestId("receipt-code")).toHaveText(/^VX-\d{4}-\d{8}$/)
+    await expect(dialog.getByText("Rita Souza Lima")).toBeVisible()
+    await expect(dialog.getByText("Kit Camisa + Medalha")).toBeVisible()
+
+    const downloadPromise = page.waitForEvent("download")
+    await dialog.getByRole("button", { name: "Baixar comprovante (PDF)" }).click()
+    const download = await downloadPromise
+    expect(download.suggestedFilename()).toMatch(/^comprovante-VX-\d{4}-\d{8}\.pdf$/)
+  })
+
   test("encontra a inscrição pelo WhatsApp", async ({ page }) => {
     test.slow()
     const whatsapp = generateWhatsapp()

@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { optionalTextField, urlField } from "./form-fields"
+import { optionalTextField, priceCentsField, urlField } from "./form-fields"
 
 export const MAX_KIT_PHOTOS = 10
 
@@ -14,6 +14,8 @@ const kitPhotoSchema = z.object({
 export const kitFormSchema = z.object({
   nome: z.string().trim().min(1, "Informe o nome do kit").max(80, "Nome com no máximo 80 caracteres"),
   descricao: optionalTextField,
+  /** Digitado em reais; somado ao valor do lote na inscrição. */
+  precoCentavos: priceCentsField(),
   ativo: z.boolean(),
   fotos: z
     .array(kitPhotoSchema)
