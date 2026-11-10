@@ -14,7 +14,7 @@ Plataforma web onde o atleta:
 
 1. Vê as corridas publicadas do Vertex;
 2. Escolhe a prova, a distância e, se houver, o kit e o tamanho da camisa;
-3. Preenche os dados, aceita regulamento e termo de responsabilidade e gera a inscrição (pagamento Pix/cartão — **pendente no backend**);
+3. Preenche os dados, aceita regulamento e termo de responsabilidade, gera a inscrição e paga via **Mercado Pago Checkout Pro** (Pix ou cartão — **endpoint pendente no backend**);
 4. Compra camisas, viseiras, acessórios e medalhas na **loja** (**pendente no backend**, ver §16);
 5. Conhece o grupo, os parceiros e as corridas parceiras com cupom exclusivo;
 6. Consulta suas inscrições **sem login e sem senha**, informando WhatsApp **ou** CPF.
@@ -124,7 +124,7 @@ Mapear no tema do shadcn/ui (CSS variables em `globals.css`):
 - **UI:** shadcn/ui + Radix UI
 - **Estilo:** Tailwind CSS
 - **Auth (somente admin):** JWT emitido pelo backend; sessão gerenciada pelo próprio Next via cookies HttpOnly (padrão BFF, ver §8). **Não usar NextAuth.** Atletas não têm conta.
-- **Pagamentos:** a definir no backend (Mercado Pago proposto). O webhook do gateway fica **no backend**, não no Next.
+- **Pagamentos:** **Mercado Pago — Checkout Pro** (Pix e cartão na página do Mercado Pago, com redirecionamento). A preferência de pagamento, as credenciais (`Access Token`) e o webhook ficam **no backend**; o Next só redireciona para o `init_point` e trata o retorno (ver §7, "Pagamento"). Sem SDK do Mercado Pago no front.
 - **Estado:** Zustand (UI, filtros, cursor de paginação, formulário multi-etapas, carrinho) + TanStack Query (dados no client)
 - **Formulários:** React Hook Form + Zod
 - **Datas:** date-fns com locale `ptBR`, fuso `America/Fortaleza`
@@ -145,7 +145,8 @@ Mapear no tema do shadcn/ui (CSS variables em `globals.css`):
 | `/corridas/[slug]` | Página do evento: capa, data/largada, local (mapa por `latitude`/`longitude`), distâncias e preço do lote vigente, kits (fotos), percurso, regulamento, FAQ, CTA fixo "Inscrever-se" no mobile | `GET /eventos/:slug` |
 | `/corridas/[slug]/inscricao` | Formulário em etapas (ver §7) | `POST /inscricoes` |
 | `/inscricao/confirmada` | Confirmação pós-criação com código e valores (dados vindos da resposta do `POST /inscricoes`, guardados em memória no store) | — |
-| `/inscricao/[code]` | Status/pagamento por código (QR Pix, copia-e-cola) | **pendente** (`GET` por código não existe) |
+| `/inscricao/retorno` | Página de volta do Checkout Pro (`back_urls`): lê `external_reference` e consulta o status real no backend | **pendente** (status por código) |
+| `/inscricao/[code]` | Status da inscrição e botão "Pagar agora" (gera novo link do Checkout Pro se ainda pendente) | **pendente** (`GET` por código não existe) |
 | `/consulta` | Consulta por WhatsApp **ou** CPF → lista mascarada | `POST /inscricoes/consulta` |
 | `/loja`, `/loja/[slug]`, `/loja/carrinho`, `/loja/checkout`, `/pedido/[code]` | Loja de camisas e medalhas | **pendente** |
 | `/medalhas` | Redireciona para `/loja?tipo=medalhas` | — |
@@ -274,16 +275,35 @@ O backend é a autoridade. O front **valida para UX** e **nunca** calcula preço
 - **Consulta:** campo único com seletor "WhatsApp / CPF"; enviar só o escolhido. Lista exibe nome mascarado, evento, distância, status e data — sem link para o código (a API não o devolve).
 - **Erros da API** mapeados para mensagens amigáveis pela tabela de §6 (`getApiErrorMessage` em `src/lib/utils/api-errors.ts`). `409 INSCRICAO_DUPLICADA` sugere ir para `/consulta`.
 - **Rate limit:** feito pelo backend. Como as chamadas saem do servidor do Next, **repassar o IP do cliente** em `X-Forwarded-For` (e `User-Agent`) para que o limite valha por atleta e não pelo IP da Vercel (confirmar com o backend qual header ele confia).
-- **Desconto 60+, cupons, número de peito, expiração de pendentes:** regras do backend (pendentes de implementação/definição — §15). O front só exibe `valorDescontoCentavos`.
+- **Desconto 60+, cupons, número de peito, expiração de pendentes:** regras do backend (pendentes de implementação/definição — §16). O front só exibe `valorDescontoCentavos`.
 
 ### Fluxo do formulário de inscrição (multi-etapas, estado em Zustand)
 1. **Distância e kit** — distância; kit (opcional, se o evento tiver); tamanho da camisa (quando aplicável)
 2. **Dados do atleta** — nome completo, data de nascimento, CPF, WhatsApp, e-mail (CPF ou WhatsApp obrigatório; recomendar ambos)
 3. **Termos** — checkbox do regulamento e do termo de responsabilidade, cada um com link para `documento.url` e versão; consentimento LGPD com link para `/privacidade`
 4. **Resumo e envio** — distância, lote, kit, total exibido → `POST /inscricoes`
-5. **Confirmação** — `/inscricao/confirmada` com código, status "Pendente" e valores da resposta; orientar a guardar o código. Pagamento entra aqui quando o backend expuser o endpoint.
+5. **Confirmação + pagamento** — `/inscricao/confirmada` com código, status "Pendente" e valores da resposta; orientar a guardar o código e botão "Ir para o pagamento" (Checkout Pro).
 
-Campos que a API **ainda não aceita** (sexo, equipe/assessoria, contato de emergência): não exibir até o backend suportar (§15).
+### Pagamento — Mercado Pago Checkout Pro
+1. Após criar a inscrição, a server action pede ao backend o link de pagamento (endpoint **pendente**, sugestão: `POST /inscricoes/:codigo/pagamento` → `{ checkoutUrl }`). O backend cria a **preferência** com:
+   - `external_reference` = código da inscrição (`VX-AAAA-NNNNNNNN`)
+   - item com título "Inscrição — <evento> — <distância>" e valor = `valorTotalCentavos` (preço sempre do servidor)
+   - `payer` com e-mail/nome quando houver, para pré-preencher
+   - `back_urls` → `${NEXT_PUBLIC_SITE_URL}/inscricao/retorno` (success, pending, failure) e `auto_return: 'approved'`
+   - `notification_url` → webhook **do backend**
+   - meios: Pix e cartão; **excluir boleto** (compensação demora mais que a reserva da vaga)
+   - `expires` / `date_of_expiration` alinhados ao prazo de reserva da inscrição pendente
+2. O front redireciona com `window.location.assign(checkoutUrl)` (validar que o host é `mercadopago.com.br`/`mercadopago.com` antes de redirecionar). Nunca montar a URL no front.
+3. **Retorno** (`/inscricao/retorno`): o Mercado Pago anexa `status`, `collection_status`, `payment_id` e `external_reference` na URL. **Não confiar nesses parâmetros**: exibir "Confirmando seu pagamento…" e consultar o status real no backend pelo código, com polling curto (ex.: a cada 3 s por até 1 min). Estados de tela:
+   - `aprovado/pago` → sucesso, dados da prova e orientação de retirada de kit
+   - `pendente` (Pix gerado e não pago) → "Aguardando pagamento" + botão "Pagar agora" (novo link)
+   - `recusado`/`cancelado` → mensagem amigável + "Tentar novamente"
+   - backend sem confirmação após o polling → "Ainda não recebemos a confirmação. Consulte em instantes em Consultar inscrição."
+4. A confirmação definitiva vem **só do webhook no backend**. O front nunca marca pagamento como aprovado.
+5. Depois do retorno, limpar os parâmetros da URL (`router.replace('/inscricao/' + codigo)`) para não ficarem no histórico.
+6. CSP: navegação para os domínios do Mercado Pago. Redirecionar por `window.location` não é limitado pela CSP (`form-action` só vale para `<form>`), então nenhum domínio do Mercado Pago entra na CSP.
+
+Campos que a API **ainda não aceita** (sexo, equipe/assessoria, contato de emergência): não exibir até o backend suportar (§16).
 
 ---
 
@@ -341,6 +361,7 @@ src/
 │   │   ├── consulta/
 │   │   ├── inscricao/
 │   │   │   ├── confirmada/
+│   │   │   ├── retorno/
 │   │   │   └── [code]/
 │   │   ├── corridas-parceiras/
 │   │   ├── loja/
@@ -519,8 +540,8 @@ Antes de cada commit: `lint`, `typecheck` e `build` passando. Commits no padrão
 ## 15. Fases de entrega
 
 1. **MVP (API já disponível)** — Home e página do evento (catálogo público), formulário de inscrição + confirmação, consulta por WhatsApp/CPF, login/logout/renovação do admin, CRUD de eventos, distâncias, lotes, kits, tamanhos e documentos, ciclo de vida do evento, auditoria.
-2. **MVP (depende do backend)** — Pagamento Pix na inscrição e página `/inscricao/[code]`, lista/exportação de inscritos no admin, e-mail de confirmação.
-3. **Fase 2** — Cartão, cupons, loja de camisas e medalhas, check-in de retirada de kit e de pedidos.
+2. **MVP (depende do backend)** — Pagamento via Checkout Pro (Pix e cartão), páginas `/inscricao/retorno` e `/inscricao/[code]`, lista/exportação de inscritos no admin, e-mail de confirmação.
+3. **Fase 2** — Cupons, loja de camisas e medalhas, check-in de retirada de kit e de pedidos.
 4. **Fase 3** — Resultados/classificação, galeria de fotos (`galeriaUrl`), notificações por WhatsApp.
 
 ---
@@ -530,7 +551,7 @@ Antes de cada commit: `lint`, `typecheck` e `build` passando. Commits no padrão
 ### Backend (combinar com o time da API)
 - [ ] O detalhe público `GET /eventos/:slug` precisa expor: distâncias (com `id`), preço do lote vigente e vagas/esgotado, kits ativos (com `id` e fotos), tamanhos de camisa disponíveis e **IDs dos documentos vigentes** (regulamento e termo) — sem eles o front não consegue montar `documentosAceitos`, `kitId` e `tamanhoCamisaId`.
 - [ ] Endpoint para buscar inscrição por código (status/pagamento) — hoje a consulta não devolve código.
-- [ ] Pagamento (gateway, criação de cobrança Pix, polling de status, webhook) e expiração de pendentes.
+- [ ] Pagamento via **Checkout Pro**: endpoint que cria a preferência e devolve `checkoutUrl` (`init_point`), webhook do Mercado Pago (validar assinatura `x-signature`, idempotente por `payment_id`), status da inscrição por código para a página de retorno, expiração de pendentes alinhada à preferência e novo link para "Pagar agora".
 - [ ] Listagem/exportação de inscrições no admin e marcação de retirada de kit.
 - [ ] Campos extras na inscrição: sexo, equipe/assessoria, contato de emergência.
 - [ ] Campo de aceite/identificação do responsável legal para atletas menores de 18 anos.
@@ -546,7 +567,9 @@ Antes de cada commit: `lint`, `typecheck` e `build` passando. Commits no padrão
 - [ ] Parceiros/apoiadores e números da comunidade: estáticos no front até haver endpoint (mock fornece dados de demonstração).
 
 ### Cliente
-- [ ] Gateway de pagamento e quem arca com as taxas
+- [x] Gateway: Mercado Pago Checkout Pro
+- [ ] Aplicação criada na **conta Mercado Pago do Vertex** (não na do desenvolvedor), chave Pix cadastrada e quem arca com as taxas
+- [ ] Parcelamento no cartão: permitido? Juros por conta de quem?
 - [ ] Hex exatos e arquivo vetorial da logo
 - [ ] Domínio do site
 - [ ] Número de WhatsApp e @ do Instagram oficiais
