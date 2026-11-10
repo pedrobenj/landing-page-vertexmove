@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useEffect } from "react"
 
 import { EmptyState } from "@/components/feedback"
+import { PayNowButton } from "@/components/registration-payment"
 import { SectionHeading } from "@/components/sections"
 import { Button } from "@/components/ui/button"
 import { cn, getRegistrationStatusBadgeClass, getRegistrationStatusLabel } from "@/lib/utils"
@@ -56,7 +57,7 @@ export function RegistrationConfirmation() {
         id="confirmada-title"
         eyebrow="Inscrição enviada"
         title="Inscrição realizada!"
-        description="Agora é só aguardar as instruções de pagamento. Nos vemos na largada!"
+        description="Falta só o pagamento. Nos vemos na largada!"
       />
       <section aria-labelledby="confirmation-code-title" className="flex flex-col gap-5 rounded-2xl bg-brand-navy-deep p-6 text-white sm:p-8">
         <div className="flex items-center gap-3">
@@ -98,10 +99,10 @@ export function RegistrationConfirmation() {
             <Clock aria-hidden="true" className="size-5 text-brand-green-text" />
             Pagamento
           </h2>
-          {/* TODO(backend): o pagamento (Pix/cartão) ainda não existe na API (§16) — exibir o QR Pix aqui. */}
           <p className="text-muted-foreground">
-            Sua vaga está reservada. Você receberá as instruções de pagamento em breve pelo WhatsApp ou e-mail informado.
+            Sua vaga está reservada. Pague com Pix ou cartão pelo Mercado Pago para garantir a inscrição.
           </p>
+          <PayNowButton code={codigo} label="Ir para o pagamento" />
         </section>
       </div>
 

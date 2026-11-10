@@ -2,6 +2,7 @@ import "server-only"
 
 import type { ADMIN_ROLE } from "@/enums/admin-role.enum"
 import type { EVENT_STATUS } from "@/enums/event-status.enum"
+import type { PAYMENT_STATUS } from "@/enums/payment-status.enum"
 import type { REGISTRATION_STATUS } from "@/enums/registration-status.enum"
 import type { AdminEventInput } from "@/types/api/admin-event.interface"
 import type { AuditEntry } from "@/types/api/audit-entry.interface"
@@ -50,6 +51,10 @@ export interface MockRegistration {
   valorDescontoCentavos: number
   valorTotalCentavos: number
   inscritoEm: string
+  /** Último pagamento simulado no checkout falso (`null` = ainda não foi ao checkout). */
+  pagamentoStatus?: PAYMENT_STATUS | null
+  /** Quando o "webhook" simulado aprova o pagamento (ms); imita o atraso do Mercado Pago. */
+  aprovacaoEm?: number | null
 }
 
 export interface MockDb {

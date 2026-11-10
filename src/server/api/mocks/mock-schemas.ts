@@ -4,6 +4,7 @@ import { z } from "zod"
 
 import { API_ERROR_CODE } from "@/enums/api-error-code.enum"
 import { DOCUMENT_TYPE } from "@/enums/document-type.enum"
+import { PAYMENT_STATUS } from "@/enums/payment-status.enum"
 import { isValidCpf } from "@/lib/utils/is-valid-cpf"
 
 import { apiError } from "./mock-http"
@@ -58,6 +59,9 @@ export const lookupSchema = z.union([
   z.strictObject({ cpf }),
   z.strictObject({ whatsapp: e164 }),
 ])
+
+/** Resultado escolhido no checkout falso (faz o papel do webhook do Mercado Pago). */
+export const mockPaymentSchema = z.strictObject({ resultado: z.enum(PAYMENT_STATUS) })
 
 export const loginSchema = z.object({ email: z.string().min(1), senha: z.string().min(1) })
 

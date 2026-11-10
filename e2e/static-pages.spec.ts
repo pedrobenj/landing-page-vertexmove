@@ -10,7 +10,7 @@ const STATIC_PAGES = [
   { path: "/corridas/encerradas", title: "Corridas que já vivemos" },
   { path: "/privacidade", title: "Política de privacidade" },
   { path: "/regulamento/corrida-vertex-beira-mar-2026", title: "Regulamento" },
-  { path: "/inscricao/VX-2026-00000042", title: "Acompanhe sua inscrição" },
+  { path: "/inscricao/VX-2026-00000042", title: "Sua inscrição" },
 ]
 
 test.describe("Páginas institucionais", () => {
@@ -90,10 +90,11 @@ test.describe("Páginas institucionais", () => {
     expect(response?.status()).toBe(404)
   })
 
-  test("inscrição com código válido leva para a consulta", async ({ page }) => {
+  test("inscrição inexistente com código válido leva para a consulta", async ({ page }) => {
     await page.goto("/inscricao/VX-2026-00000042")
     await expect(page.getByText("VX-2026-00000042").first()).toBeVisible()
-    await expect(page.getByRole("link", { name: "Consultar minha inscrição" })).toHaveAttribute("href", "/consulta")
+    await expect(page.getByText("Inscrição não encontrada")).toBeVisible()
+    await expect(page.getByRole("link", { name: "Consultar inscrição" })).toHaveAttribute("href", "/consulta")
   })
 
   test("inscrição com código em formato inválido responde 404", async ({ page }) => {

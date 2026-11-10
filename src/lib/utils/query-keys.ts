@@ -22,6 +22,8 @@ export const queryKeys = {
     all: ["registrations"] as const,
     /** Chave de mutação da consulta: CPF/WhatsApp nunca entram em chaves de cache (LGPD). */
     lookup: () => [...queryKeys.registrations.all, "lookup"] as const,
+    /** Status por código (página de retorno do Checkout Pro e `/inscricao/[code]`). */
+    detail: (code: string) => [...queryKeys.registrations.all, "detail", code] as const,
   },
   store: {
     all: ["store"] as const,

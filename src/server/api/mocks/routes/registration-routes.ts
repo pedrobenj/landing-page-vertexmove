@@ -3,19 +3,60 @@ import "server-only"
 import { API_ERROR_CODE } from "@/enums/api-error-code.enum"
 import { DOCUMENT_TYPE } from "@/enums/document-type.enum"
 import { EVENT_STATUS } from "@/enums/event-status.enum"
+import { PAYMENT_STATUS } from "@/enums/payment-status.enum"
 import { REGISTRATION_STATUS } from "@/enums/registration-status.enum"
+import { MOCK_CHECKOUT_PATH } from "@/lib/utils/checkout-url"
+import type { RegistrationCheckout, RegistrationDetails } from "@/types/api/registration-details.interface"
 import type { CreatedRegistration, RegistrationLookupItem } from "@/types/api/registration.interface"
 
 import { getMockDb, nextId } from "../mock-db"
-import { apiError, created, json, type MockRoute } from "../mock-http"
+import { apiError, created, json, noContent, type MockRoute } from "../mock-http"
 import { findCurrentDocuments, findCurrentTier, isActiveRegistrationStatus, isSoldOut, maskName } from "../mock-mappers"
 import { paginate } from "../mock-pagination"
-import { createRegistrationSchema, lookupSchema, validate } from "../mock-schemas"
+import { createRegistrationSchema, lookupSchema, mockPaymentSchema, validate } from "../mock-schemas"
 import { ageOn, toFortalezaIso, todayInFortaleza } from "../mock-time"
 import type { MockRegistration } from "../mock-types"
 
 const SENIOR_AGE = 60
 const SENIOR_DISCOUNT_PERCENT = 50
+
+/** Atraso do "webhook" simulado: dá tempo de a página de retorno mostrar "Confirmando seu pagamento…". */
+const MOCK_WEBHOOK_DELAY_MS = 4_000
+
+/** Aplica a aprovação simulada quando o atraso do "webhook" passou. */
+function settlePayment(registration: MockRegistration): void {
+  if (registration.aprovacaoEm && Date.now() >= registration.aprovacaoEm) {
+    registration.status = REGISTRATION_STATUS.CONFIRMED
+    registration.pagamentoStatus = PAYMENT_STATUS.APPROVED
+    registration.aprovacaoEm = null
+  }
+}
+
+function findRegistration(codigo: string): MockRegistration | undefined {
+  const registration = getMockDb().registrations.find((item) => item.codigo === codigo)
+  if (registration) settlePayment(registration)
+  return registration
+}
+
+function toDetails(registration: MockRegistration): RegistrationDetails {
+  const db = getMockDb()
+  const event = db.events.find((item) => item.id === registration.eventoId)
+  return {
+    codigo: registration.codigo,
+    status: registration.status,
+    evento: {
+      slug: event?.slug ?? "",
+      nome: event?.nome ?? "",
+      dataEvento: event?.dataEvento ?? "",
+      horarioLargada: event?.horarioLargada ?? "",
+    },
+    distancia: db.distances.find((item) => item.id === registration.distanciaId)?.nome ?? "",
+    valorBaseCentavos: registration.valorBaseCentavos,
+    valorDescontoCentavos: registration.valorDescontoCentavos,
+    valorTotalCentavos: registration.valorTotalCentavos,
+    pagamento: registration.pagamentoStatus ? { status: registration.pagamentoStatus } : null,
+  }
+}
 
 function sameAthleteName(a: string, b: string): boolean {
   return a.trim().toLocaleLowerCase("pt-BR") === b.trim().toLocaleLowerCase("pt-BR")
@@ -105,6 +146,8 @@ export const registrationRoutes: MockRoute[] = [
         valorDescontoCentavos,
         valorTotalCentavos: valorBaseCentavos - valorDescontoCentavos,
         inscritoEm: toFortalezaIso(new Date()),
+        pagamentoStatus: null,
+        aprovacaoEm: null,
       }
       db.registrations.push(registration)
 
@@ -141,6 +184,52 @@ export const registrationRoutes: MockRoute[] = [
         inscritoEm: item.inscritoEm,
       }))
       return page instanceof Response ? page : json(200, page)
+    },
+  },
+  {
+    method: "GET",
+    path: "/inscricoes/:codigo",
+    handler: ({ params }) => {
+      const registration = findRegistration(params.codigo)
+      if (!registration) return apiError(404, API_ERROR_CODE.NOT_FOUND, "Inscrição não encontrada.")
+      return json(200, toDetails(registration))
+    },
+  },
+  {
+    // Cria a "preferência" do Checkout Pro. O mock aponta para o checkout falso local em vez do Mercado Pago.
+    method: "POST",
+    path: "/inscricoes/:codigo/pagamento",
+    handler: ({ params }) => {
+      const registration = findRegistration(params.codigo)
+      if (!registration) return apiError(404, API_ERROR_CODE.NOT_FOUND, "Inscrição não encontrada.")
+      if (registration.status !== REGISTRATION_STATUS.PENDING || registration.aprovacaoEm) {
+        return apiError(409, API_ERROR_CODE.PAYMENT_UNAVAILABLE, "A inscrição não está aguardando pagamento.")
+      }
+      const response: RegistrationCheckout = { checkoutUrl: `${MOCK_CHECKOUT_PATH}${registration.codigo}` }
+      return created(response, `/inscricoes/${registration.codigo}`)
+    },
+  },
+  {
+    // Só no mock: faz o papel do webhook do Mercado Pago (o real fica no backend).
+    method: "POST",
+    path: "/dev/pagamentos/:codigo",
+    handler: ({ params, body }) => {
+      const input = validate(mockPaymentSchema, body)
+      if (input instanceof Response) return input
+
+      const registration = findRegistration(params.codigo)
+      if (!registration) return apiError(404, API_ERROR_CODE.NOT_FOUND, "Inscrição não encontrada.")
+      if (registration.status !== REGISTRATION_STATUS.PENDING) {
+        return apiError(409, API_ERROR_CODE.PAYMENT_UNAVAILABLE, "A inscrição não está aguardando pagamento.")
+      }
+
+      if (input.resultado === PAYMENT_STATUS.APPROVED) {
+        // Até o "webhook" chegar, o backend não sabe do pagamento: `pagamento` continua como estava.
+        registration.aprovacaoEm = Date.now() + MOCK_WEBHOOK_DELAY_MS
+      } else {
+        registration.pagamentoStatus = input.resultado
+      }
+      return noContent()
     },
   },
 ]

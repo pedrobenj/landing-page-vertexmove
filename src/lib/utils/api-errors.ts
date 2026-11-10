@@ -27,6 +27,8 @@ const MESSAGES: Partial<Record<string, string>> = {
   [API_ERROR_CODE.STOCK_CHANGED]: "O estoque mudou enquanto você editava. Recarregue a página e tente de novo.",
   [API_ERROR_CODE.CART_CHANGED]: "Seu carrinho mudou. Confira os itens.",
   [API_ERROR_CODE.EMPTY_CART]: "Seu carrinho está vazio.",
+  [API_ERROR_CODE.PAYMENT_UNAVAILABLE]: "Esta inscrição não está aguardando pagamento.",
+  [API_ERROR_CODE.INVALID_CHECKOUT_URL]: "Não foi possível abrir o pagamento. Tente novamente em instantes.",
 }
 
 export function getApiErrorMessage(codigo: string | undefined, fallback?: string): string {

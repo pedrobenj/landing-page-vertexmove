@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import type { AdminLoginResponse } from "@/types/api/admin-auth.interface"
 import type { AdminEvent } from "@/types/api/admin-event.interface"
@@ -7,6 +7,7 @@ import type { CursorPage } from "@/types/api/cursor-page.interface"
 import type { PublicEvent } from "@/types/api/event.interface"
 import type { PartnerRace } from "@/types/api/partner-race.interface"
 import type { PublicEventDetail } from "@/types/api/public-event-detail.interface"
+import type { RegistrationCheckout, RegistrationDetails } from "@/types/api/registration-details.interface"
 import type { CreatedRegistration, RegistrationLookupItem } from "@/types/api/registration.interface"
 
 import { resetMockDb } from "./mock-db"
@@ -253,6 +254,64 @@ describe("mockFetch", () => {
       })
       expect(res.status).toBe(409)
       expect(await errorCode(res)).toBe("DISTANCIA_ESGOTADA")
+    })
+  })
+
+  describe("pagamento (Checkout Pro)", () => {
+    async function createCode(): Promise<string> {
+      const res = await call("POST", "/inscricoes", { body: await registrationBody() })
+      return ((await res.json()) as CreatedRegistration).codigo
+    }
+
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
+    it("GET /inscricoes/:codigo devolve o status sem PII", async () => {
+      const codigo = await createCode()
+      const res = await call("GET", `/inscricoes/${codigo}`)
+      const body = (await res.json()) as RegistrationDetails
+
+      expect(res.status).toBe(200)
+      expect(body).toMatchObject({ codigo, status: "pendente", pagamento: null, valorTotalCentavos: 8990 })
+      expect(body.evento.nome).toBe("Corrida Vertex Beira-Mar 2026")
+      expect(JSON.stringify(body)).not.toContain(VALID_CPF)
+      expect(JSON.stringify(body)).not.toContain("Ana")
+    })
+
+    it("GET de código inexistente dá 404", async () => {
+      expect((await call("GET", "/inscricoes/VX-2026-99999999")).status).toBe(404)
+    })
+
+    it("cria o link do checkout falso para inscrição pendente", async () => {
+      const codigo = await createCode()
+      const res = await call("POST", `/inscricoes/${codigo}/pagamento`)
+      expect(res.status).toBe(201)
+      expect(((await res.json()) as RegistrationCheckout).checkoutUrl).toBe(`/dev/checkout-pro/${codigo}`)
+    })
+
+    it("aprova só depois do atraso do webhook e então recusa novo link", async () => {
+      vi.useFakeTimers({ toFake: ["Date"] })
+      const codigo = await createCode()
+      expect((await call("POST", `/dev/pagamentos/${codigo}`, { body: { resultado: "aprovado" } })).status).toBe(204)
+
+      const before = (await (await call("GET", `/inscricoes/${codigo}`)).json()) as RegistrationDetails
+      expect(before.status).toBe("pendente")
+
+      vi.setSystemTime(Date.now() + 5_000)
+      const after = (await (await call("GET", `/inscricoes/${codigo}`)).json()) as RegistrationDetails
+      expect(after).toMatchObject({ status: "confirmada", pagamento: { status: "aprovado" } })
+
+      const res = await call("POST", `/inscricoes/${codigo}/pagamento`)
+      expect(res.status).toBe(409)
+      expect(await errorCode(res)).toBe("PAGAMENTO_INDISPONIVEL")
+    })
+
+    it("pagamento recusado mantém a inscrição pendente", async () => {
+      const codigo = await createCode()
+      await call("POST", `/dev/pagamentos/${codigo}`, { body: { resultado: "recusado" } })
+      const body = (await (await call("GET", `/inscricoes/${codigo}`)).json()) as RegistrationDetails
+      expect(body).toMatchObject({ status: "pendente", pagamento: { status: "recusado" } })
     })
   })
 
