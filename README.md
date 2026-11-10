@@ -35,6 +35,7 @@ Copie `.env.example` para `.env`:
 | `NEXT_PUBLIC_SITE_URL` | URL pública do site (sitemap, Open Graph). |
 | `NEXT_PUBLIC_WHATSAPP_NUMBER` | WhatsApp de contato (só dígitos, com DDI). |
 | `NEXT_PUBLIC_INSTAGRAM_URL` | Perfil do Instagram. |
+| `NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY` | Public Key do Mercado Pago (a de teste no desenvolvimento), usada para tokenizar o cartão no navegador. O Access Token fica só no backend. |
 
 As variáveis do servidor são validadas com Zod em `src/lib/env.ts`.
 
@@ -126,7 +127,9 @@ Na primeira rodada, o `next dev` compila cada rota sob demanda; abrir as página
 
 O `next.config.ts` envia em todas as rotas `Content-Security-Policy`, `X-Content-Type-Options: nosniff`,
 `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin` e
-`Permissions-Policy: camera=(), microphone=(), geolocation=()`. As páginas de inscrição e consulta usam
+`Permissions-Policy: camera=(), microphone=(), geolocation=()`. Só a página de pagamento
+(`/inscricao/[code]`) libera os domínios do Mercado Pago na CSP (`script-src`, `connect-src` e `frame-src`),
+para o SDK de pagamento com cartão. As páginas de inscrição e consulta usam
 `Referrer-Policy: no-referrer`. A CSP é sem nonce (com `'unsafe-inline'`): nonce obrigaria a renderizar
 todas as páginas sob demanda e não combina com o Partial Prerendering.
 
