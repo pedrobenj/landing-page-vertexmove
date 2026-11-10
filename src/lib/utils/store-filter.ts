@@ -9,7 +9,7 @@ export interface StoreFilterOption {
 
 const PRODUCT_TYPES = Object.values(PRODUCT_TYPE)
 
-/** Filtros da loja ("Todos" + um por tipo), como na referência. O tipo vai em `?tipo=` (ex.: `medalhas`). */
+/** Filtros da loja ("Todos" + um por tipo), como na referência. O tipo vai em `?tipo=` (ex.: `camisas`). */
 export const STORE_FILTER_OPTIONS: readonly StoreFilterOption[] = [
   { label: "Todos", href: "/loja", type: null },
   ...PRODUCT_TYPES.map((type) => ({

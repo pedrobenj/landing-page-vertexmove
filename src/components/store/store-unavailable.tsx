@@ -20,7 +20,7 @@ export function StoreUnavailable({ context = "public" }: StoreUnavailableProps) 
       description={
         isAdmin
           ? "O cadastro de produtos volta a funcionar quando a API da loja estiver no ar."
-          : "Camisas, viseiras e medalhas do Vertex chegam aqui em breve. Enquanto isso, garanta sua vaga."
+          : "Camisas, viseiras e acessórios do Vertex chegam aqui em breve. Enquanto isso, garanta sua vaga."
       }
       action={
         isAdmin ? undefined : (

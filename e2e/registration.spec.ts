@@ -25,7 +25,7 @@ test.describe("Inscrição em etapas", () => {
 
     await expect(page.getByRole("heading", { name: "Revise sua inscrição" })).toBeVisible()
     await expect(page.getByText("5 km", { exact: true })).toBeVisible()
-    await expect(page.getByText("Kit Básico", { exact: true })).toBeVisible()
+    await expect(page.getByText("Kit Camisa + Medalha", { exact: true })).toBeVisible()
     await expect(page.getByText(`***.${cpf.slice(3, 6)}.${cpf.slice(6, 9)}-**`)).toBeVisible()
     await expect(page.getByText("R$ 89,90")).toBeVisible()
     await expect(page.getByText(/O valor final é confirmado após o envio/)).toBeVisible()

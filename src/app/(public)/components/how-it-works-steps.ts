@@ -6,5 +6,5 @@ export const HOW_IT_WORKS_STEPS: HowItWorksStep[] = [
   { title: "Inscreva-se", description: "Preencha seus dados, aceite o regulamento e guarde o código da inscrição." },
   { title: "Retire o kit", description: "Apresente o código no local e no horário informados." },
   { title: "Corra", description: "Largue com a gente e aproveite cada quilômetro." },
-  { title: "Receba a medalha", description: "Cruzou a linha de chegada, a medalha é sua." },
+  { title: "Comemore a chegada", description: "Cruzou a linha? Comemore com a gente — no kit com medalha, ela é sua." },
 ]

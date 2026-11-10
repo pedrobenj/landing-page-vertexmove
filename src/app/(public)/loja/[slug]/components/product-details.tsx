@@ -1,7 +1,7 @@
-import { Info, MapPin } from "lucide-react"
+import { MapPin } from "lucide-react"
 
 import { ProductImage, SoldOutBadge } from "@/components/store"
-import { PRODUCT_TYPE, PRODUCT_TYPE_LABEL } from "@/enums/product-type.enum"
+import { PRODUCT_TYPE_LABEL } from "@/enums/product-type.enum"
 import { formatCurrency, isProductSoldOut } from "@/lib/utils"
 import type { StoreProduct } from "@/types/store-product.interface"
 
@@ -10,8 +10,6 @@ import { ProductPurchaseForm } from "./product-purchase-form"
 interface ProductDetailsProps {
   product: StoreProduct
 }
-
-const MEDAL_NOTICE = "Compra apenas da medalha física — não gera inscrição em nenhuma corrida."
 
 export function ProductDetails({ product }: ProductDetailsProps) {
   return (
@@ -36,12 +34,6 @@ export function ProductDetails({ product }: ProductDetailsProps) {
           </div>
         </div>
         <p className="leading-relaxed text-muted-foreground">{product.description}</p>
-        {product.type === PRODUCT_TYPE.MEDAL && (
-          <p role="note" className="flex gap-2 rounded-xl border border-brand-green/40 bg-brand-green/10 p-3 text-sm font-medium text-brand-navy-deep">
-            <Info aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-brand-green-text" />
-            {MEDAL_NOTICE}
-          </p>
-        )}
         <ProductPurchaseForm variants={product.variants} />
         <p className="flex items-start gap-2 rounded-xl bg-slate-50 p-3 text-sm text-muted-foreground">
           <MapPin className="mt-0.5 size-4 shrink-0 text-brand-green-text" aria-hidden="true" />

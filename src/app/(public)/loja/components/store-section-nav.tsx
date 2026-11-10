@@ -8,7 +8,7 @@ interface StoreSectionNavProps {
   activeType: PRODUCT_TYPE | null
 }
 
-/** Filtro por categoria ("Todos" + tipos), via `?tipo=` (ex.: `/loja?tipo=medalhas`). */
+/** Filtro por categoria ("Todos" + tipos), via `?tipo=` (ex.: `/loja?tipo=camisas`). */
 export function StoreSectionNav({ activeType }: StoreSectionNavProps) {
   return (
     <nav aria-label="Categorias da loja">

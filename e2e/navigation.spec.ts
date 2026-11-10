@@ -45,7 +45,7 @@ test.describe("Navegação pública", () => {
 
   const publicRoutes = [
     { path: "/consulta", title: "Consultar inscrição" },
-    { path: "/loja", title: "Camisas e medalhas" },
+    { path: "/loja", title: "Camisas e acessórios" },
     { path: "/privacidade", title: "Política de privacidade" },
     { path: "/corridas/corrida-vertex-beira-mar-2026", title: "Corrida Vertex Beira-Mar 2026" },
     { path: "/regulamento/corrida-vertex-beira-mar-2026", title: "Regulamento" },

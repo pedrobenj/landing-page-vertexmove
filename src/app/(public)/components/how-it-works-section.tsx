@@ -11,7 +11,7 @@ export function HowItWorksSection() {
         id="como-funciona-title"
         eyebrow="Passo a passo"
         title="Como funciona"
-        description="Da inscrição à medalha, em poucos passos."
+        description="Da inscrição à linha de chegada, em poucos passos."
       />
       <StaggerGroup as="ol" className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {HOW_IT_WORKS_STEPS.map((step, index) => (

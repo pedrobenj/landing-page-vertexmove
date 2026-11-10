@@ -134,7 +134,7 @@ describe("mockFetch", () => {
       expect(detail).not.toHaveProperty("id")
       expect(detail.distancias!.map((distance) => distance.nome)).toEqual(["5 km", "10 km", "Caminhada 3 km"])
       expect(detail.distancias![0].loteVigente).toEqual({ nome: "1º lote", precoCentavos: 8990 })
-      expect(detail.kits!.map((kit) => kit.nome)).toEqual(["Kit Básico", "Kit Premium"])
+      expect(detail.kits!.map((kit) => kit.nome)).toEqual(["Kit Camisa + Medalha", "Kit Camisa"])
       expect(detail.tamanhosCamisa!.map((size) => size.codigo)).toEqual(["PP", "P", "M", "G", "GG", "XGG"])
       expect(detail.documentosVigentes!.map((document) => document.tipo)).toEqual(["regulamento", "termo_responsabilidade"])
     })

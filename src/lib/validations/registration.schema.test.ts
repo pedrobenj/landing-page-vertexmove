@@ -8,7 +8,7 @@ import {
 } from "./registration.schema"
 
 const SIZES = [{ id: 3, codigo: "M", descricao: "Médio", ordem: 3, ativo: true }]
-const KITS = [{ id: 2, nome: "Kit Básico", fotos: [] }]
+const KITS = [{ id: 2, nome: "Kit Camisa + Medalha", fotos: [] }]
 const EVENT = { tamanhosCamisa: SIZES, kits: KITS }
 const EVENT_DATE = "2026-12-06"
 const athleteStepSchema = createAthleteStepSchema(EVENT_DATE)

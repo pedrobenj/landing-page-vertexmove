@@ -9,17 +9,16 @@ describe("store filter", () => {
     expect(STORE_FILTER_OPTIONS.map((option) => [option.label, option.href])).toEqual([
       ["Todos", "/loja"],
       ["Camisas", "/loja?tipo=camisas"],
-      ["Medalhas", "/loja?tipo=medalhas"],
     ])
   })
 
   it("lê o tipo da query", () => {
-    expect(parseStoreFilter("medalhas")).toBe(PRODUCT_TYPE.MEDAL)
-    expect(parseStoreFilter(["camisas", "medalhas"])).toBe(PRODUCT_TYPE.SHIRT)
+    expect(parseStoreFilter("camisas")).toBe(PRODUCT_TYPE.SHIRT)
+    expect(parseStoreFilter(["camisas", "viseiras"])).toBe(PRODUCT_TYPE.SHIRT)
   })
 
   it("ausente ou desconhecido = todos", () => {
     expect(parseStoreFilter(undefined)).toBeNull()
-    expect(parseStoreFilter("viseiras")).toBeNull()
+    expect(parseStoreFilter("medalhas")).toBeNull()
   })
 })

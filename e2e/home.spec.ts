@@ -93,7 +93,7 @@ test.describe("Home", () => {
     const steps = page.getByRole("region", { name: "Como funciona" }).getByRole("listitem")
     await expect(steps).toHaveCount(6)
     await expect(steps.first()).toContainText("Escolha a prova")
-    await expect(steps.last()).toContainText("Receba a medalha")
+    await expect(steps.last()).toContainText("Comemore a chegada")
   })
 
   test("faixa de consulta, parceiros, loja e \"Mais que corrida\"", async ({ page }) => {

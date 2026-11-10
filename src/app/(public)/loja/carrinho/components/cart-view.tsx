@@ -22,7 +22,7 @@ export function CartView() {
       <EmptyState
         icon={ShoppingBag}
         title="Seu carrinho está vazio."
-        description="Escolha camisas e medalhas na loja."
+        description="Escolha camisas e acessórios na loja."
         action={
           <Button asChild variant="cta" size="lg">
             <Link href="/loja">Ver produtos</Link>

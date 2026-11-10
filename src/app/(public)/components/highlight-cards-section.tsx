@@ -47,7 +47,7 @@ export function HighlightCardsSection() {
         <StaggerItem as="div">
           <HighlightCard
             title="Loja"
-            description="Camisas e medalhas oficiais do Vertex."
+            description="Camisas e acessórios oficiais do Vertex."
             badge={<PillBadge icon={ShoppingBag}>Produtos oficiais</PillBadge>}
             linkLabel="Acessar a loja"
             href="/loja"

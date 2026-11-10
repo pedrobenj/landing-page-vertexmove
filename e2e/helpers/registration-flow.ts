@@ -17,10 +17,10 @@ export async function chooseOption(page: Page, text: RegExp) {
   await page.locator("label").filter({ hasText: text }).click()
 }
 
-/** Etapa 1: 5 km, Kit Básico (já vem marcado) e camisa M. */
+/** Etapa 1: 5 km, Kit Camisa + Medalha (já vem marcado) e camisa M. */
 export async function fillDistanceStep(page: Page) {
   await chooseOption(page, /^5 km/)
-  await expect(page.getByRole("radio", { name: /^Kit Básico/ })).toBeChecked()
+  await expect(page.getByRole("radio", { name: /^Kit Camisa \+ Medalha/ })).toBeChecked()
   await chooseOption(page, /^M \(Médio\)$/)
   await page.getByRole("button", { name: "Continuar" }).click()
 }

@@ -14,8 +14,6 @@ import type { StoreProduct } from "@/types/store-product.interface"
 import { ProductSection } from "./product-section"
 import { StoreSectionNav } from "./store-section-nav"
 
-const MEDAL_NOTICE = "A compra é apenas da medalha física e não gera inscrição em nenhuma corrida."
-
 interface StoreCatalogProps {
   searchParams: PageProps<"/loja">["searchParams"]
 }
@@ -39,14 +37,12 @@ export async function StoreCatalog({ searchParams }: StoreCatalogProps) {
   }
 
   const showShirts = activeType === null || activeType === PRODUCT_TYPE.SHIRT
-  const showMedals = activeType === null || activeType === PRODUCT_TYPE.MEDAL
   const shirts = showShirts ? products.filter((product) => product.type === PRODUCT_TYPE.SHIRT) : []
-  const medals = showMedals ? products.filter((product) => product.type === PRODUCT_TYPE.MEDAL) : []
 
   return (
     <div className="flex flex-col gap-10">
       <StoreSectionNav activeType={activeType} />
-      {shirts.length === 0 && medals.length === 0 && (
+      {shirts.length === 0 && (
         <EmptyState
           icon={SearchX}
           title="Nenhum produto nesta categoria no momento."
@@ -62,14 +58,6 @@ export async function StoreCatalog({ searchParams }: StoreCatalogProps) {
           id={PRODUCT_TYPE_SECTION[PRODUCT_TYPE.SHIRT].anchor}
           title={PRODUCT_TYPE_SECTION[PRODUCT_TYPE.SHIRT].title}
           products={shirts}
-        />
-      )}
-      {medals.length > 0 && (
-        <ProductSection
-          id={PRODUCT_TYPE_SECTION[PRODUCT_TYPE.MEDAL].anchor}
-          title={PRODUCT_TYPE_SECTION[PRODUCT_TYPE.MEDAL].title}
-          products={medals}
-          notice={MEDAL_NOTICE}
         />
       )}
     </div>

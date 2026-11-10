@@ -13,19 +13,14 @@ async function addToCart(page: Page, slug: string, size?: string) {
 }
 
 test.describe("Loja", () => {
-  test("catálogo separa camisas e medalhas e esconde produtos inativos", async ({ page }) => {
+  test("catálogo lista as camisas e esconde produtos inativos", async ({ page }) => {
     await page.goto("/loja")
     const shirts = page.getByRole("region", { name: "Camisas", exact: true })
-    const medals = page.getByRole("region", { name: "Medalhas", exact: true })
     await expect(shirts.getByRole("listitem").filter({ hasNotText: E2E_PRODUCT })).toHaveCount(3)
-    await expect(medals.getByRole("listitem")).toHaveCount(2)
     for (const name of ["Camisa Oficial Vertex 2026", "Camisa Treino Dry-Fit", "Regata Vertex Run"]) {
       await expect(shirts.getByRole("listitem").filter({ hasText: name })).toHaveCount(1)
     }
-    for (const name of ["Medalha Corrida Beira-Mar 2025", "Medalha Night Run 2025"]) {
-      await expect(medals.getByRole("listitem").filter({ hasText: name })).toHaveCount(1)
-    }
-    await expect(medals).toContainText("não gera inscrição")
+    await expect(page.getByText(/medalha/i)).toHaveCount(0)
     await expect(page.getByText("Camisa Edição Limitada 2024")).toHaveCount(0)
     await expect(shirts.getByRole("listitem").filter({ hasText: "Regata Vertex Run" })).toContainText("Esgotado")
     await expect(shirts.getByRole("listitem").filter({ hasText: "Camisa Treino Dry-Fit" })).not.toContainText("Esgotado")
@@ -44,13 +39,13 @@ test.describe("Loja", () => {
   })
 
   test("adiciona ao carrinho, mostra o contador e mantém após recarregar", async ({ page }) => {
-    await addToCart(page, "medalha-night-run-2025")
+    await addToCart(page, "camisa-treino-dry-fit", "M")
     await expect(page.getByTestId("cart-count")).toHaveText("1")
     await page.reload()
     await expect(page.getByTestId("cart-count")).toHaveText("1")
     await page.goto("/loja/carrinho")
-    await expect(page.getByText("Medalha Night Run 2025")).toBeVisible()
-    await expect(page.getByTestId("cart-total")).toHaveText(/R\$\s35,00/)
+    await expect(page.getByText("Camisa Treino Dry-Fit")).toBeVisible()
+    await expect(page.getByTestId("cart-total")).toHaveText(/R\$\s69,90/)
   })
 
   test("carrinho vazio mostra estado vazio", async ({ page }) => {
@@ -91,15 +86,6 @@ test.describe("Loja", () => {
     await expect(page.getByTestId("cart-count")).toHaveCount(0)
   })
 
-  test("/medalhas redireciona para a loja filtrada por medalhas", async ({ page }) => {
-    await page.goto("/medalhas")
-    await expect(page).toHaveURL(/\/loja\?tipo=medalhas$/)
-    await expect(page.getByRole("region", { name: "Medalhas", exact: true }).getByRole("listitem")).toHaveCount(2)
-    await expect(page.getByRole("region", { name: "Camisas", exact: true })).toHaveCount(0)
-    const filters = page.getByRole("navigation", { name: "Categorias da loja" })
-    await expect(filters.getByRole("link", { name: "Medalhas" })).toHaveAttribute("aria-current", "page")
-  })
-
   test("filtro por categoria: Todos + tipos", async ({ page }) => {
     await page.goto("/loja")
     const filters = page.getByRole("navigation", { name: "Categorias da loja" })
@@ -107,12 +93,13 @@ test.describe("Loja", () => {
 
     await filters.getByRole("link", { name: "Camisas" }).click()
     await expect(page).toHaveURL(/\/loja\?tipo=camisas$/)
-    await expect(page.getByRole("region", { name: "Medalhas", exact: true })).toHaveCount(0)
+    await expect(filters.getByRole("link", { name: "Camisas" })).toHaveAttribute("aria-current", "page")
     await expect(page.getByRole("region", { name: "Camisas", exact: true })).toBeVisible()
 
     await filters.getByRole("link", { name: "Todos" }).click()
     await expect(page).toHaveURL(/\/loja$/)
-    await expect(page.getByRole("region", { name: "Medalhas", exact: true })).toBeVisible()
+    await expect(filters.getByRole("link", { name: "Medalhas" })).toHaveCount(0)
+    await expect(page.getByRole("region", { name: "Camisas", exact: true })).toBeVisible()
   })
 
   test("pedido inexistente retorna 404", async ({ page }) => {

@@ -10,7 +10,7 @@ import { StoreCatalog, StoreCatalogSkeleton } from "./components"
 
 export const metadata: Metadata = {
   title: "Loja",
-  description: "Camisas e medalhas do Vertex Grupo de Corrida. Pague com Pix e retire presencialmente.",
+  description: "Camisas e acessórios do Vertex Grupo de Corrida. Pague com Pix e retire presencialmente.",
   alternates: { canonical: "/loja" },
 }
 
@@ -21,7 +21,7 @@ export default function StorePage({ searchParams }: PageProps<"/loja">) {
         as="h1"
         id="loja-title"
         eyebrow="Loja Vertex"
-        title="Camisas e medalhas"
+        title="Camisas e acessórios"
         description="Vista o movimento: pague com Pix e retire presencialmente — sem frete."
         actions={
           <Button asChild variant="outline" size="lg" className="w-full rounded-xl sm:w-auto">

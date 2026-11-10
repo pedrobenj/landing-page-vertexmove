@@ -15,7 +15,7 @@ Plataforma web onde o atleta:
 1. Vê as corridas publicadas do Vertex;
 2. Escolhe a prova, a distância e, se houver, o kit e o tamanho da camisa;
 3. Preenche os dados, aceita regulamento e termo de responsabilidade, gera a inscrição e paga via **Mercado Pago Checkout Pro** (Pix ou cartão — **endpoint pendente no backend**);
-4. Compra camisas, viseiras, acessórios e medalhas na **loja** (**pendente no backend**, ver §16);
+4. Compra camisas, viseiras e acessórios na **loja** (o Vertex **não vende medalhas**) (**pendente no backend**, ver §16);
 5. Conhece o grupo, os parceiros e as corridas parceiras com cupom exclusivo;
 6. Consulta suas inscrições **sem login e sem senha**, informando WhatsApp **ou** CPF.
 
@@ -61,7 +61,7 @@ Referência: **https://www.corredasamigas.com.br/** (site do grupo de corrida fe
 
 **Páginas internas da referência que entram no projeto:**
 - **Corridas encerradas** ("Eventos que já vivemos") — histórico das edições passadas com capa e data; futuramente com galeria e resultados.
-- **Loja** — grade de produtos (camisas, viseiras, ecobags, acessórios, medalhas) com filtro por categoria ("Todos" + tipos) e link para o carrinho; pagamento Pix ou cartão.
+- **Loja** — grade de produtos (camisas, viseiras, ecobags, acessórios — **sem medalhas**) com filtro por categoria ("Todos" + tipos) e link para o carrinho; pagamento Pix ou cartão.
 - **Corridas Parceiras** — corridas de outras organizações com **cupom de desconto exclusivo** do Vertex: card com data, distâncias, cupom (botão copiar) e link externo de inscrição.
 - **Conheça o Vertex** (`/sobre`) — título + tagline, "Nossa história", "Missão", CTA "Ver próximas corridas". Melhorar em relação à referência com fotos reais e números do grupo.
 - **Parceiros** — logos/links dos apoiadores.
@@ -148,8 +148,7 @@ Mapear no tema do shadcn/ui (CSS variables em `globals.css`):
 | `/inscricao/retorno` | Página de volta do Checkout Pro (`back_urls`): lê `external_reference` e consulta o status real no backend | **pendente** (status por código) |
 | `/inscricao/[code]` | Status da inscrição e botão "Pagar agora" (gera novo link do Checkout Pro se ainda pendente) | **pendente** (`GET` por código não existe) |
 | `/consulta` | Consulta por WhatsApp **ou** CPF → lista mascarada | `POST /inscricoes/consulta` |
-| `/loja`, `/loja/[slug]`, `/loja/carrinho`, `/loja/checkout`, `/pedido/[code]` | Loja de camisas e medalhas | **pendente** |
-| `/medalhas` | Redireciona para `/loja?tipo=medalhas` | — |
+| `/loja`, `/loja/[slug]`, `/loja/carrinho`, `/loja/checkout`, `/pedido/[code]` | Loja de camisas e acessórios | **pendente** |
 | `/corridas-parceiras` | Corridas de parceiros com cupom exclusivo e link externo | **pendente** (conteúdo estático até haver endpoint) |
 | `/sobre` | Conheça o Vertex: história, missão, fotos, números | estático |
 | `/parceiros` | Apoiadores (logos e links) | estático |
@@ -541,7 +540,7 @@ Antes de cada commit: `lint`, `typecheck` e `build` passando. Commits no padrão
 
 1. **MVP (API já disponível)** — Home e página do evento (catálogo público), formulário de inscrição + confirmação, consulta por WhatsApp/CPF, login/logout/renovação do admin, CRUD de eventos, distâncias, lotes, kits, tamanhos e documentos, ciclo de vida do evento, auditoria.
 2. **MVP (depende do backend)** — Pagamento via Checkout Pro (Pix e cartão), páginas `/inscricao/retorno` e `/inscricao/[code]`, lista/exportação de inscritos no admin, e-mail de confirmação.
-3. **Fase 2** — Cupons, loja de camisas e medalhas, check-in de retirada de kit e de pedidos.
+3. **Fase 2** — Cupons, loja de camisas e acessórios, check-in de retirada de kit e de pedidos.
 4. **Fase 3** — Resultados/classificação, galeria de fotos (`galeriaUrl`), notificações por WhatsApp.
 
 ---
