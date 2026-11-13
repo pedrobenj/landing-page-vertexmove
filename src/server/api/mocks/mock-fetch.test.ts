@@ -7,7 +7,7 @@ import type { CursorPage } from "@/types/api/cursor-page.interface"
 import type { PublicEvent } from "@/types/api/event.interface"
 import type { PartnerRace } from "@/types/api/partner-race.interface"
 import type { PublicEventDetail } from "@/types/api/public-event-detail.interface"
-import type { RegistrationCheckout, RegistrationDetails } from "@/types/api/registration-details.interface"
+import type { ApiCheckout, ApiRegistrationStatus } from "@/types/api/registration-details.interface"
 import type { RegistrationReceipt } from "@/types/api/registration-receipt.interface"
 import type { CreatedRegistration, RegistrationLookupItem } from "@/types/api/registration.interface"
 
@@ -280,23 +280,63 @@ describe("mockFetch", () => {
   })
 
   describe("pagamento (Checkout Pro)", () => {
-    async function createCode(): Promise<string> {
+    interface Created {
+      codigo: string
+      auth: Record<string, string>
+    }
+
+    async function createRegistration(): Promise<Created> {
       const res = await call("POST", "/inscricoes", { body: await registrationBody() })
-      return ((await res.json()) as CreatedRegistration).codigo
+      const body = (await res.json()) as CreatedRegistration
+      return { codigo: body.codigo, auth: { Authorization: `Bearer ${body.accessToken}` } }
+    }
+
+    async function getStatus({ codigo, auth }: Created): Promise<ApiRegistrationStatus> {
+      return (await (await call("GET", `/inscricoes/${codigo}`, { headers: auth })).json()) as ApiRegistrationStatus
+    }
+
+    function checkoutHeaders(auth: Record<string, string>): Record<string, string> {
+      return { ...auth, "Idempotency-Key": "11111111-1111-4111-8111-111111111111" }
     }
 
     afterEach(() => {
       vi.useRealTimers()
     })
 
-    it("GET /inscricoes/:codigo devolve o status sem PII", async () => {
-      const codigo = await createCode()
-      const res = await call("GET", `/inscricoes/${codigo}`)
-      const body = (await res.json()) as RegistrationDetails
+    it("POST /inscricoes devolve o token e o prazo da reserva, como o backend", async () => {
+      const res = await call("POST", "/inscricoes", { body: await registrationBody() })
+      const body = (await res.json()) as CreatedRegistration
+      expect(body).toMatchObject({
+        accessToken: expect.any(String),
+        expiraEm: expect.any(String),
+        eventoSlug: SLUG,
+        distanciaId: expect.any(Number),
+      })
+    })
 
-      expect(res.status).toBe(200)
-      expect(body).toMatchObject({ codigo, status: "pendente", pagamento: null, valorTotalCentavos: 8990 })
-      expect(body.evento.nome).toBe("Corrida Vertex Beira-Mar 2026")
+    it("GET /inscricoes/:codigo sem o Bearer da inscrição dá 401", async () => {
+      const { codigo } = await createRegistration()
+      const res = await call("GET", `/inscricoes/${codigo}`)
+      expect(res.status).toBe(401)
+      expect(await errorCode(res)).toBe("NAO_AUTENTICADO")
+      const other = await call("GET", `/inscricoes/${codigo}`, { headers: { Authorization: "Bearer outro" } })
+      expect(other.status).toBe(401)
+    })
+
+    it("GET /inscricoes/:codigo com o Bearer devolve o status no formato do backend, sem PII", async () => {
+      const registration = await createRegistration()
+      const body = await getStatus(registration)
+
+      expect(body).toMatchObject({
+        codigo: registration.codigo,
+        status: "pendente",
+        pagamento: null,
+        valorTotalCentavos: 8990,
+        eventoNome: "Corrida Vertex Beira-Mar 2026",
+        distanciaNome: "5 km",
+        eventoSlug: SLUG,
+        expiraEm: expect.any(String),
+      })
       expect(JSON.stringify(body)).not.toContain(VALID_CPF)
       expect(JSON.stringify(body)).not.toContain("Ana")
     })
@@ -305,35 +345,51 @@ describe("mockFetch", () => {
       expect((await call("GET", "/inscricoes/VX-2026-99999999")).status).toBe(404)
     })
 
+    it("POST /pagamentos sem Idempotency-Key dá 422", async () => {
+      const { codigo, auth } = await createRegistration()
+      const res = await call("POST", `/inscricoes/${codigo}/pagamentos`, { headers: auth })
+      expect(res.status).toBe(422)
+      expect(await errorCode(res)).toBe("DADO_INVALIDO")
+    })
+
+    it("POST /pagamentos sem o Bearer dá 401", async () => {
+      const { codigo } = await createRegistration()
+      const res = await call("POST", `/inscricoes/${codigo}/pagamentos`, { headers: checkoutHeaders({}) })
+      expect(res.status).toBe(401)
+    })
+
     it("cria o link do checkout falso para inscrição pendente", async () => {
-      const codigo = await createCode()
-      const res = await call("POST", `/inscricoes/${codigo}/pagamento`)
+      const { codigo, auth } = await createRegistration()
+      const res = await call("POST", `/inscricoes/${codigo}/pagamentos`, { headers: checkoutHeaders(auth) })
       expect(res.status).toBe(201)
-      expect(((await res.json()) as RegistrationCheckout).checkoutUrl).toBe(`/dev/checkout-pro/${codigo}`)
+      expect((await res.json()) as ApiCheckout).toMatchObject({
+        pagamentoId: expect.any(Number),
+        status: "pendente",
+        checkoutUrl: `/dev/checkout-pro/${codigo}`,
+        gatewayPreferenceId: expect.stringMatching(/^MOCK-PREF-/),
+      })
     })
 
     it("aprova só depois do atraso do webhook e então recusa novo link", async () => {
       vi.useFakeTimers({ toFake: ["Date"] })
-      const codigo = await createCode()
+      const registration = await createRegistration()
+      const { codigo, auth } = registration
       expect((await call("POST", `/dev/pagamentos/${codigo}`, { body: { resultado: "aprovado" } })).status).toBe(204)
 
-      const before = (await (await call("GET", `/inscricoes/${codigo}`)).json()) as RegistrationDetails
-      expect(before.status).toBe("pendente")
+      expect((await getStatus(registration)).status).toBe("pendente")
 
       vi.setSystemTime(Date.now() + 5_000)
-      const after = (await (await call("GET", `/inscricoes/${codigo}`)).json()) as RegistrationDetails
-      expect(after).toMatchObject({ status: "confirmada", pagamento: { status: "aprovado" } })
+      expect(await getStatus(registration)).toMatchObject({ status: "confirmada", pagamento: { status: "aprovado" } })
 
-      const res = await call("POST", `/inscricoes/${codigo}/pagamento`)
+      const res = await call("POST", `/inscricoes/${codigo}/pagamentos`, { headers: checkoutHeaders(auth) })
       expect(res.status).toBe(409)
       expect(await errorCode(res)).toBe("PAGAMENTO_INDISPONIVEL")
     })
 
     it("pagamento recusado mantém a inscrição pendente", async () => {
-      const codigo = await createCode()
-      await call("POST", `/dev/pagamentos/${codigo}`, { body: { resultado: "recusado" } })
-      const body = (await (await call("GET", `/inscricoes/${codigo}`)).json()) as RegistrationDetails
-      expect(body).toMatchObject({ status: "pendente", pagamento: { status: "recusado" } })
+      const registration = await createRegistration()
+      await call("POST", `/dev/pagamentos/${registration.codigo}`, { body: { resultado: "recusado" } })
+      expect(await getStatus(registration)).toMatchObject({ status: "pendente", pagamento: { status: "recusado" } })
     })
   })
 

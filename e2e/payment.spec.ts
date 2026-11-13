@@ -23,7 +23,7 @@ test.describe("Pagamento (Checkout Pro, mock)", () => {
     // (O estado intermediário pode passar antes da primeira checagem se a rota demorar a compilar.)
     await expect(page.getByRole("heading", { name: "Pagamento confirmado!" })).toBeVisible({ timeout: 30_000 })
     await expect(page).toHaveURL(`/inscricao/${code}`)
-    await expect(page.getByText("R$ 139,90")).toBeVisible()
+    await expect(page.getByText("R$ 139,90", { exact: true })).toBeVisible()
   })
 
   test("pagamento recusado oferece nova tentativa", async ({ page }) => {
@@ -44,6 +44,24 @@ test.describe("Pagamento (Checkout Pro, mock)", () => {
     await page.reload()
     await expect(page.getByRole("heading", { name: "Aguardando pagamento" })).toBeVisible()
     await expect(page.getByRole("button", { name: "Pagar agora" })).toBeVisible()
+  })
+
+  test("a inscrição só abre no navegador em que foi feita (token em cookie HttpOnly)", async ({ page, browser }) => {
+    await registerAthlete(page, { name: "Paula Souza", birthDate: "15/08/1992", cpf: generateValidCpf(), whatsapp: generateWhatsapp() })
+    const code = (await page.getByTestId("registration-code").textContent())!.trim()
+
+    const other = await browser.newContext()
+    try {
+      const otherPage = await other.newPage()
+      await otherPage.goto(`/inscricao/${code}`)
+      await expect(otherPage.getByText(/Abra esta inscrição no mesmo aparelho/)).toBeVisible()
+      await expect(otherPage.getByRole("link", { name: "Consultar inscrição" })).toHaveAttribute("href", "/consulta")
+    } finally {
+      await other.close()
+    }
+
+    await page.goto(`/inscricao/${code}`)
+    await expect(page.getByRole("heading", { name: "Aguardando pagamento" })).toBeVisible()
   })
 
   test("retorno sem código válido manda para a consulta", async ({ page }) => {

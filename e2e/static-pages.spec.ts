@@ -90,10 +90,12 @@ test.describe("Páginas institucionais", () => {
     expect(response?.status()).toBe(404)
   })
 
-  test("inscrição inexistente com código válido leva para a consulta", async ({ page }) => {
+  test("código válido sem a inscrição feita neste navegador leva para a consulta", async ({ page }) => {
+    // Sem o cookie da inscrição o backend responde 401 (nem revela se o código existe).
     await page.goto("/inscricao/VX-2026-00000042")
     await expect(page.getByText("VX-2026-00000042").first()).toBeVisible()
-    await expect(page.getByText("Inscrição não encontrada")).toBeVisible()
+    await expect(page.getByText("Abra no aparelho da inscrição")).toBeVisible()
+    await expect(page.getByText(/mesmo aparelho/)).toBeVisible()
     await expect(page.getByRole("link", { name: "Consultar inscrição" })).toHaveAttribute("href", "/consulta")
   })
 
