@@ -57,6 +57,7 @@ export function getRegistrationStatusBadgeClass(status: REGISTRATION_STATUS | st
 }
 
 const ADMIN_ROLE_LABELS: Record<ADMIN_ROLE, string> = {
+  [ADMIN_ROLE.ADMIN]: "Administrador",
   [ADMIN_ROLE.ORGANIZATION]: "Organização",
   [ADMIN_ROLE.OPERATOR]: "Operador",
   [ADMIN_ROLE.SUPER_ADMIN]: "Super admin",
