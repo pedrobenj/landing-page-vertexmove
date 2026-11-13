@@ -23,14 +23,19 @@ export interface CreatedRegistration {
   valorTotalCentavos: number
   kitId?: number | null
   tamanhoCamisaId?: number | null
+  expiraEm: string // ISO — prazo da reserva da vaga
+  eventoSlug: string
+  distanciaId: number
+  /** Credencial da inscrição. SÓ no servidor: a action guarda em cookie HttpOnly e remove antes de responder ao client. */
+  accessToken?: string
 }
 
 /** Corpo de `POST /inscricoes/consulta`: exatamente um dos campos. */
 export type RegistrationLookupInput = { cpf: string } | { whatsapp: string }
 
 export interface RegistrationLookupItem {
-  /** Referência opaca (não é o código) para pedir o comprovante. Campo PROPOSTO ao backend (§16). */
-  referencia: string
+  /** Referência opaca (não é o código) para pedir o comprovante. PROPOSTO ao backend (§16): ausente na API real hoje. */
+  referencia?: string
   nomeMascarado: string
   evento: string
   distancia: string

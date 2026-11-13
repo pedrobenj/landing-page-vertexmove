@@ -1,5 +1,6 @@
 import type { DOCUMENT_TYPE } from "@/enums/document-type.enum"
 
+import type { ApiKitPickup } from "./api-event-detail.interface"
 import type { PublicEvent } from "./event.interface"
 import type { KitPhoto } from "./kit.interface"
 import type { ShirtSize } from "./shirt-size.interface"
@@ -40,6 +41,7 @@ export interface PublicDocument {
  */
 export interface PublicEventDetail extends PublicEvent {
   galeriaUrl?: string | null
+  retiradaKit?: ApiKitPickup | null
   distancias?: PublicDistance[]
   kits?: PublicKit[]
   tamanhosCamisa?: ShirtSize[]

@@ -10,6 +10,7 @@ import { receiptRequestSchema, type ReceiptRequestInput } from "@/lib/validation
 import { createRegistrationInputSchema } from "@/lib/validations/registration.schema"
 import { isApiError } from "@/server/api/api-error"
 import { createRegistration, getRegistrationReceipt, lookupRegistrations } from "@/server/api/endpoints/registrations"
+import { saveRegistrationAccess } from "@/server/api/registration-access"
 import { buildRegistrationReceiptPdf, getReceiptFileName } from "@/server/pdf/registration-receipt-pdf"
 import type { CursorPage } from "@/types/api/cursor-page.interface"
 import type {
@@ -57,7 +58,9 @@ export async function createRegistrationAction(
   }
 
   try {
-    const data = await createRegistration(parsed.data)
+    // O token fica só no cookie HttpOnly do Next: a resposta ao navegador sai sem ele.
+    const { accessToken, ...data } = await createRegistration(parsed.data)
+    if (accessToken) await saveRegistrationAccess(data.codigo, accessToken)
     return { status: 201, data, title: "Inscrição realizada!" }
   } catch (error) {
     return toErrorResponse(error, CREATE_ERROR_TITLE, "createRegistrationAction")

@@ -46,6 +46,24 @@ test.describe("Pagamento (Checkout Pro, mock)", () => {
     await expect(page.getByRole("button", { name: "Pagar agora" })).toBeVisible()
   })
 
+  test("a inscrição só abre no navegador em que foi feita (token em cookie HttpOnly)", async ({ page, browser }) => {
+    await registerAthlete(page, { name: "Paula Souza", birthDate: "15/08/1992", cpf: generateValidCpf(), whatsapp: generateWhatsapp() })
+    const code = (await page.getByTestId("registration-code").textContent())!.trim()
+
+    const other = await browser.newContext()
+    try {
+      const otherPage = await other.newPage()
+      await otherPage.goto(`/inscricao/${code}`)
+      await expect(otherPage.getByText(/Abra esta inscrição no mesmo aparelho/)).toBeVisible()
+      await expect(otherPage.getByRole("link", { name: "Consultar inscrição" })).toHaveAttribute("href", "/consulta")
+    } finally {
+      await other.close()
+    }
+
+    await page.goto(`/inscricao/${code}`)
+    await expect(page.getByRole("heading", { name: "Aguardando pagamento" })).toBeVisible()
+  })
+
   test("retorno sem código válido manda para a consulta", async ({ page }) => {
     await page.goto("/inscricao/retorno?external_reference=abc&status=approved")
     await expect(page.getByRole("heading", { level: 1, name: "Não identificamos a inscrição" })).toBeVisible()

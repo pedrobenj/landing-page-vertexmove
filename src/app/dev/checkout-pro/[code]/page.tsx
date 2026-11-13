@@ -6,6 +6,7 @@ import { env } from "@/lib/env"
 import { formatCurrency, isRegistrationCode } from "@/lib/utils"
 import { isApiError } from "@/server/api/api-error"
 import { getRegistrationDetails } from "@/server/api/endpoints/registration-payment"
+import { getRegistrationAccessToken } from "@/server/api/registration-access"
 
 import { MockPaymentOption } from "./components"
 
@@ -31,10 +32,12 @@ export default async function MockCheckoutPage({ params }: PageProps<"/dev/check
   if (!env.USE_MOCK_API) notFound()
   const { code } = await params
   if (!isRegistrationCode(code)) notFound()
+  const token = await getRegistrationAccessToken(code)
+  if (!token) notFound()
 
   let total: number
   try {
-    total = (await getRegistrationDetails(code)).valorTotalCentavos
+    total = (await getRegistrationDetails(code, token)).valorTotalCentavos
   } catch (error) {
     unstable_rethrow(error)
     if (isApiError(error) && error.status === 404) notFound()

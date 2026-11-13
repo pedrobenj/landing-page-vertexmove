@@ -2,6 +2,8 @@ import "server-only"
 
 import { cacheLife, cacheTag } from "next/cache"
 
+import { toPublicEventDetail } from "@/lib/utils/to-public-event-detail"
+import type { ApiPublicEventDetail } from "@/types/api/api-event-detail.interface"
 import type { CursorPage } from "@/types/api/cursor-page.interface"
 import type { PublicEvent } from "@/types/api/event.interface"
 import type { PublicEventDetail } from "@/types/api/public-event-detail.interface"
@@ -42,7 +44,9 @@ async function fetchPublicEvent(slug: string): Promise<CachedResult<PublicEventD
   "use cache"
   cacheTag("events", `event:${slug}`)
   try {
-    const data = await apiFetch<PublicEventDetail>(`/eventos/${encodeURIComponent(slug)}`, { forwardClient: false })
+    const raw = await apiFetch<ApiPublicEventDetail>(`/eventos/${encodeURIComponent(slug)}`, { forwardClient: false })
+    // O lote vigente é calculado no momento do cache; o cacheLife curto do catálogo limita o atraso na virada de lote.
+    const data = toPublicEventDetail(raw, new Date())
     cacheLife(PUBLIC_CATALOG_CACHE_LIFE)
     return { ok: true, data }
   } catch (error) {

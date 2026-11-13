@@ -9,7 +9,9 @@ interface RegistrationSummaryProps {
 
 export function RegistrationSummary({ details }: RegistrationSummaryProps) {
   const { evento, distancia, valorDescontoCentavos, valorTotalCentavos } = details
-  const when = evento.dataEvento ? `${formatApiDate(evento.dataEvento)} · largada ${evento.horarioLargada}` : "—"
+  const when = evento.dataEvento
+    ? `${formatApiDate(evento.dataEvento)}${evento.horarioLargada ? ` · largada ${evento.horarioLargada}` : ""}`
+    : null
 
   return (
     <section aria-labelledby="registration-summary-title" className="rounded-2xl border bg-card p-6">
@@ -18,9 +20,9 @@ export function RegistrationSummary({ details }: RegistrationSummaryProps) {
       </h2>
       <dl className="mt-2 divide-y">
         <RegistrationSummaryRow label="Corrida" value={evento.nome} />
-        <RegistrationSummaryRow label="Data" value={when} />
+        {when && <RegistrationSummaryRow label="Data" value={when} />}
         <RegistrationSummaryRow label="Distância" value={distancia} />
-        {valorDescontoCentavos > 0 && (
+        {valorDescontoCentavos !== null && valorDescontoCentavos > 0 && (
           <RegistrationSummaryRow label="Desconto" value={`− ${formatCurrency(valorDescontoCentavos)}`} />
         )}
         <RegistrationSummaryRow label="Total" value={formatCurrency(valorTotalCentavos)} emphasis />

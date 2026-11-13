@@ -5,6 +5,11 @@ import { ADMIN_ROLE } from "@/enums/admin-role.enum"
 import { canManageEvents, canManageStore } from "./admin-permissions"
 
 describe("canManageEvents", () => {
+  it("o papel único do backend (admin) gerencia corridas e loja", () => {
+    expect(canManageEvents(ADMIN_ROLE.ADMIN)).toBe(true)
+    expect(canManageStore(ADMIN_ROLE.ADMIN)).toBe(true)
+  })
+
   it("organização e super admin gerenciam corridas", () => {
     expect(canManageEvents(ADMIN_ROLE.ORGANIZATION)).toBe(true)
     expect(canManageEvents(ADMIN_ROLE.SUPER_ADMIN)).toBe(true)

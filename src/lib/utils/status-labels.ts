@@ -30,6 +30,7 @@ const REGISTRATION_STATUS_LABELS: Record<REGISTRATION_STATUS, string> = {
   [REGISTRATION_STATUS.CONFIRMED]: "Confirmada",
   [REGISTRATION_STATUS.CANCELLED]: "Cancelada",
   [REGISTRATION_STATUS.EXPIRED]: "Expirada",
+  [REGISTRATION_STATUS.REFUNDED]: "Estornada",
 }
 
 const REGISTRATION_STATUS_BADGES: Record<REGISTRATION_STATUS, string> = {
@@ -37,6 +38,7 @@ const REGISTRATION_STATUS_BADGES: Record<REGISTRATION_STATUS, string> = {
   [REGISTRATION_STATUS.CONFIRMED]: "bg-cta text-cta-foreground",
   [REGISTRATION_STATUS.CANCELLED]: "bg-destructive/10 text-destructive",
   [REGISTRATION_STATUS.EXPIRED]: "bg-muted text-muted-foreground",
+  [REGISTRATION_STATUS.REFUNDED]: "bg-muted text-muted-foreground",
 }
 
 /** Aceita `string` porque a lista de status ainda pode mudar no backend (§16). */
@@ -57,6 +59,7 @@ export function getRegistrationStatusBadgeClass(status: REGISTRATION_STATUS | st
 }
 
 const ADMIN_ROLE_LABELS: Record<ADMIN_ROLE, string> = {
+  [ADMIN_ROLE.ADMIN]: "Administrador",
   [ADMIN_ROLE.ORGANIZATION]: "Organização",
   [ADMIN_ROLE.OPERATOR]: "Operador",
   [ADMIN_ROLE.SUPER_ADMIN]: "Super admin",

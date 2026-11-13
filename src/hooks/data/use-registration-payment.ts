@@ -11,6 +11,8 @@ import { queryKeys } from "@/lib/utils/query-keys"
 export const PAYMENT_POLL_INTERVAL_MS = 3_000
 export const PAYMENT_POLL_WINDOW_MS = 60_000
 
+const NO_RETRY_STATUSES = new Set([401, 404])
+
 /** Erro da consulta, com o status HTTP para separar "não encontrada" (404) de falha. */
 export class RegistrationDetailsError extends Error {
   constructor(
@@ -45,7 +47,9 @@ export function useRegistrationPayment(code: string, awaitingConfirmation: boole
     },
     // Pagamento: sempre atual (CLAUDE.md §10).
     staleTime: 0,
-    retry: (failureCount, error) => !(error instanceof RegistrationDetailsError && error.status === 404) && failureCount < 2,
+    // 404 (código inexistente) e 401 (sem o cookie da inscrição neste aparelho) não melhoram tentando de novo.
+    retry: (failureCount, error) =>
+      !(error instanceof RegistrationDetailsError && NO_RETRY_STATUSES.has(error.status)) && failureCount < 2,
     refetchInterval: ({ state }) =>
       state.data && shouldPollPayment({ details: state.data, awaitingConfirmation, pollingExpired })
         ? PAYMENT_POLL_INTERVAL_MS

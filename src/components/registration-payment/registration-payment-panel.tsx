@@ -1,6 +1,6 @@
 "use client"
 
-import { CircleCheckBig, Clock, Loader2, type LucideIcon, TicketX, XCircle } from "lucide-react"
+import { CircleCheckBig, Clock, Loader2, type LucideIcon, Smartphone, TicketX, XCircle } from "lucide-react"
 import Link from "next/link"
 import type { ReactNode } from "react"
 
@@ -89,7 +89,7 @@ function getViewContent(view: PaymentView, details: RegistrationDetails): ViewCo
         title: `Inscrição ${getRegistrationStatusLabel(details.status).toLowerCase()}`,
         description: "Esta inscrição não aceita mais pagamento. Se ainda houver vagas, faça uma nova inscrição.",
         tone: "warning",
-        actions: <EventLink slug={evento.slug} label="Ver a corrida" />,
+        actions: <EventLink slug={evento.slug ?? ""} label="Ver a corrida" />,
       }
   }
 }
@@ -112,11 +112,19 @@ export function RegistrationPaymentPanel({ code, awaitingConfirmation = false }:
   }
 
   if (error || !data) {
-    const notFound = error instanceof RegistrationDetailsError && error.status === 404
+    const status = error instanceof RegistrationDetailsError ? error.status : null
     return (
       <>
         {heading}
-        {notFound ? (
+        {status === 401 ? (
+          // Sem o cookie da inscrição neste navegador: o backend não diz nem se o código existe.
+          <EmptyState
+            icon={Smartphone}
+            title="Abra no aparelho da inscrição"
+            description={error?.message ?? "Consulte o status em Consultar inscrição."}
+            action={<LookupLink />}
+          />
+        ) : status === 404 ? (
           <EmptyState
             icon={TicketX}
             title="Inscrição não encontrada"

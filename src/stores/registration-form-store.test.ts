@@ -14,6 +14,9 @@ const confirmation = {
   valorBaseCentavos: 8990,
   valorDescontoCentavos: 0,
   valorTotalCentavos: 8990,
+  expiraEm: "2026-11-12T15:30:00.000Z",
+  eventoSlug: "corrida",
+  distanciaId: 1,
 }
 
 describe("registration form store", () => {

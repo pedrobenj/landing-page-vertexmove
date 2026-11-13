@@ -9,7 +9,7 @@ import { PAYMENT_STATUS } from "@/enums/payment-status.enum"
 import { REGISTRATION_STATUS } from "@/enums/registration-status.enum"
 import { MOCK_CHECKOUT_PATH } from "@/lib/utils/checkout-url"
 import { maskCpf } from "@/lib/utils/masks"
-import type { RegistrationCheckout, RegistrationDetails } from "@/types/api/registration-details.interface"
+import type { ApiCheckout, ApiRegistrationStatus } from "@/types/api/registration-details.interface"
 import type { RegistrationReceipt } from "@/types/api/registration-receipt.interface"
 import type { CreatedRegistration, RegistrationLookupItem } from "@/types/api/registration.interface"
 
@@ -20,6 +20,9 @@ import { paginate } from "../mock-pagination"
 import { createRegistrationSchema, lookupSchema, mockPaymentSchema, receiptSchema, validate } from "../mock-schemas"
 import { ageOn, toFortalezaIso, todayInFortaleza } from "../mock-time"
 import type { MockRegistration } from "../mock-types"
+
+/** Reserva da vaga enquanto a inscrição está pendente (igual ao padrão do backend). */
+const REGISTRATION_HOLD_MS = 30 * 60 * 1000
 
 const SENIOR_AGE = 60
 const SENIOR_DISCOUNT_PERCENT = 50
@@ -42,23 +45,46 @@ function findRegistration(codigo: string): MockRegistration | undefined {
   return registration
 }
 
-function toDetails(registration: MockRegistration): RegistrationDetails {
+/** Como o backend: o token de `POST /inscricoes` é a única credencial de status e pagamento. */
+function authorize(headers: Headers, registration: MockRegistration): Response | null {
+  const [scheme, token] = (headers.get("Authorization") ?? "").split(" ")
+  return scheme === "Bearer" && token === registration.accessToken
+    ? null
+    : apiError(401, API_ERROR_CODE.NOT_AUTHENTICATED, "Não autenticado.")
+}
+
+function holdExpiresAt(registration: MockRegistration): string {
+  return new Date(Date.parse(registration.inscritoEm) + REGISTRATION_HOLD_MS).toISOString()
+}
+
+function toCheckout(registration: MockRegistration, status: PAYMENT_STATUS): ApiCheckout {
+  return {
+    pagamentoId: registration.id,
+    status,
+    checkoutUrl: `${MOCK_CHECKOUT_PATH}${registration.codigo}`,
+    expiraEm: holdExpiresAt(registration),
+    gatewayPreferenceId: `MOCK-PREF-${registration.id}`,
+  }
+}
+
+/**
+ * `StatusInscricaoResponse` do backend. Inclui `eventoSlug`, `dataEvento` e `horarioLargada`, que a fase 3
+ * do plano pede ao backend (o front trata a ausência deles).
+ */
+function toStatus(registration: MockRegistration): ApiRegistrationStatus {
   const db = getMockDb()
   const event = db.events.find((item) => item.id === registration.eventoId)
   return {
     codigo: registration.codigo,
     status: registration.status,
-    evento: {
-      slug: event?.slug ?? "",
-      nome: event?.nome ?? "",
-      dataEvento: event?.dataEvento ?? "",
-      horarioLargada: event?.horarioLargada ?? "",
-    },
-    distancia: db.distances.find((item) => item.id === registration.distanciaId)?.nome ?? "",
-    valorBaseCentavos: registration.valorBaseCentavos,
-    valorDescontoCentavos: registration.valorDescontoCentavos,
+    expiraEm: holdExpiresAt(registration),
     valorTotalCentavos: registration.valorTotalCentavos,
-    pagamento: registration.pagamentoStatus ? { status: registration.pagamentoStatus } : null,
+    eventoNome: event?.nome ?? "",
+    distanciaNome: db.distances.find((item) => item.id === registration.distanciaId)?.nome ?? "",
+    eventoSlug: event?.slug,
+    dataEvento: event?.dataEvento,
+    horarioLargada: event?.horarioLargada,
+    pagamento: registration.pagamentoStatus ? toCheckout(registration, registration.pagamentoStatus) : null,
   }
 }
 
@@ -160,6 +186,7 @@ export const registrationRoutes: MockRoute[] = [
         id,
         codigo: `VX-${todayInFortaleza().slice(0, 4)}-${String(id).padStart(8, "0")}`,
         referencia: randomUUID(),
+        accessToken: randomUUID(),
         eventoId: event.id,
         distanciaId: distance.id,
         kitId: input.kitId ?? null,
@@ -188,6 +215,10 @@ export const registrationRoutes: MockRoute[] = [
         valorTotalCentavos: registration.valorTotalCentavos,
         kitId: registration.kitId,
         tamanhoCamisaId: registration.tamanhoCamisaId,
+        expiraEm: new Date(Date.now() + REGISTRATION_HOLD_MS).toISOString(),
+        eventoSlug: event.slug,
+        distanciaId: distance.id,
+        accessToken: registration.accessToken,
       }
       return created(response, `/inscricoes/${registration.codigo}`)
     },
@@ -234,24 +265,30 @@ export const registrationRoutes: MockRoute[] = [
   {
     method: "GET",
     path: "/inscricoes/:codigo",
-    handler: ({ params }) => {
+    handler: ({ params, headers }) => {
       const registration = findRegistration(params.codigo)
       if (!registration) return apiError(404, API_ERROR_CODE.NOT_FOUND, "Inscrição não encontrada.")
-      return json(200, toDetails(registration))
+      const denied = authorize(headers, registration)
+      if (denied) return denied
+      return json(200, toStatus(registration))
     },
   },
   {
     // Cria a "preferência" do Checkout Pro. O mock aponta para o checkout falso local em vez do Mercado Pago.
     method: "POST",
-    path: "/inscricoes/:codigo/pagamento",
-    handler: ({ params }) => {
+    path: "/inscricoes/:codigo/pagamentos",
+    handler: ({ params, headers }) => {
       const registration = findRegistration(params.codigo)
       if (!registration) return apiError(404, API_ERROR_CODE.NOT_FOUND, "Inscrição não encontrada.")
+      const denied = authorize(headers, registration)
+      if (denied) return denied
+      if (!headers.get("Idempotency-Key")) {
+        return apiError(422, API_ERROR_CODE.INVALID_DATA, "Idempotency-Key obrigatório.")
+      }
       if (registration.status !== REGISTRATION_STATUS.PENDING || registration.aprovacaoEm) {
         return apiError(409, API_ERROR_CODE.PAYMENT_UNAVAILABLE, "A inscrição não está aguardando pagamento.")
       }
-      const response: RegistrationCheckout = { checkoutUrl: `${MOCK_CHECKOUT_PATH}${registration.codigo}` }
-      return created(response, `/inscricoes/${registration.codigo}`)
+      return created(toCheckout(registration, PAYMENT_STATUS.PENDING), `/inscricoes/${registration.codigo}`)
     },
   },
   {
