@@ -57,7 +57,7 @@ export async function startRegistrationCheckoutAction(codigo: string): Promise<H
   }
 }
 
-const MOCK_RETURN_STATUS: Record<PAYMENT_STATUS, string> = {
+const MOCK_RETURN_STATUS: Partial<Record<PAYMENT_STATUS, string>> = {
   [PAYMENT_STATUS.APPROVED]: "approved",
   [PAYMENT_STATUS.PENDING]: "pending",
   [PAYMENT_STATUS.REJECTED]: "rejected",
@@ -69,13 +69,13 @@ const MOCK_RETURN_STATUS: Record<PAYMENT_STATUS, string> = {
  * `/inscricao/retorno` com os mesmos parâmetros que o Mercado Pago anexa.
  */
 export async function simulateMockPaymentAction(codigo: string, resultado: PAYMENT_STATUS): Promise<void> {
-  if (!env.USE_MOCK_API || !isRegistrationCode(codigo) || !(resultado in MOCK_RETURN_STATUS)) return
+  const status = MOCK_RETURN_STATUS[resultado]
+  if (!env.USE_MOCK_API || !isRegistrationCode(codigo) || status === undefined) return
   try {
     await simulateMockPayment(codigo, resultado)
   } catch (error) {
     console.error("[simulateMockPaymentAction]", error instanceof Error ? error.name : "erro desconhecido")
   }
-  const status = MOCK_RETURN_STATUS[resultado]
   const query = new URLSearchParams({
     collection_status: status,
     status,

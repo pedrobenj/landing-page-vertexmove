@@ -38,6 +38,21 @@ describe("getPaymentView", () => {
     const details = { status: REGISTRATION_STATUS.PENDING, pagamento: { status: PAYMENT_STATUS.PENDING } }
     expect(getPaymentView({ details, awaitingConfirmation: false, pollingExpired: false })).toBe("awaiting-payment")
   })
+
+  it("inscrição estornada fica encerrada", () => {
+    const details = { status: REGISTRATION_STATUS.REFUNDED, pagamento: { status: PAYMENT_STATUS.REFUNDED } }
+    expect(getPaymentView({ details, awaitingConfirmation: false, pollingExpired: false })).toBe("closed")
+  })
+
+  it.each([PAYMENT_STATUS.EXPIRED])("pagamento %s pede nova tentativa", (status) => {
+    const details = { status: REGISTRATION_STATUS.PENDING, pagamento: { status } }
+    expect(getPaymentView({ details, awaitingConfirmation: false, pollingExpired: false })).toBe("payment-failed")
+  })
+
+  it.each([PAYMENT_STATUS.CREATED, PAYMENT_STATUS.UNDER_REVIEW])("pagamento %s ainda aguarda", (status) => {
+    const details = { status: REGISTRATION_STATUS.PENDING, pagamento: { status } }
+    expect(getPaymentView({ details, awaitingConfirmation: false, pollingExpired: false })).toBe("awaiting-payment")
+  })
 })
 
 describe("shouldPollPayment", () => {

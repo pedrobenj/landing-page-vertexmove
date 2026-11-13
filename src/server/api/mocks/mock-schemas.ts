@@ -67,7 +67,9 @@ export const receiptSchema = z.strictObject({
 })
 
 /** Resultado escolhido no checkout falso (faz o papel do webhook do Mercado Pago). */
-export const mockPaymentSchema = z.strictObject({ resultado: z.enum(PAYMENT_STATUS) })
+export const mockPaymentSchema = z.strictObject({
+  resultado: z.enum([PAYMENT_STATUS.APPROVED, PAYMENT_STATUS.PENDING, PAYMENT_STATUS.REJECTED, PAYMENT_STATUS.CANCELLED]),
+})
 
 export const loginSchema = z.object({ email: z.string().min(1), senha: z.string().min(1) })
 

@@ -19,7 +19,11 @@ interface PaymentViewInput {
   pollingExpired: boolean
 }
 
-const FAILED_PAYMENT_STATUSES = new Set<string>([PAYMENT_STATUS.REJECTED, PAYMENT_STATUS.CANCELLED])
+const FAILED_PAYMENT_STATUSES = new Set<string>([
+  PAYMENT_STATUS.REJECTED,
+  PAYMENT_STATUS.CANCELLED,
+  PAYMENT_STATUS.EXPIRED,
+])
 
 export function getPaymentView({ details, awaitingConfirmation, pollingExpired }: PaymentViewInput): PaymentView {
   if (details.status === REGISTRATION_STATUS.CONFIRMED) return "confirmed"

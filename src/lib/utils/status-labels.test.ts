@@ -56,4 +56,8 @@ describe("status-labels", () => {
     expect(getAdminRoleLabel("operador")).toBe("Operador")
     expect(getAdminRoleLabel("auditor")).toBe("auditor")
   })
+
+  it("traduz estornada", () => {
+    expect(getRegistrationStatusLabel(REGISTRATION_STATUS.REFUNDED)).toBe("Estornada")
+  })
 })
