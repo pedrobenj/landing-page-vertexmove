@@ -38,6 +38,8 @@ export interface MockRegistration {
   codigo: string
   /** Referência opaca devolvida na consulta (pedido de comprovante). */
   referencia: string
+  /** Credencial da inscrição (`Authorization: Bearer`), como no backend. */
+  accessToken: string
   eventoId: number
   distanciaId: number
   kitId: number | null

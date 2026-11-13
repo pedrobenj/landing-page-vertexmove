@@ -8,6 +8,8 @@ const mockEnv = vi.hoisted(() => ({ NODE_ENV: "test", API_URL: "http://api.test"
 
 vi.mock("@/lib/env", () => ({ env: mockEnv }))
 vi.mock("next/headers", () => ({ headers: async () => new Headers() }))
+const saveRegistrationAccess = vi.hoisted(() => vi.fn(async () => undefined))
+vi.mock("@/server/api/registration-access", () => ({ saveRegistrationAccess }))
 
 const { createRegistrationAction, downloadRegistrationReceiptAction, getRegistrationReceiptAction, lookupRegistrationsAction } =
   await import("./registrations")
@@ -39,6 +41,13 @@ describe("createRegistrationAction", () => {
       valorDescontoCentavos: 0,
       valorTotalCentavos: 13990,
     })
+  })
+
+  it("guarda o accessToken em cookie e nunca o devolve ao navegador", async () => {
+    saveRegistrationAccess.mockClear()
+    const response = await createRegistrationAction(input)
+    expect(response.data).not.toHaveProperty("accessToken")
+    expect(saveRegistrationAccess).toHaveBeenCalledWith(response.data?.codigo, expect.any(String))
   })
 
   it("409 INSCRICAO_DUPLICADA → status, código e mensagem amigável", async () => {

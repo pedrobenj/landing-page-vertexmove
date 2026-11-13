@@ -21,6 +21,9 @@ import { createRegistrationSchema, lookupSchema, mockPaymentSchema, receiptSchem
 import { ageOn, toFortalezaIso, todayInFortaleza } from "../mock-time"
 import type { MockRegistration } from "../mock-types"
 
+/** Reserva da vaga enquanto a inscrição está pendente (igual ao padrão do backend). */
+const REGISTRATION_HOLD_MS = 30 * 60 * 1000
+
 const SENIOR_AGE = 60
 const SENIOR_DISCOUNT_PERCENT = 50
 
@@ -160,6 +163,7 @@ export const registrationRoutes: MockRoute[] = [
         id,
         codigo: `VX-${todayInFortaleza().slice(0, 4)}-${String(id).padStart(8, "0")}`,
         referencia: randomUUID(),
+        accessToken: randomUUID(),
         eventoId: event.id,
         distanciaId: distance.id,
         kitId: input.kitId ?? null,
@@ -188,6 +192,10 @@ export const registrationRoutes: MockRoute[] = [
         valorTotalCentavos: registration.valorTotalCentavos,
         kitId: registration.kitId,
         tamanhoCamisaId: registration.tamanhoCamisaId,
+        expiraEm: new Date(Date.now() + REGISTRATION_HOLD_MS).toISOString(),
+        eventoSlug: event.slug,
+        distanciaId: distance.id,
+        accessToken: registration.accessToken,
       }
       return created(response, `/inscricoes/${registration.codigo}`)
     },
