@@ -12,14 +12,15 @@ interface VertexLogoProps {
 }
 
 const LOGO_SOURCES = {
-  full: { src: "/brand/vertex-logo.png", width: 180, height: 72 },
+  // Logo oficial em SVG (quadrada, fundo branco): usar sobre fundo claro ou na `VertexLogoPlate`.
+  full: { src: "/brand/vertex-logo.svg", width: 1254, height: 1254 },
   white: { src: "/brand/vertex-logo-white.png", width: 180, height: 72 },
   symbol: { src: "/brand/vertex-symbol.png", width: 40, height: 40 },
 } as const
 
 /**
  * Logo oficial — nunca distorcer, recolorir ou aplicar sombra (CLAUDE.md §3).
- * Enquanto os arquivos de `public/brand/` não chegarem do cliente, cai para o nome em texto.
+ * Se o arquivo de `public/brand/` faltar, cai para o nome em texto.
  */
 export function VertexLogo({ variant = "full", className, priority }: VertexLogoProps) {
   const [hasError, setHasError] = useState(false)
@@ -49,6 +50,8 @@ export function VertexLogo({ variant = "full", className, priority }: VertexLogo
       height={logo.height}
       alt="Vertex Grupo de Corrida"
       priority={priority}
+      // SVG não passa pelo otimizador do Next (exigiria `dangerouslyAllowSVG`).
+      unoptimized={logo.src.endsWith(".svg")}
       onError={() => setHasError(true)}
       className={cn("h-auto object-contain", className)}
     />

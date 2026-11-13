@@ -6,21 +6,30 @@ import type { AboutSection } from "@/types/about-section.interface"
  */
 export const ABOUT_SECTIONS: readonly AboutSection[] = [
   {
-    id: "historia",
-    eyebrow: "Nossa história",
-    title: "Correr junto é melhor",
+    id: "nome",
+    eyebrow: "Por que Vertex",
+    title: "Vértice é o ponto mais alto",
     paragraphs: [
-      "O Vertex Grupo de Corrida reúne, em Fortaleza, pessoas apaixonadas por correr e por estar em boa companhia.",
-      "Somos uma comunidade que organiza corridas de rua abertas a todos, do primeiro quilômetro à próxima meta pessoal.",
+      "Vertex vem de vértice: o topo, o ponto onde as linhas se encontram. É o pico verde da nossa marca.",
+      "Para nós, o topo não é um pódio distante. É a próxima meta de cada corredor, seja o primeiro 5 km ou o recorde nos 10.",
+    ],
+  },
+  {
+    id: "historia",
+    eyebrow: "Nossa subida",
+    title: "Uma prova de cada vez",
+    paragraphs: [
+      "O Vertex Grupo de Corrida nasceu em Fortaleza para levar gente para as ruas, um degrau por vez.",
+      "Organizamos corridas de rua abertas a todos os ritmos, com percurso seguro, kit caprichado e chegada para comemorar.",
     ],
   },
   {
     id: "missao",
-    eyebrow: "Missão",
-    title: "Levar mais gente para o topo",
+    eyebrow: "Onde queremos chegar",
+    title: "Mais gente chegando ao seu topo",
     paragraphs: [
-      "Queremos tornar a corrida de rua acessível, acolhedora e bem organizada para quem está começando e para quem já coleciona medalhas.",
-      "Cada prova é pensada para que você chegue, corra no seu ritmo e saia com vontade de voltar.",
+      "Queremos que cada prova seja o próximo degrau de alguém: quem nunca correu, quem voltou agora e quem já coleciona medalhas.",
+      "Bem organizada do início ao fim, para você só pensar em subir.",
     ],
   },
 ]

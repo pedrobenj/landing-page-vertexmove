@@ -5,7 +5,7 @@ interface AboutSectionCardProps {
   section: AboutSection
 }
 
-/** "Nossa história" / "Missão": eyebrow, título e parágrafos num card. */
+/** Bloco da página "O Vertex" (nome, história, missão): eyebrow, título e parágrafos num card. */
 export function AboutSectionCard({ section }: AboutSectionCardProps) {
   return (
     <li>

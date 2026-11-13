@@ -9,12 +9,12 @@ export function PartnersStripSection() {
   if (partners.length === 0) return null
 
   return (
-    <SectionBand tone="muted" spacing="compact" aria-labelledby="parceiros-title">
+    <SectionBand spacing="compact" aria-labelledby="parceiros-title">
       <h2
         id="parceiros-title"
         className="font-heading text-sm font-black uppercase tracking-[0.2em] text-brand-navy-deep"
       >
-        Marcas que correm com a gente
+        Marcas na nossa subida
       </h2>
       <PartnersCarousel partners={partners} />
     </SectionBand>

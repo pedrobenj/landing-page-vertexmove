@@ -7,14 +7,14 @@ test.describe("Navegação pública", () => {
 
     const menu = page.getByRole("dialog", { name: "Menu" })
     await expect(menu).toBeVisible()
-    for (const label of ["Início", "Corridas", "Loja", "Corridas Parceiras", "Conheça o Vertex", "Parceiros", "Contato"]) {
+    for (const label of ["Início", "Provas", "Loja", "Provas parceiras", "O Vertex", "Parceiros", "Fale com a gente"]) {
       await expect(menu.getByRole("link", { name: label, exact: true })).toBeVisible()
     }
     await expect(menu.getByRole("link", { name: "Área administrativa" })).toHaveAttribute("href", "/admin")
 
     await menu.getByRole("link", { name: "Consultar inscrição" }).click()
     await expect(page).toHaveURL("/consulta")
-    await expect(page.getByRole("heading", { level: 1, name: "Consultar inscrição" })).toBeVisible()
+    await expect(page.getByRole("heading", { level: 1, name: "Onde está minha inscrição?" })).toBeVisible()
     await expect(menu).toBeHidden()
   })
 
@@ -30,7 +30,9 @@ test.describe("Navegação pública", () => {
   test("rodapé tem contato, navegação e crédito, e leva para a loja", async ({ page }) => {
     await page.goto("/")
     const footer = page.getByRole("contentinfo")
-    await expect(footer.getByRole("heading", { name: "Contato" })).toBeVisible()
+    await expect(footer.getByRole("heading", { name: "Fale com a gente" })).toBeVisible()
+    await expect(footer.getByRole("heading", { name: "Explore" })).toBeVisible()
+    await expect(footer).toContainText("Cada prova é um degrau.")
     await expect(footer.getByRole("link", { name: /contato@vertexcorrida\.com\.br/ })).toHaveAttribute(
       "href",
       "mailto:contato@vertexcorrida.com.br",
@@ -44,7 +46,7 @@ test.describe("Navegação pública", () => {
   })
 
   const publicRoutes = [
-    { path: "/consulta", title: "Consultar inscrição" },
+    { path: "/consulta", title: "Onde está minha inscrição?" },
     { path: "/loja", title: "Camisas e acessórios" },
     { path: "/privacidade", title: "Política de privacidade" },
     { path: "/corridas/corrida-vertex-beira-mar-2026", title: "Corrida Vertex Beira-Mar 2026" },

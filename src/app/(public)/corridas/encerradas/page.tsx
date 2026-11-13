@@ -20,9 +20,9 @@ export default function PastEventsPage() {
       <SectionHeading
         as="h1"
         id="encerradas-title"
-        eyebrow="Nossa história em movimento"
-        title="Corridas que já vivemos"
-        description="Edições que viraram histórias, conquistas e amizades."
+        eyebrow="Edições passadas"
+        title="Topos conquistados"
+        description="Cada edição foi um degrau. Relembre as provas que já subimos juntos."
         actions={
           <Button asChild variant="outline" size="xl" className="w-full shadow-sm sm:w-auto">
             <Link href="/#corridas">

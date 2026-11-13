@@ -5,7 +5,7 @@ import { SectionBand, SectionHeading } from "@/components/sections"
 import { ContactChannelList, TrainingInfo } from "./components"
 
 export const metadata: Metadata = {
-  title: "Contato",
+  title: "Fale com a gente",
   description: "Fale com o Vertex Grupo de Corrida pelo WhatsApp, Instagram ou e-mail.",
   alternates: { canonical: "/contato" },
 }
@@ -17,9 +17,9 @@ export default function ContactPage() {
         <SectionHeading
           as="h1"
           id="contato-title"
-          eyebrow="Fale com a gente"
-          title="Contato"
-          description="Dúvida sobre inscrição, kit ou parceria? A gente responde com prazer."
+          eyebrow="Contato"
+          title="Fale com a gente"
+          description="Dúvida sobre inscrição, kit ou parceria? Chama no WhatsApp que a gente responde."
         />
         <ContactChannelList />
       </SectionBand>

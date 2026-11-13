@@ -23,12 +23,12 @@ export function SiteFooter() {
     <footer className="mt-auto bg-brand-navy-deep text-white">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 text-sm sm:grid-cols-2 lg:grid-cols-3">
         <div className="flex flex-col items-start gap-4">
-          <VertexLogoPlate className="h-12 text-lg" />
+          <VertexLogoPlate className="h-24 text-lg" />
           <p className="text-white/80">Vertex Grupo de Corrida — {SITE_TAGLINE}</p>
         </div>
 
         <div className="flex flex-col gap-4">
-          <h2 className="font-heading text-xs font-bold uppercase tracking-widest text-brand-green">Contato</h2>
+          <h2 className="font-heading text-xs font-bold uppercase tracking-widest text-brand-green">Fale com a gente</h2>
           <ul className="flex flex-col gap-3">
             <FooterContactItem
               icon={MessageCircle}
@@ -49,7 +49,7 @@ export function SiteFooter() {
         </div>
 
         <nav aria-label="Navegação do rodapé" className="flex flex-col gap-4">
-          <h2 className="font-heading text-xs font-bold uppercase tracking-widest text-brand-green">Navegação</h2>
+          <h2 className="font-heading text-xs font-bold uppercase tracking-widest text-brand-green">Explore</h2>
           <ul className="flex flex-col gap-2.5">
             {SITE_NAV_ITEMS.map((item) => (
               <FooterNavLink key={item.href} item={item} />

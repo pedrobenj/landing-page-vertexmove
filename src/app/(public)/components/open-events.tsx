@@ -22,11 +22,11 @@ export async function OpenEvents() {
     return (
       <EmptyState
         icon={CalendarX2}
-        title="Nenhuma corrida aberta no momento."
-        description="Volte em breve!"
+        title="Nenhuma prova aberta agora."
+        description="O próximo topo já está sendo preparado. Volte em breve!"
         action={
           <Button asChild variant="outline">
-            <Link href="/corridas/encerradas">Ver corridas encerradas</Link>
+            <Link href="/corridas/encerradas">Ver os topos conquistados</Link>
           </Button>
         }
       />
