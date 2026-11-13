@@ -11,7 +11,7 @@ import { getCommunityStats } from "@/server/content/community-stats"
 import { AboutSections } from "./components"
 
 export const metadata: Metadata = {
-  title: "Conheça o Vertex",
+  title: "O Vertex",
   description: "Conheça o Vertex Grupo de Corrida: comunidade de corredores de Fortaleza que organiza corridas de rua abertas a todos.",
   alternates: { canonical: "/sobre" },
 }
@@ -25,12 +25,12 @@ export default function AboutPage() {
           as="h1"
           id="sobre-title"
           eyebrow="Vertex Grupo de Corrida"
-          title="Conheça o Vertex"
-          description={`${SITE_TAGLINE} Uma comunidade de corredores de Fortaleza que acredita que todo mundo pode chegar ao topo, no seu ritmo.`}
+          title="O Vertex"
+          description={`${SITE_TAGLINE} Corridas de rua em Fortaleza para quem quer subir mais um, no próprio ritmo.`}
           actions={
             <Button asChild variant="cta" size="xl" className="w-full normal-case tracking-normal sm:w-auto">
               <Link href="/#corridas">
-                Ver próximas corridas
+                Ver os próximos topos
                 <ArrowRight aria-hidden="true" />
               </Link>
             </Button>

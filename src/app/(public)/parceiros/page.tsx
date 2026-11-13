@@ -23,9 +23,9 @@ export default function PartnersPage() {
       <SectionHeading
         as="h1"
         id="parceiros-page-title"
-        eyebrow="Marcas que correm com a gente"
+        eyebrow="Quem sobe junto"
         title="Parceiros"
-        description="Quem apoia o Vertex ajuda a tornar cada prova possível. Obrigado por correrem com a gente!"
+        description="Cada prova do Vertex tem marcas que ajudam a construir a subida. Obrigado por estarem na largada com a gente."
         actions={hasPartners ? <BecomePartnerButton /> : undefined}
       />
       {hasPartners ? (

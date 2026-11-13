@@ -28,7 +28,7 @@ export function SiteFooter() {
         </div>
 
         <div className="flex flex-col gap-4">
-          <h2 className="font-heading text-xs font-bold uppercase tracking-widest text-brand-green">Contato</h2>
+          <h2 className="font-heading text-xs font-bold uppercase tracking-widest text-brand-green">Fale com a gente</h2>
           <ul className="flex flex-col gap-3">
             <FooterContactItem
               icon={MessageCircle}
@@ -49,7 +49,7 @@ export function SiteFooter() {
         </div>
 
         <nav aria-label="Navegação do rodapé" className="flex flex-col gap-4">
-          <h2 className="font-heading text-xs font-bold uppercase tracking-widest text-brand-green">Navegação</h2>
+          <h2 className="font-heading text-xs font-bold uppercase tracking-widest text-brand-green">Explore</h2>
           <ul className="flex flex-col gap-2.5">
             {SITE_NAV_ITEMS.map((item) => (
               <FooterNavLink key={item.href} item={item} />

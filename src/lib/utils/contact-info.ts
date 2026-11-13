@@ -9,4 +9,4 @@ export const CONTACT_INFO = {
 } as const
 
 /** TODO(cliente): frase oficial do grupo (§16). */
-export const SITE_TAGLINE = "Corra. Conecte-se. Evolua."
+export const SITE_TAGLINE = "Cada prova é um degrau."

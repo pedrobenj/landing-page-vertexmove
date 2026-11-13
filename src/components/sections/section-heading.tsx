@@ -1,5 +1,6 @@
 import type { ReactNode } from "react"
 
+import { Chevron } from "@/components/brand"
 import { StaggerGroup, StaggerItem } from "@/components/motion"
 import { cn } from "@/lib/utils"
 
@@ -16,7 +17,8 @@ interface SectionHeadingProps {
 }
 
 /**
- * Eyebrow + título grande e pesado + linha de apoio, com ações à direita no desktop (CLAUDE.md §3).
+ * Eyebrow (com o pico da marca à frente) + título grande e pesado + linha de apoio, com ações à
+ * direita no desktop (CLAUDE.md §3).
  * Revela em cascata (eyebrow → título → subtítulo → ações) ao entrar na tela.
  */
 export function SectionHeading({
@@ -38,10 +40,11 @@ export function SectionHeading({
           <StaggerItem as="div">
             <p
               className={cn(
-                "text-xs font-bold uppercase tracking-[0.2em]",
+                "flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em]",
                 isDark ? "text-brand-green" : "text-brand-green-text",
               )}
             >
+              <Chevron className="h-2.5 w-4 shrink-0 text-current" />
               {eyebrow}
             </p>
           </StaggerItem>

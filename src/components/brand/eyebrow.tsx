@@ -2,12 +2,14 @@ import type { ReactNode } from "react"
 
 import { cn } from "@/lib/utils"
 
+import { Chevron } from "./chevron"
+
 interface EyebrowProps {
   children: ReactNode
   className?: string
 }
 
-/** Subtítulo no estilo "— GRUPO DE CORRIDA —", acima dos títulos de seção. */
+/** Subtítulo curto em caixa alta com o pico da marca à frente, acima de títulos. */
 export function Eyebrow({ children, className }: EyebrowProps) {
   return (
     <p
@@ -16,9 +18,8 @@ export function Eyebrow({ children, className }: EyebrowProps) {
         className,
       )}
     >
-      <span aria-hidden="true" className="h-0.5 w-6 bg-brand-green" />
+      <Chevron className="h-2.5 w-4 shrink-0" />
       {children}
-      <span aria-hidden="true" className="h-0.5 w-6 bg-brand-green" />
     </p>
   )
 }

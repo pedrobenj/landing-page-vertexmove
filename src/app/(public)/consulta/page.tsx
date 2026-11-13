@@ -16,9 +16,9 @@ export default function LookupPage() {
       <SectionHeading
         as="h1"
         id="consulta-title"
-        eyebrow="Sem login e sem senha"
-        title="Consultar inscrição"
-        description="Informe o WhatsApp ou o CPF usado na inscrição para ver suas corridas e o status de cada uma."
+        eyebrow="Consultar inscrição"
+        title="Onde está minha inscrição?"
+        description="Sem login e sem senha: informe o WhatsApp ou o CPF da inscrição e veja suas provas e o status de cada uma."
       />
       <p className="flex gap-2 text-sm text-muted-foreground">
         <ShieldCheck aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-brand-green-text" />
