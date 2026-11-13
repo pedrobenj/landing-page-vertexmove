@@ -20,7 +20,7 @@ export default function AdminLoginPage({ searchParams }: PageProps<"/admin/login
           aria-label="Vertex Grupo de Corrida — início"
           className="rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-green"
         >
-          <VertexLogoPlate className="h-14 text-lg" priority />
+          <VertexLogoPlate className="h-24 text-lg" priority />
         </Link>
 
         <section

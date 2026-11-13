@@ -23,7 +23,7 @@ export function SiteFooter() {
     <footer className="mt-auto bg-brand-navy-deep text-white">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 text-sm sm:grid-cols-2 lg:grid-cols-3">
         <div className="flex flex-col items-start gap-4">
-          <VertexLogoPlate className="h-12 text-lg" />
+          <VertexLogoPlate className="h-24 text-lg" />
           <p className="text-white/80">Vertex Grupo de Corrida — {SITE_TAGLINE}</p>
         </div>
 

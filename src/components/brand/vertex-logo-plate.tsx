@@ -7,16 +7,20 @@ interface VertexLogoPlateProps {
   priority?: boolean
 }
 
-/** Logo colorida sobre uma "placa" branca arredondada, para fundos escuros (header e rodapé). */
+/**
+ * Logo colorida sobre uma "placa" branca arredondada, para fundos escuros (header e rodapé).
+ * A logo é quadrada e já tem margem própria, então a placa é quadrada e quase sem padding.
+ * O tamanho vem da altura (`h-*`) passada em `className`.
+ */
 export function VertexLogoPlate({ className, priority }: VertexLogoPlateProps) {
   return (
     <span
       className={cn(
-        "inline-flex h-10 items-center justify-center overflow-hidden rounded-xl bg-white px-2.5 text-base shadow-sm",
+        "inline-flex aspect-square h-12 items-center justify-center overflow-hidden rounded-xl bg-white p-0.5 text-base shadow-sm",
         className,
       )}
     >
-      <VertexLogo className="h-full max-h-8 w-auto" priority={priority} />
+      <VertexLogo className="size-full" priority={priority} />
     </span>
   )
 }
