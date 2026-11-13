@@ -32,56 +32,42 @@ E onde o organizador (admin), numa área protegida:
 
 ---
 
-## 2. Referência do cliente
+## 2. Identidade e estrutura do site
 
-Referência: **https://www.corredasamigas.com.br/** (site do grupo de corrida feminino "Corre das Amigas"). Substitui a referência anterior (paineldodesafio.com.br).
+**Referência histórica:** o projeto começou espelhando https://www.corredasamigas.com.br/ e ficou idêntico a ela. Em 2026-11-13 o site ganhou estrutura e voz próprias (design em `docs/plans/2026-11-13-identidade-propria-design.md`). **Não voltar a copiar a referência** (ordem de seções, cards de destaque com foto, frase de três batidas, textos).
 
-### Estrutura da referência a seguir
+### Voz: superação / "vértice"
+Vertex vem de vértice: o topo. Os textos falam de **topo, subida, degrau, largada**, em frases curtas e diretas. Exemplos em uso: "Todo corredor tem um topo. Qual é o seu?", "Cada prova é um degrau." (tagline), "Próximos topos", "Topos conquistados", "Começar a subida". Telas funcionais (inscrição, pagamento, termos, privacidade) mantêm texto neutro e claro.
 
-**Menu principal** (header e repetido no rodapé): Início · Corridas · Loja · Corridas Parceiras · Conheça o Vertex · Parceiros · Contato · Área administrativa (link discreto, por último).
+**Menu principal** (header e rodapé): Início · Provas · Loja · Provas parceiras · O Vertex · Parceiros · Fale com a gente · Área administrativa (discreto, por último). Rodapé: logo + tagline, colunas "Fale com a gente" e "Explore", crédito "Desenvolvido por Pedro Benjamin".
 
-**Home, nesta ordem (espelhando o site atual da referência):**
-1. **Hero** — selo-pílula com o nome do grupo, frase curta e motivacional de três batidas (no estilo "Corra. Conecte-se. Evolua.") em tipografia enorme, uma linha sobre o grupo e CTA "Conheça nossa história" (`/sobre`). Adicionar um CTA primário "Quero me inscrever" (âncora `#corridas`), já que aqui o foco é a inscrição.
-2. **Três cards de destaque com foto e sobreposição escura**, lado a lado no desktop e empilhados no mobile, cada um com selo (ex.: "2 corridas abertas"), título, frase e link:
-   - *Próximas corridas* → "Garantir minha vaga" (`#corridas`)
-   - *Consultar inscrição* → "Consultar" (`/consulta`) — no lugar dos "Desafios Online" da referência
-   - *Loja* → "Acessar a loja" (`/loja`)
-3. **Corridas que já vivemos** — carrossel de edições passadas (foto, data, nome) e link "Ver todas" (`/corridas/encerradas`). Some se não houver dados.
-4. **Próximas corridas** (`#corridas`) — título "Escolha seu próximo desafio", texto curto, grade de cards de corridas abertas (capa, nome, data/largada, local, distâncias, "a partir de" e botão "Inscrever-se").
-5. **Como funciona** — passos numerados (mantido do projeto, não existe na referência).
-6. **Acompanhe sua inscrição** — faixa escura com ícone, texto e botão "Consultar minha inscrição" (`/consulta`). Equivale ao "Acompanhe seu desafio" da referência, trocando quilômetros por status da inscrição.
-7. **Marcas que correm com a gente** — faixa/carrossel de logos dos parceiros (`/parceiros`). Some se não houver parceiros.
-8. **Vista o movimento** — faixa da loja com CTA "Conhecer a loja".
-9. **Mais que corrida** — faixa escura: título institucional, texto, CTA para `/sobre` e grade 2×2 com **quatro selos** (ícone + frase: ambiente acolhedor, todos os níveis, experiências marcantes, comunidade em movimento — adaptar ao Vertex).
-10. **Próximas corridas parceiras** — três cards com capa, data, local, distâncias, caixa de cupom e botão "Inscrever-se" (link externo), mais link "Ver todas" (`/corridas-parceiras`). Some se não houver dados.
-11. **Números da comunidade** — faixa na cor de destaque com 4 indicadores grandes (corridas realizadas, participantes, inscrições, anos de grupo). Some se os números não estiverem definidos.
-12. **Rodapé** escuro em 3 colunas — logo + tagline, "Contato" (WhatsApp `wa.me`, e-mail, Instagram) e "Navegação"; linha final com © ano e "Desenvolvido por Pedro Benjamin".
+### Home, nesta ordem
+1. **Hero "Próximo topo"** (navy, pico gigante esmaecido): nome, data/largada e local da próxima corrida aberta (`getNextEvent` sobre `GET /eventos`), CTAs "Começar a subida" (página da corrida) e "Ver todas as provas" (`#corridas`), capa inclinada. Sem corrida aberta ou com a API fora → hero institucional "Todo corredor tem um topo. Qual é o seu?".
+2. **Próximos topos** (`#corridas`): grade de corridas abertas + selo com a contagem; link para as encerradas.
+3. **Do primeiro passo ao pódio**: seis degraus em escada (o 1º embaixo) + cartão "Já se inscreveu?" para `/consulta`.
+4. **Quem sobe junto** (navy): números da comunidade + quatro selos + CTA para `/sobre`. Sem números definidos, ficam só os selos.
+5. **Topos conquistados**: carrossel de edições passadas. Some se não houver dados.
+6. **Loja + provas parceiras**, lado a lado no desktop: bloco verde "Vista a subida" e "Outras trilhas, com desconto" (até 2 corridas com cupom). As parceiras somem se não houver dados.
+7. **Marcas na nossa subida**: logos dos parceiros. Some se não houver parceiros.
 
-**Header:** barra escura com a logo, carrinho e botão de menu (hambúrguer) que abre a navegação em painel lateral, em todos os tamanhos de tela, como na referência.
+**Header:** barra navy com a logo (placa branca), carrinho e menu lateral (hambúrguer) em todos os tamanhos.
 
-**Páginas internas da referência que entram no projeto:**
-- **Corridas encerradas** ("Eventos que já vivemos") — histórico das edições passadas com capa e data; futuramente com galeria e resultados.
-- **Loja** — grade de produtos (camisas, viseiras, ecobags, acessórios — **sem medalhas**) com filtro por categoria ("Todos" + tipos) e link para o carrinho; pagamento Pix ou cartão.
-- **Corridas Parceiras** — corridas de outras organizações com **cupom de desconto exclusivo** do Vertex: card com data, distâncias, cupom (botão copiar) e link externo de inscrição.
-- **Conheça o Vertex** (`/sobre`) — título + tagline, "Nossa história", "Missão", CTA "Ver próximas corridas". Melhorar em relação à referência com fotos reais e números do grupo.
-- **Parceiros** — logos/links dos apoiadores.
-- **Contato** — WhatsApp, Instagram, e-mail e, se houver, local/horário dos treinos.
+### Páginas internas
+- **O Vertex** (`/sobre`): "Por que Vertex" (o nome), "Nossa subida" (história), "Onde queremos chegar" (missão), números e CTA. Textos provisórios até o cliente enviar os oficiais.
+- **Topos conquistados** (`/corridas/encerradas`), **Outras trilhas** (`/corridas-parceiras`, cupom com botão copiar e link externo), **Loja** (eyebrow "Vista a subida"; sem medalhas), **Onde está minha inscrição?** (`/consulta`), **Parceiros**, **Fale com a gente** (`/contato`).
 
-**Tom:** acolhedor, motivacional e inclusivo; frases curtas focadas em comunidade. Títulos de seção no formato eyebrow + título forte (ver §3).
-
-### O que não copiar / o que é diferente
-- A referência é um grupo **feminino** com treinos e **desafios online por meta de km**. O Vertex organiza **corridas de rua presenciais** abertas a todos: nada de "desafios online"/"meus quilômetros"; no lugar, informações de prova (data, largada, local, percurso, kit, regulamento, resultados).
-- A referência carrega listas só no client ("Carregando eventos...") e deixa contato e redes vazios. Aqui: listas renderizadas no servidor (SEO e skeleton com os 4 estados), contato e redes sempre preenchidos.
-- Manter o que já era nosso e a referência não tem: **consulta de inscrição sem login**, seção **"Como funciona"** em passos (pode entrar entre as seções 3 e 4 da home) e **FAQ** na página do evento.
-- Estado vazio amigável quando não há corridas abertas: "Nenhuma corrida aberta no momento. Volte em breve!" + link para corridas encerradas.
+### O que o Vertex é (e não é)
+- Corridas de rua **presenciais** abertas a todos: nada de desafios online ou "meus quilômetros"; no lugar, informações de prova (data, largada, local, percurso, kit, regulamento, resultados).
+- Listas renderizadas no servidor (SEO e skeleton com os 4 estados); contato e redes sempre preenchidos.
+- Consulta de inscrição **sem login**, "Como funciona" em degraus e **FAQ** na página do evento.
 
 ---
 
 ## 3. Identidade visual
 
 ### Logo
-- Arquivo oficial: `public/brand/vertex-logo.png` (versão completa: pico + corredor + "VERTEX" + "GRUPO DE CORRIDA").
-- Criar também versões: `vertex-symbol` (só pico + corredor, para favicon/app icon e header mobile) e `vertex-logo-white` (para fundos escuros). Pedir ao cliente o arquivo vetorial (SVG/AI/PDF) — se não houver, vetorizar.
+- Arquivo oficial: `public/brand/vertex-logo.svg` (quadrado 1:1, fundo branco; pico + corredor + "VERTEX" + "GRUPO DE CORRIDA"). Sobre fundo escuro, usar a `VertexLogoPlate` (placa branca quadrada).
+- Ainda faltam: `vertex-symbol` (só pico + corredor, para favicon/app icon) e `vertex-logo-white` (para fundos escuros). O SVG atual foi traçado de imagem: pedir ao cliente o vetorial original (AI/PDF), se houver.
 - Nunca distorcer, recolorir ou aplicar sombra na logo. Manter área de respiro mínima equivalente à altura do "E" de VERTEX.
 
 ### Cores (extraídas da logo — confirmar hex com o arquivo vetorial)
@@ -100,18 +86,17 @@ Mapear no tema do shadcn/ui (CSS variables em `globals.css`):
 
 ### Tipografia
 - Títulos: **Montserrat** (700/800, caixa alta em títulos curtos). Corpo: **Inter**. Carregar via `next/font/google`.
-- Subtítulos no estilo "GRUPO DE CORRIDA": caixa alta, `tracking-widest`, ladeados por traços verdes — padrão de "eyebrow" acima dos títulos de seção.
+- Eyebrows (acima dos títulos de seção): caixa alta, `tracking-widest`, com o pico verde à frente.
 
 ### Linguagem visual (adaptada da referência)
-- **Ritmo de seções:** faixas brancas alternadas com faixas escuras (`brand-navy`, ou um navy mais profundo como `brand-navy-deep`) e uma faixa na cor de destaque (`brand-green`, texto navy) para os números. Seções brancas separadas por borda fina.
+- **Ritmo de seções:** poucas alternâncias. Hero e comunidade em navy (`brand-navy-deep`); o resto branco ou cinza-claro (`slate-50`), separado por borda fina. Sem faixa verde de números; o verde aparece em CTAs, no bloco da loja e nos números sobre o navy.
 - **Cabeçalho de seção:** eyebrow pequeno em caixa alta na cor de destaque (verde escurecido para passar AA sobre branco) → título **muito grande e pesado** (Montserrat 800/900, `text-4xl`–`text-6xl`) → linha de apoio em cinza; botões secundários ("Ver todas →") alinhados à direita no desktop.
 - **Cards:** cantos bem arredondados (`rounded-2xl`), borda clara e sombra suave; imagem de capa no topo; linhas de informação com ícones lucide na cor de destaque; preço em destaque e botão pequeno com seta.
-- **Cards de destaque do topo:** foto de fundo com sobreposição escura, selo-pílula, título branco grande e link na cor de destaque.
 - **Botões:** primário na cor de destaque com seta (`ArrowRight`); secundário branco com borda.
 - **Mobile:** tudo empilhado, botões em largura total.
 
 ### Motivo gráfico
-- O **pico/chevron verde** ("^") é o elemento-assinatura: divisor de seção, marca d'água no hero, bullet de listas, ícone de "subida/progresso". Um uso marcante por tela.
+- O **pico/chevron verde** ("^") é o elemento-assinatura: marca d'água no hero, prefixo dos eyebrows (no lugar de traços laterais), bullet de listas, ícone de "subida/progresso".
 - Fotos: corredores reais de Fortaleza (Beira-Mar, Aterro, Parque do Cocó) pedidas ao cliente. Evitar banco de imagens genérico.
 
 ---
@@ -140,7 +125,7 @@ Mapear no tema do shadcn/ui (CSS variables em `globals.css`):
 ### Públicas — `src/app/(public)/`
 | Rota | Conteúdo | API |
 |---|---|---|
-| `/` | Hero, 3 cards de destaque, próximas corridas, como funciona, acompanhe sua inscrição, vista o movimento, mais que corrida (ver §2) | `GET /eventos` |
+| `/` | Hero "próximo topo", próximos topos, como funciona em degraus, comunidade, topos conquistados, loja + provas parceiras, parceiros (ver §2) | `GET /eventos` |
 | `/corridas/encerradas` | "Corridas que já vivemos": edições passadas | **pendente** (API pública só lista publicadas) |
 | `/corridas/[slug]` | Página do evento: capa, data/largada, local (mapa por `latitude`/`longitude`), distâncias e preço do lote vigente, kits (fotos), percurso, regulamento, FAQ, CTA fixo "Inscrever-se" no mobile | `GET /eventos/:slug` |
 | `/corridas/[slug]/inscricao` | Formulário em etapas (ver §7) | `POST /inscricoes` |

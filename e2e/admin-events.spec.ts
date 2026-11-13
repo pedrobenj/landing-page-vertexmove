@@ -84,7 +84,7 @@ test.describe("Admin — cadastro e publicação de corridas", () => {
     await expect(main.getByText("Rascunho", { exact: true })).toBeVisible({ timeout: 30_000 })
 
     await page.goto("/")
-    await expect(page.getByRole("heading", { name: "Escolha seu próximo desafio" })).toBeVisible()
+    await expect(page.getByRole("heading", { name: "Próximos topos" })).toBeVisible()
     await expect(page.getByText(nome)).toHaveCount(0)
 
     // Limpeza: exclusão com confirmação (o mock guarda tudo em memória entre execuções).

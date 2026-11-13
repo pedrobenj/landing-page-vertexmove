@@ -3,14 +3,14 @@ import { expect, test } from "@playwright/test"
 // Roda com USE_MOCK_API=true: corridas parceiras, encerradas, parceiros e números vêm do mock/demonstração.
 
 const STATIC_PAGES = [
-  { path: "/sobre", title: "Conheça o Vertex" },
+  { path: "/sobre", title: "O Vertex" },
   { path: "/parceiros", title: "Parceiros" },
-  { path: "/contato", title: "Contato" },
-  { path: "/corridas-parceiras", title: "Corridas parceiras" },
-  { path: "/corridas/encerradas", title: "Corridas que já vivemos" },
+  { path: "/contato", title: "Fale com a gente" },
+  { path: "/corridas-parceiras", title: "Outras trilhas" },
+  { path: "/corridas/encerradas", title: "Topos conquistados" },
   { path: "/privacidade", title: "Política de privacidade" },
   { path: "/regulamento/corrida-vertex-beira-mar-2026", title: "Regulamento" },
-  { path: "/inscricao/VX-2026-00000042", title: "Sua inscrição" },
+  { path: "/inscricao/VX-2026-99999999", title: "Sua inscrição" },
 ]
 
 test.describe("Páginas institucionais", () => {
@@ -23,14 +23,15 @@ test.describe("Páginas institucionais", () => {
     })
   }
 
-  test("Conheça o Vertex mostra história, missão, números e o CTA", async ({ page }) => {
+  test("O Vertex mostra o nome, a história, a missão, os números e o CTA", async ({ page }) => {
     await page.goto("/sobre")
-    await expect(page.getByText("Nossa história", { exact: true })).toBeVisible()
-    await expect(page.getByText("Missão", { exact: true })).toBeVisible()
+    await expect(page.getByText("Por que Vertex", { exact: true })).toBeVisible()
+    await expect(page.getByText("Nossa subida", { exact: true })).toBeVisible()
+    await expect(page.getByText("Onde queremos chegar", { exact: true })).toBeVisible()
     const stats = page.getByRole("region", { name: "Números da comunidade" }).getByRole("listitem")
     await expect(stats).toHaveCount(4)
     await expect(stats.first()).toContainText("12+")
-    await expect(page.getByRole("link", { name: "Ver próximas corridas" })).toHaveAttribute("href", "/#corridas")
+    await expect(page.getByRole("link", { name: "Ver os próximos topos" })).toHaveAttribute("href", "/#corridas")
   })
 
   test("parceiros mostra os 6 parceiros de demonstração e o CTA", async ({ page }) => {
@@ -91,8 +92,9 @@ test.describe("Páginas institucionais", () => {
   })
 
   test("inscrição inexistente com código válido leva para a consulta", async ({ page }) => {
-    await page.goto("/inscricao/VX-2026-00000042")
-    await expect(page.getByText("VX-2026-00000042").first()).toBeVisible()
+    // Código fora do alcance do mock (que guarda em memória as inscrições de outros testes).
+    await page.goto("/inscricao/VX-2026-99999999")
+    await expect(page.getByText("VX-2026-99999999").first()).toBeVisible()
     await expect(page.getByText("Inscrição não encontrada")).toBeVisible()
     await expect(page.getByRole("link", { name: "Consultar inscrição" })).toHaveAttribute("href", "/consulta")
   })

@@ -1,32 +1,24 @@
 import {
-  CommunityStatsSection,
+  ClimbStepsSection,
+  CommunitySection,
   HeroSection,
-  HighlightCardsSection,
-  HowItWorksSection,
-  MoreThanRunningSection,
   OpenEventsSection,
-  PartnerRacesSection,
   PartnersStripSection,
   PastEventsSection,
-  StoreBandSection,
-  TrackRegistrationBand,
+  StoreAndPartnersSection,
 } from "./components"
 
-/** Home na ordem da referência (CLAUDE.md §2). */
+/** Home: do próximo topo à comunidade (CLAUDE.md §2). */
 export default function HomePage() {
   return (
     <>
       <HeroSection />
-      <HighlightCardsSection />
-      <PastEventsSection />
       <OpenEventsSection />
-      <HowItWorksSection />
-      <TrackRegistrationBand />
+      <ClimbStepsSection />
+      <CommunitySection />
+      <PastEventsSection />
+      <StoreAndPartnersSection />
       <PartnersStripSection />
-      <StoreBandSection />
-      <MoreThanRunningSection />
-      <PartnerRacesSection />
-      <CommunityStatsSection />
     </>
   )
 }

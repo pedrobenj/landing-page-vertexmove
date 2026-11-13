@@ -6,9 +6,10 @@ import type { PartnerRace } from "@/types/api/partner-race.interface"
 
 import { PartnerRacesBand } from "./partner-races-band"
 
-const HOME_LIMIT = 3
+/** Divide a largura com a loja: duas cabem lado a lado. */
+const HOME_LIMIT = 2
 
-/** Até 3 corridas parceiras. Vazio → a seção some. */
+/** Até 2 corridas parceiras. Vazio → o bloco some. */
 export async function PartnerRaces() {
   let races: PartnerRace[]
   try {
@@ -26,7 +27,7 @@ export async function PartnerRaces() {
 
   return (
     <PartnerRacesBand>
-      <PartnerRaceGrid races={races.slice(0, HOME_LIMIT)} />
+      <PartnerRaceGrid races={races.slice(0, HOME_LIMIT)} className="lg:grid-cols-2" />
     </PartnerRacesBand>
   )
 }
