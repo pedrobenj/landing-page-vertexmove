@@ -5,7 +5,7 @@ import { isApiError } from "@/server/api/api-error"
 import { listPublicEvents } from "@/server/api/endpoints/events"
 import { pluralize } from "@/lib/utils"
 
-/** Selo dinâmico do card "Próximas corridas". Em erro, volta ao selo sem número. */
+/** Selo dinâmico de "Próximos topos". Em erro, volta ao selo sem número. */
 export async function OpenEventsCountBadge() {
   let count: number
   try {

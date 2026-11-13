@@ -4,7 +4,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 
 import { ServerError } from "@/components/feedback"
-import { SectionBand, SectionHeading } from "@/components/sections"
+import { PageHero, SectionBand } from "@/components/sections"
 import { isApiError } from "@/server/api/api-error"
 import { getPublicEvent } from "@/server/api/endpoints/events"
 import type { PublicEventDetail } from "@/types/api/public-event-detail.interface"
@@ -50,23 +50,27 @@ export default async function RegulationPage({ params }: PageProps<"/regulamento
   }
 
   return (
-    <SectionBand aria-labelledby="regulamento-title" className="border-t-0" containerClassName="max-w-4xl">
-      <Link
-        href={`/corridas/${event.slug}`}
-        className="-mb-4 inline-flex w-fit items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-brand-navy-deep focus-visible:outline-2 focus-visible:outline-brand-green"
-      >
-        <ArrowLeft aria-hidden="true" className="size-4" />
-        Voltar para a corrida
-      </Link>
-      <SectionHeading
-        as="h1"
+    <>
+      <PageHero
         id="regulamento-title"
         eyebrow={event.nome}
         title="Regulamento"
         description="Leia com atenção antes de se inscrever: na inscrição você confirma o aceite do regulamento e do termo de responsabilidade."
+        containerClassName="max-w-4xl"
+        before={
+          <Link
+            href={`/corridas/${event.slug}`}
+            className="inline-flex w-fit items-center gap-1.5 text-sm font-semibold text-white/75 hover:text-brand-green focus-visible:outline-2 focus-visible:outline-brand-green"
+          >
+            <ArrowLeft aria-hidden="true" className="size-4" />
+            Voltar para a prova
+          </Link>
+        }
       />
-      <h2 className="sr-only">Documentos vigentes</h2>
-      <RegulationDocumentList documents={event.documentosVigentes} eventSlug={event.slug} />
-    </SectionBand>
+      <SectionBand className="border-t-0" containerClassName="max-w-4xl">
+        <h2 className="sr-only">Documentos vigentes</h2>
+        <RegulationDocumentList documents={event.documentosVigentes} eventSlug={event.slug} />
+      </SectionBand>
+    </>
   )
 }

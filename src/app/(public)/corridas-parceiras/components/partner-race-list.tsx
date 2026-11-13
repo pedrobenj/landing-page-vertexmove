@@ -22,11 +22,11 @@ export async function PartnerRaceList() {
     return (
       <EmptyState
         icon={TicketPercent}
-        title="Nenhuma corrida parceira no momento."
-        description="Logo teremos novas provas com cupom exclusivo para a comunidade. Enquanto isso, que tal correr com o Vertex?"
+        title="Nenhuma prova parceira no momento."
+        description="Logo teremos novas trilhas com cupom do Vertex. Enquanto isso, que tal subir com a gente?"
         action={
           <Button asChild variant="outline">
-            <Link href="/#corridas">Ver próximas corridas</Link>
+            <Link href="/#corridas">Ver os próximos topos</Link>
           </Button>
         }
       />

@@ -2,7 +2,7 @@ import { Handshake } from "lucide-react"
 import type { Metadata } from "next"
 
 import { EmptyState } from "@/components/feedback"
-import { SectionBand, SectionHeading } from "@/components/sections"
+import { PageHero, SectionBand } from "@/components/sections"
 import { getPartners } from "@/server/content/partners"
 
 import { BecomePartnerButton, PartnerGrid } from "./components"
@@ -19,25 +19,26 @@ export default function PartnersPage() {
   const hasPartners = partners.length > 0
 
   return (
-    <SectionBand aria-labelledby="parceiros-page-title" className="border-t-0">
-      <SectionHeading
-        as="h1"
+    <>
+      <PageHero
         id="parceiros-page-title"
         eyebrow="Quem sobe junto"
         title="Parceiros"
         description="Cada prova do Vertex tem marcas que ajudam a construir a subida. Obrigado por estarem na largada com a gente."
         actions={hasPartners ? <BecomePartnerButton /> : undefined}
       />
-      {hasPartners ? (
-        <PartnerGrid partners={partners} />
-      ) : (
-        <EmptyState
-          icon={Handshake}
-          title="Em breve, nossos parceiros aparecerão aqui."
-          description="Quer apoiar o esporte em Fortaleza e fazer parte dessa comunidade?"
-          action={<BecomePartnerButton />}
-        />
-      )}
-    </SectionBand>
+      <SectionBand className="border-t-0">
+        {hasPartners ? (
+          <PartnerGrid partners={partners} />
+        ) : (
+          <EmptyState
+            icon={Handshake}
+            title="Em breve, nossos parceiros aparecerão aqui."
+            description="Quer apoiar o esporte em Fortaleza e subir junto com a gente?"
+            action={<BecomePartnerButton />}
+          />
+        )}
+      </SectionBand>
+    </>
   )
 }

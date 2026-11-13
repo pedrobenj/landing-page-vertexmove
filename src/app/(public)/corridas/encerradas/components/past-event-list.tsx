@@ -27,11 +27,11 @@ export async function PastEventList() {
     return (
       <EmptyState
         icon={History}
-        title="O histórico das nossas corridas chega em breve."
-        description="Enquanto isso, garanta sua vaga na próxima prova."
+        title="Os topos conquistados chegam em breve."
+        description="Enquanto isso, garanta sua vaga no próximo."
         action={
           <Button asChild variant="outline">
-            <Link href="/#corridas">Ver próximas corridas</Link>
+            <Link href="/#corridas">Ver os próximos topos</Link>
           </Button>
         }
       />

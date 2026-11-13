@@ -3,39 +3,40 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { Suspense } from "react"
 
-import { SectionBand, SectionHeading } from "@/components/sections"
+import { PageHero, SectionBand } from "@/components/sections"
 import { Button } from "@/components/ui/button"
 
 import { PastEventGridSkeleton, PastEventList } from "./components"
 
 export const metadata: Metadata = {
-  title: "Corridas encerradas",
+  title: "Topos conquistados",
   description: "Edições passadas das corridas do Vertex Grupo de Corrida em Fortaleza.",
   alternates: { canonical: "/corridas/encerradas" },
 }
 
 export default function PastEventsPage() {
   return (
-    <SectionBand aria-labelledby="encerradas-title" className="border-t-0">
-      <SectionHeading
-        as="h1"
+    <>
+      <PageHero
         id="encerradas-title"
         eyebrow="Edições passadas"
         title="Topos conquistados"
         description="Cada edição foi um degrau. Relembre as provas que já subimos juntos."
         actions={
-          <Button asChild variant="outline" size="xl" className="w-full shadow-sm sm:w-auto">
+          <Button asChild variant="cta" size="xl" className="w-full normal-case tracking-normal sm:w-auto">
             <Link href="/#corridas">
-              Ver próximas corridas
+              Ver os próximos topos
               <ArrowRight aria-hidden="true" />
             </Link>
           </Button>
         }
       />
-      <h2 className="sr-only">Edições passadas</h2>
-      <Suspense fallback={<PastEventGridSkeleton />}>
-        <PastEventList />
-      </Suspense>
-    </SectionBand>
+      <SectionBand className="border-t-0">
+        <h2 className="sr-only">Edições passadas</h2>
+        <Suspense fallback={<PastEventGridSkeleton />}>
+          <PastEventList />
+        </Suspense>
+      </SectionBand>
+    </>
   )
 }

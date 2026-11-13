@@ -23,6 +23,35 @@ test.describe("Páginas institucionais", () => {
     })
   }
 
+  // Páginas de conteúdo usam o cabeçalho navy (`PageHero`): o h1 nomeia a própria região do topo.
+  const CONTENT_PAGES = [
+    { path: "/sobre", title: "O Vertex" },
+    { path: "/corridas/encerradas", title: "Topos conquistados" },
+    { path: "/corridas-parceiras", title: "Outras trilhas" },
+    { path: "/loja", title: "Camisas e acessórios" },
+    { path: "/consulta", title: "Onde está minha inscrição?" },
+    { path: "/parceiros", title: "Parceiros" },
+    { path: "/contato", title: "Fale com a gente" },
+    { path: "/privacidade", title: "Política de privacidade" },
+    { path: "/regulamento/corrida-vertex-beira-mar-2026", title: "Regulamento" },
+  ]
+
+  for (const { path, title } of CONTENT_PAGES) {
+    test(`${path} abre com o cabeçalho da página`, async ({ page }) => {
+      await page.goto(path)
+      const hero = page.getByRole("region", { name: title, exact: true })
+      await expect(hero.getByRole("heading", { level: 1, name: title, exact: true })).toBeVisible()
+    })
+  }
+
+  test("regulamento volta para a prova", async ({ page }) => {
+    await page.goto("/regulamento/corrida-vertex-beira-mar-2026")
+    await expect(page.getByRole("link", { name: "Voltar para a prova" })).toHaveAttribute(
+      "href",
+      "/corridas/corrida-vertex-beira-mar-2026",
+    )
+  })
+
   test("O Vertex mostra o nome, a história, a missão, os números e o CTA", async ({ page }) => {
     await page.goto("/sobre")
     await expect(page.getByText("Por que Vertex", { exact: true })).toBeVisible()

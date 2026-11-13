@@ -9,8 +9,8 @@ export function AboutSections() {
       <SectionHeading
         id="quem-somos-title"
         eyebrow="Quem somos"
-        title="Mais que corrida, uma comunidade"
-        description="Gente de todos os ritmos, unida pela vontade de evoluir junto."
+        title="Um grupo que sobe junto"
+        description="Gente de todos os ritmos, cada um no seu degrau, rumo ao próximo topo."
       />
       <ul className="grid gap-6 md:grid-cols-2">
         {ABOUT_SECTIONS.map((section) => (

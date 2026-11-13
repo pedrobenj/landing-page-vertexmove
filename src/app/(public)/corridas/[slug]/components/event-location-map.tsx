@@ -14,7 +14,7 @@ export function EventLocationMap({ location }: EventLocationMapProps) {
       href={getMapsUrl(location)}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex w-fit items-center gap-1 text-sm font-bold text-brand-green-text underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-green"
+      className="inline-flex w-fit items-center gap-1 text-sm font-bold text-brand-green underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-green"
     >
       Ver no mapa
       <ExternalLink aria-hidden="true" className="size-3.5" />

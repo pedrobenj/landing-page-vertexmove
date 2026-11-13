@@ -3,7 +3,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { Suspense } from "react"
 
-import { SectionBand, SectionHeading } from "@/components/sections"
+import { PageHero, SectionBand } from "@/components/sections"
 import { Button } from "@/components/ui/button"
 
 import { StoreCatalog, StoreCatalogSkeleton } from "./components"
@@ -16,9 +16,8 @@ export const metadata: Metadata = {
 
 export default function StorePage({ searchParams }: PageProps<"/loja">) {
   return (
-    <SectionBand aria-labelledby="loja-title" className="border-t-0">
-      <SectionHeading
-        as="h1"
+    <>
+      <PageHero
         id="loja-title"
         eyebrow="Vista a subida"
         title="Camisas e acessórios"
@@ -32,10 +31,12 @@ export default function StorePage({ searchParams }: PageProps<"/loja">) {
           </Button>
         }
       />
-      {/* `?tipo=` é dado da requisição: o catálogo (filtro + produtos) fica atrás do Suspense. */}
-      <Suspense fallback={<StoreCatalogSkeleton />}>
-        <StoreCatalog searchParams={searchParams} />
-      </Suspense>
-    </SectionBand>
+      <SectionBand className="border-t-0">
+        {/* `?tipo=` é dado da requisição: o catálogo (filtro + produtos) fica atrás do Suspense. */}
+        <Suspense fallback={<StoreCatalogSkeleton />}>
+          <StoreCatalog searchParams={searchParams} />
+        </Suspense>
+      </SectionBand>
+    </>
   )
 }

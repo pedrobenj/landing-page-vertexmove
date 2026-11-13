@@ -25,7 +25,7 @@ export function StoreUnavailable({ context = "public" }: StoreUnavailableProps) 
       action={
         isAdmin ? undefined : (
           <ArrowLink href="/#corridas" className="text-brand-green-text">
-            Ver próximas corridas
+            Ver os próximos topos
           </ArrowLink>
         )
       }

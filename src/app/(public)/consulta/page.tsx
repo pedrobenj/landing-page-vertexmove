@@ -1,7 +1,7 @@
 import { ShieldCheck } from "lucide-react"
 import type { Metadata } from "next"
 
-import { SectionBand, SectionHeading } from "@/components/sections"
+import { PageHero, SectionBand } from "@/components/sections"
 
 import { LookupForm } from "./components"
 
@@ -12,19 +12,21 @@ export const metadata: Metadata = {
 
 export default function LookupPage() {
   return (
-    <SectionBand aria-labelledby="consulta-title" className="border-t-0" containerClassName="max-w-3xl gap-8">
-      <SectionHeading
-        as="h1"
+    <>
+      <PageHero
         id="consulta-title"
         eyebrow="Consultar inscrição"
         title="Onde está minha inscrição?"
         description="Sem login e sem senha: informe o WhatsApp ou o CPF da inscrição e veja suas provas e o status de cada uma."
+        containerClassName="max-w-3xl"
       />
-      <p className="flex gap-2 text-sm text-muted-foreground">
-        <ShieldCheck aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-brand-green-text" />
-        Por segurança (LGPD), mostramos apenas dados mascarados: nome parcial, corrida, distância e status.
-      </p>
-      <LookupForm />
-    </SectionBand>
+      <SectionBand className="border-t-0" containerClassName="max-w-3xl gap-8">
+        <p className="flex gap-2 text-sm text-muted-foreground">
+          <ShieldCheck aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-brand-green-text" />
+          Por segurança (LGPD), mostramos apenas dados mascarados: nome parcial, corrida, distância e status.
+        </p>
+        <LookupForm />
+      </SectionBand>
+    </>
   )
 }

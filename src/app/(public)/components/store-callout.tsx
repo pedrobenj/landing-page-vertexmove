@@ -13,7 +13,10 @@ export function StoreCallout() {
     >
       <Chevron className="pointer-events-none absolute -right-10 -bottom-6 w-56 text-brand-navy-deep opacity-10" />
       <div className="relative flex flex-col gap-3">
-        <p className="text-xs font-bold uppercase tracking-[0.2em]">Loja Vertex</p>
+        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em]">
+          <Chevron className="h-2.5 w-4 shrink-0 text-current" />
+          Loja Vertex
+        </p>
         <h2 id="loja-title" className="font-heading text-3xl font-black sm:text-4xl">
           Vista a subida
         </h2>

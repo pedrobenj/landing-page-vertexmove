@@ -53,6 +53,7 @@ Vertex vem de vértice: o topo. Os textos falam de **topo, subida, degrau, larga
 **Header:** barra navy com a logo (placa branca), carrinho e menu lateral (hambúrguer) em todos os tamanhos.
 
 ### Páginas internas
+- **Cabeçalho:** páginas de conteúdo (O Vertex, Topos conquistados, Outras trilhas, Loja, Consulta, Parceiros, Fale com a gente, Regulamento, Privacidade) abrem com o `PageHero` (`src/components/sections/page-hero.tsx`): faixa navy com o pico esmaecido e o `h1`, mesma linguagem do hero da home. A página da corrida usa o mesmo estilo no `EventHero` (capa inclinada sobre a moldura verde). **Fluxos de tarefa** (formulário de inscrição, confirmação, retorno do pagamento, `/inscricao/[code]`, carrinho, checkout, pedido) ficam brancos, para manter o foco.
 - **O Vertex** (`/sobre`): "Por que Vertex" (o nome), "Nossa subida" (história), "Onde queremos chegar" (missão), números e CTA. Textos provisórios até o cliente enviar os oficiais.
 - **Topos conquistados** (`/corridas/encerradas`), **Outras trilhas** (`/corridas-parceiras`, cupom com botão copiar e link externo), **Loja** (eyebrow "Vista a subida"; sem medalhas), **Onde está minha inscrição?** (`/consulta`), **Parceiros**, **Fale com a gente** (`/contato`).
 

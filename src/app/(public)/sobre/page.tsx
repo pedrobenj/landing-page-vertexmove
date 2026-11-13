@@ -3,7 +3,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 
 import { CommunityStatsBand } from "@/components/community"
-import { SectionBand, SectionHeading } from "@/components/sections"
+import { PageHero } from "@/components/sections"
 import { Button } from "@/components/ui/button"
 import { SITE_TAGLINE } from "@/lib/utils"
 import { getCommunityStats } from "@/server/content/community-stats"
@@ -20,23 +20,20 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <>
-      <SectionBand aria-labelledby="sobre-title" className="border-t-0">
-        <SectionHeading
-          as="h1"
-          id="sobre-title"
-          eyebrow="Vertex Grupo de Corrida"
-          title="O Vertex"
-          description={`${SITE_TAGLINE} Corridas de rua em Fortaleza para quem quer subir mais um, no próprio ritmo.`}
-          actions={
-            <Button asChild variant="cta" size="xl" className="w-full normal-case tracking-normal sm:w-auto">
-              <Link href="/#corridas">
-                Ver os próximos topos
-                <ArrowRight aria-hidden="true" />
-              </Link>
-            </Button>
-          }
-        />
-      </SectionBand>
+      <PageHero
+        id="sobre-title"
+        eyebrow="Vertex Grupo de Corrida"
+        title="O Vertex"
+        description={`${SITE_TAGLINE} Corridas de rua em Fortaleza para quem quer subir mais um, no próprio ritmo.`}
+        actions={
+          <Button asChild variant="cta" size="xl" className="w-full normal-case tracking-normal sm:w-auto">
+            <Link href="/#corridas">
+              Ver os próximos topos
+              <ArrowRight aria-hidden="true" />
+            </Link>
+          </Button>
+        }
+      />
       <AboutSections />
       <CommunityStatsBand stats={getCommunityStats()} />
     </>

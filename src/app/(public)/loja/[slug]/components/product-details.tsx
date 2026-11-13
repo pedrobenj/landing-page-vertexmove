@@ -1,5 +1,6 @@
 import { MapPin } from "lucide-react"
 
+import { Chevron } from "@/components/brand"
 import { ProductImage, SoldOutBadge } from "@/components/store"
 import { PRODUCT_TYPE_LABEL } from "@/enums/product-type.enum"
 import { formatCurrency, isProductSoldOut } from "@/lib/utils"
@@ -24,7 +25,10 @@ export function ProductDetails({ product }: ProductDetailsProps) {
       />
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-3">
-          <p className="text-xs font-bold tracking-[0.2em] text-brand-green-text uppercase">{PRODUCT_TYPE_LABEL[product.type]}</p>
+          <p className="flex items-center gap-2 text-xs font-bold tracking-[0.2em] text-brand-green-text uppercase">
+            <Chevron className="h-2.5 w-4 shrink-0 text-current" />
+            {PRODUCT_TYPE_LABEL[product.type]}
+          </p>
           <h1 className="font-heading text-3xl leading-[1.05] font-black tracking-tight text-brand-navy-deep sm:text-4xl">
             {product.name}
           </h1>

@@ -1,5 +1,6 @@
 import { QrCode } from "lucide-react"
 
+import { Chevron } from "@/components/brand"
 import { PillBadge } from "@/components/sections"
 import { ORDER_STATUS_LABEL } from "@/enums/order-status.enum"
 import { formatCurrency, formatDateTime } from "@/lib/utils"
@@ -16,7 +17,10 @@ export function OrderDetails({ order }: OrderDetailsProps) {
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-3">
-        <p className="text-xs font-bold tracking-[0.2em] text-brand-green-text uppercase">Pedido da loja</p>
+        <p className="flex items-center gap-2 text-xs font-bold tracking-[0.2em] text-brand-green-text uppercase">
+          <Chevron className="h-2.5 w-4 shrink-0 text-current" />
+          Pedido da loja
+        </p>
         <p className="text-muted-foreground">Olá, {order.buyerFirstName}! Seu pedido:</p>
         <h1 className="font-heading text-4xl leading-[1.05] font-black tracking-tight text-brand-navy-deep sm:text-5xl">{order.code}</h1>
         <PillBadge tone="soft">{ORDER_STATUS_LABEL[order.status]}</PillBadge>
