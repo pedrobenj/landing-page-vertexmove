@@ -89,7 +89,7 @@ function getViewContent(view: PaymentView, details: RegistrationDetails): ViewCo
         title: `Inscrição ${getRegistrationStatusLabel(details.status).toLowerCase()}`,
         description: "Esta inscrição não aceita mais pagamento. Se ainda houver vagas, faça uma nova inscrição.",
         tone: "warning",
-        actions: <EventLink slug={evento.slug} label="Ver a corrida" />,
+        actions: <EventLink slug={evento.slug ?? ""} label="Ver a corrida" />,
       }
   }
 }

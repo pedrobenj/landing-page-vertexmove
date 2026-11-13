@@ -34,7 +34,7 @@ function toDistance(distance: ApiPublicDistance, now: Date): PublicDistance {
 
 /** Documento sem URL não pode ser lido antes do aceite: fica de fora (e a inscrição, indisponível). */
 function toDocuments(documents: readonly ApiPublicDocument[]): PublicDocument[] {
-  return documents.flatMap(({ vigenteEm: _vigenteEm, url, ...document }) => (url ? [{ ...document, url }] : []))
+  return documents.flatMap(({ id, tipo, versao, titulo, url }) => (url ? [{ id, tipo, versao, titulo, url }] : []))
 }
 
 /** Resposta de `GET /eventos/:slug` (backend real ou mock) → tipo usado pelas telas. */

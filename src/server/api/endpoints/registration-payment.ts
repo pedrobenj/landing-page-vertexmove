@@ -1,20 +1,39 @@
 import "server-only"
 
+import { randomUUID } from "node:crypto"
+
 import type { PAYMENT_STATUS } from "@/enums/payment-status.enum"
-import type { RegistrationCheckout, RegistrationDetails } from "@/types/api/registration-details.interface"
+import { toRegistrationDetails } from "@/lib/utils/to-registration-details"
+import type {
+  ApiCheckout,
+  ApiRegistrationStatus,
+  RegistrationDetails,
+} from "@/types/api/registration-details.interface"
 
 import { apiFetch } from "../api-client"
 
 // Sem cache: status de pagamento muda a qualquer momento (webhook no backend).
 
-/** `GET /inscricoes/:codigo` — proposto ao backend (§16). */
-export async function getRegistrationDetails(codigo: string): Promise<RegistrationDetails> {
-  return apiFetch(`/inscricoes/${encodeURIComponent(codigo)}`)
+function bearer(accessToken: string): Record<string, string> {
+  return { Authorization: `Bearer ${accessToken}` }
 }
 
-/** `POST /inscricoes/:codigo/pagamento` — cria a preferência do Checkout Pro no backend (§7). */
-export async function createRegistrationCheckout(codigo: string): Promise<RegistrationCheckout> {
-  return apiFetch(`/inscricoes/${encodeURIComponent(codigo)}/pagamento`, { method: "POST" })
+/** `GET /inscricoes/:codigo` — exige o token da inscrição. */
+export async function getRegistrationDetails(codigo: string, accessToken: string): Promise<RegistrationDetails> {
+  return toRegistrationDetails(
+    await apiFetch<ApiRegistrationStatus>(`/inscricoes/${encodeURIComponent(codigo)}`, { headers: bearer(accessToken) }),
+  )
+}
+
+/**
+ * `POST /inscricoes/:codigo/pagamentos` — cria ou reaproveita a preferência do Checkout Pro.
+ * A `Idempotency-Key` é nova a cada clique em "Pagar": o backend já reaproveita a cobrança ativa da inscrição.
+ */
+export async function createRegistrationCheckout(codigo: string, accessToken: string): Promise<ApiCheckout> {
+  return apiFetch(`/inscricoes/${encodeURIComponent(codigo)}/pagamentos`, {
+    method: "POST",
+    headers: { ...bearer(accessToken), "Idempotency-Key": randomUUID() },
+  })
 }
 
 /** Só no modo mock: simula o webhook do Mercado Pago. */
