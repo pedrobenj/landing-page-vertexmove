@@ -430,7 +430,7 @@ describe("mockFetch", () => {
       const detail = await getDetail()
       await call("POST", "/inscricoes", { body: await registrationBody({ kitId: detail.kits![0].id, tamanhoCamisaId: 3 }) })
       const res = await call("POST", "/inscricoes/consulta", { body: { cpf: VALID_CPF } })
-      return ((await res.json()) as CursorPage<RegistrationLookupItem>).items[0].referencia
+      return ((await res.json()) as CursorPage<RegistrationLookupItem>).items[0].referencia!
     }
 
     it("devolve os dados da inscrição com a data de nascimento certa", async () => {

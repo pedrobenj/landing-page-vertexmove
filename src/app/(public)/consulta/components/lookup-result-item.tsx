@@ -1,6 +1,7 @@
 import { CalendarCheck, Route, User } from "lucide-react"
 
 import { cn, formatDateTime, getRegistrationStatusBadgeClass, getRegistrationStatusLabel } from "@/lib/utils"
+import { hasReceiptReference } from "@/lib/utils/has-receipt-reference"
 import type { RegistrationLookupItem } from "@/types/api/registration.interface"
 
 import { RegistrationReceiptDialog } from "./registration-receipt-dialog"
@@ -39,9 +40,11 @@ export function LookupResultItem({ item }: LookupResultItemProps) {
             </span>
           </li>
         </ul>
-        <div className="border-t pt-4 [&>button]:w-full sm:[&>button]:w-auto">
-          <RegistrationReceiptDialog referencia={item.referencia} ariaLabel={`Ver inscrição: ${item.evento} — ${item.distancia}`} />
-        </div>
+        {hasReceiptReference(item) && (
+          <div className="border-t pt-4 [&>button]:w-full sm:[&>button]:w-auto">
+            <RegistrationReceiptDialog referencia={item.referencia} ariaLabel={`Ver inscrição: ${item.evento} — ${item.distancia}`} />
+          </div>
+        )}
       </article>
     </li>
   )

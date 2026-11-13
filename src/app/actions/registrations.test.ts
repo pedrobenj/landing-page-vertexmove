@@ -104,7 +104,7 @@ describe("lookupRegistrationsAction", () => {
     async function lookupReference(): Promise<string> {
       await createRegistrationAction(input)
       const response = await lookupRegistrationsAction({ tipo: "cpf", valor: "529.982.247-25" })
-      return response.data!.items[0].referencia
+      return response.data!.items[0].referencia!
     }
 
     it("libera os dados com a data de nascimento certa (DD/MM/AAAA)", async () => {
