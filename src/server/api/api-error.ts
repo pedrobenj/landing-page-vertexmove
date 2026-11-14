@@ -6,6 +6,8 @@ export class ApiError extends Error {
     readonly status: number,
     readonly codigo: string,
     readonly mensagem: string,
+    /** Primeiro campo de `detalhes` num 422 do backend (ex.: `endereco`). */
+    readonly campo?: string,
   ) {
     super(`${status} ${codigo}: ${mensagem}`)
   }

@@ -103,6 +103,22 @@ describe("apiFetch", () => {
     expect(error).toMatchObject({ status: 409, codigo: "INSCRICAO_DUPLICADA", mensagem: "Inscrição duplicada" })
   })
 
+  it("guarda o primeiro campo de `detalhes` do 422 do backend", async () => {
+    transport.mockResolvedValue(
+      jsonResponse(422, {
+        error: {
+          codigo: "DADO_INVALIDO",
+          mensagem: "Os dados informados são inválidos.",
+          detalhes: [{ campo: "endereco", regra: "invalid_type" }],
+        },
+      }),
+    )
+
+    const error = await catchError(apiFetch("/admin/eventos", { method: "POST", body: {} }))
+
+    expect(error).toMatchObject({ status: 422, codigo: "DADO_INVALIDO", campo: "endereco" })
+  })
+
   it("usa DESCONHECIDO quando o corpo de erro não é JSON", async () => {
     transport.mockResolvedValue(new Response("<html>Bad Gateway</html>", { status: 502, statusText: "Bad Gateway" }))
 

@@ -141,6 +141,14 @@ describe("admin events actions", () => {
       const response = await createAdminEventAction(form)
       expect(response).toMatchObject({ status: 422, field: "cep", error: "CEP deve ter 8 dígitos." })
     })
+
+    it("422 da API real com `detalhes[].campo` preenche field", async () => {
+      mocks.createAdminEvent.mockRejectedValue(
+        new ApiError(422, "DADO_INVALIDO", "Os dados informados são inválidos.", "endereco"),
+      )
+      const response = await createAdminEventAction(form)
+      expect(response).toMatchObject({ status: 422, field: "endereco", error: "Confira este campo." })
+    })
   })
 
   describe("updateAdminEventAction", () => {

@@ -10,6 +10,7 @@ import type { HttpResponse } from "@/types/http-response.interface"
 import { isApiError } from "./api-error"
 
 const ACCESS_DENIED_MESSAGE = getApiErrorMessage(API_ERROR_CODE.ACCESS_DENIED)
+const INVALID_FIELD_MESSAGE = "Confira este campo."
 
 interface ToErrorResponseOptions {
   title: string
@@ -24,9 +25,15 @@ interface ToErrorResponseOptions {
  *
  * - Relança os erros de controle do Next (`redirect()` do `adminFetch`, `notFound()`): por isso deve
  *   ser a primeira coisa no `catch`.
- * - `ApiError` → mensagem amigável; 422 no formato `"campo: mensagem"` preenche `field` para o `setError`.
+ * - `ApiError` → mensagem amigável; 422 com campo (`"campo: mensagem"` ou `detalhes[].campo`) preenche
+ *   `field` para o `setError`.
  * - Outros erros → 500, logando só o nome do erro (nunca o corpo: pode ter PII).
  */
+/** 422: `"campo: mensagem"` (mock) ou `detalhes[].campo` (backend, que não manda mensagem por campo). */
+function toFieldError(mensagem: string, campo: string | undefined) {
+  return parseApiFieldError(mensagem) ?? (campo ? { field: campo, message: INVALID_FIELD_MESSAGE } : null)
+}
+
 export function toErrorResponse(error: unknown, { title, context, fieldByCode }: ToErrorResponseOptions): HttpResponse<never> {
   unstable_rethrow(error)
 
@@ -35,7 +42,7 @@ export function toErrorResponse(error: unknown, { title, context, fieldByCode }:
     if (codeField) {
       return { status: error.status, code: error.codigo, error: getApiErrorMessage(error.codigo), title, field: codeField }
     }
-    const fieldError = error.status === 422 ? parseApiFieldError(error.mensagem) : null
+    const fieldError = error.status === 422 ? toFieldError(error.mensagem, error.campo) : null
     return {
       status: error.status,
       code: error.codigo,
