@@ -1,21 +1,20 @@
-import { ADMIN_DASHBOARD_METRICS } from "@/lib/utils/admin-dashboard"
+import { BarChart3 } from "lucide-react"
 
-import { DashboardMetricCard } from "./dashboard-metric-card"
-
+/** Números de inscrições: dependem dos relatórios do backend (fase 5 do plano). */
 export function DashboardMetrics() {
   return (
-    <section aria-labelledby="dashboard-metrics-title" className="flex flex-col gap-3">
-      <div className="flex flex-col gap-1">
-        <h2 id="dashboard-metrics-title" className="font-heading text-lg font-extrabold text-brand-navy">
+    <section
+      aria-labelledby="dashboard-metrics-title"
+      className="flex items-start gap-3 rounded-2xl border border-dashed bg-card p-4 text-sm text-muted-foreground"
+    >
+      <BarChart3 className="mt-0.5 size-5 shrink-0 text-brand-navy" aria-hidden="true" />
+      <p>
+        <span id="dashboard-metrics-title" className="font-heading font-bold text-brand-navy">
           Números
-        </h2>
-        <p className="text-sm text-muted-foreground">Aguardando os relatórios de inscrições do backend.</p>
-      </div>
-      <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {ADMIN_DASHBOARD_METRICS.map((label) => (
-          <DashboardMetricCard key={label} label={label} />
-        ))}
-      </ul>
+        </span>{" "}
+        · Inscrições, confirmadas, valor arrecadado e vagas restantes aparecem aqui quando os relatórios do backend estiverem
+        prontos.
+      </p>
     </section>
   )
 }

@@ -37,7 +37,8 @@ export default function AdminPanelLayout({ children }: LayoutProps<"/admin">) {
           </div>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8">{children}</main>
+      {/* Cada página abre com o `AdminPageHero` (largura total) e o conteúdo vem no `AdminPageBody`. */}
+      <main className="flex w-full flex-1 flex-col bg-slate-50">{children}</main>
     </>
   )
 }

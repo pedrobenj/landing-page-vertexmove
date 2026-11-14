@@ -2,8 +2,7 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { connection } from "next/server"
 
-import { ReadOnlyNotice } from "@/components/admin"
-import { ServerError } from "@/components/feedback"
+import { AdminPageBody, AdminPageError, ReadOnlyNotice } from "@/components/admin"
 import { canManageEvents } from "@/lib/utils/admin-permissions"
 import { toAdminEventFormValues } from "@/lib/utils/admin-event-form-values"
 import { parseIdParam } from "@/lib/utils/parse-id-param"
@@ -39,28 +38,22 @@ export default async function AdminEventPage({ params }: PageProps<"/admin/event
   const [admin, result] = await Promise.all([requireAdminSession(), loadAdminEvent(eventId)])
   if ("notFound" in result) notFound()
   if ("error" in result) {
-    return (
-      <section className="flex flex-col gap-6">
-        <h1 className="text-2xl font-extrabold text-brand-navy">{FALLBACK_TITLE}</h1>
-        <ServerError title="Não foi possível carregar a corrida" />
-      </section>
-    )
+    return <AdminPageError eyebrow="Corrida" title={FALLBACK_TITLE} message="Não foi possível carregar a corrida" />
   }
 
   const { event } = result
   const canManage = canManageEvents(admin.papel)
 
   return (
-    <section className="flex flex-col gap-8">
+    <>
       <AdminEventHeader event={event} />
-      {canManage ? (
-        <EventLifecycleActions eventId={event.id} status={event.status} />
-      ) : (
-        <ReadOnlyNotice />
-      )}
-      <EventSectionNav eventId={event.id} />
-      {/* key: depois de salvar/mudar status, o refresh traz dados novos e o form reinicia com eles. */}
-      <EventForm key={`${event.id}-${event.slug}`} eventId={event.id} defaultValues={toAdminEventFormValues(event)} readOnly={!canManage} />
-    </section>
+      <AdminPageBody>
+        {/* Ciclo de vida no topo do corpo: o vermelho do "Cancelar"/"Excluir" não tem contraste sobre o navy. */}
+        {canManage ? <EventLifecycleActions eventId={event.id} status={event.status} /> : <ReadOnlyNotice />}
+        <EventSectionNav eventId={event.id} />
+        {/* key: depois de salvar/mudar status, o refresh traz dados novos e o form reinicia com eles. */}
+        <EventForm key={`${event.id}-${event.slug}`} eventId={event.id} defaultValues={toAdminEventFormValues(event)} readOnly={!canManage} />
+      </AdminPageBody>
+    </>
   )
 }

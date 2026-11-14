@@ -1,23 +1,42 @@
 import type { Metadata } from "next"
 import { Suspense } from "react"
 
-import { DashboardMetrics, DashboardOverview, DashboardOverviewSkeleton } from "./components"
+import { AdminPageBody, AdminPageHeroSkeleton } from "@/components/admin"
 
-export const metadata: Metadata = { title: "Dashboard" }
+import {
+  DashboardHero,
+  DashboardMetrics,
+  DashboardShortcuts,
+  DashboardShortcutsSkeleton,
+  UpcomingEvents,
+  UpcomingEventsSkeleton,
+} from "./components"
+
+export const metadata: Metadata = { title: "Painel" }
 
 export default function AdminDashboardPage() {
   return (
-    <section aria-labelledby="dashboard-title" className="flex flex-col gap-8">
-      <div className="flex flex-col gap-2">
-        <p className="text-xs font-bold tracking-[0.2em] text-brand-green-text uppercase">Painel</p>
-        <h1 id="dashboard-title" className="font-heading text-4xl font-black tracking-tight text-brand-navy-deep">
-          Dashboard
-        </h1>
-      </div>
-      <Suspense fallback={<DashboardOverviewSkeleton />}>
-        <DashboardOverview />
+    <>
+      <Suspense fallback={<AdminPageHeroSkeleton />}>
+        <DashboardHero />
       </Suspense>
-      <DashboardMetrics />
-    </section>
+      <AdminPageBody>
+        <section aria-labelledby="upcoming-events-title" className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1">
+            <h2 id="upcoming-events-title" className="font-heading text-2xl font-black text-brand-navy-deep">
+              Próximos topos
+            </h2>
+            <p className="text-sm text-muted-foreground">O que falta para cada prova receber inscrições.</p>
+          </div>
+          <Suspense fallback={<UpcomingEventsSkeleton />}>
+            <UpcomingEvents />
+          </Suspense>
+        </section>
+        <Suspense fallback={<DashboardShortcutsSkeleton />}>
+          <DashboardShortcuts />
+        </Suspense>
+        <DashboardMetrics />
+      </AdminPageBody>
+    </>
   )
 }

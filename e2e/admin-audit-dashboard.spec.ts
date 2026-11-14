@@ -32,16 +32,32 @@ test.describe("Admin — auditoria", () => {
 test.describe("Admin — dashboard", () => {
   test.describe.configure({ timeout: 60_000 })
 
-  test("saúda o admin, mostra atalhos e métricas em breve", async ({ page }) => {
+  test("faixa navy com saudação, atalhos e números em breve", async ({ page }) => {
     await loginAsAdmin(page)
 
-    await expect(page.getByText("Olá, Organização Vertex!")).toBeVisible()
-    await expect(page.getByText("Perfil: Organização")).toBeVisible()
+    const hero = page.getByRole("region", { name: "Bom te ver, Organização Vertex" })
+    await expect(hero.getByText("Painel do organizador")).toBeVisible()
+    await expect(hero.getByRole("link", { name: "Nova corrida" })).toHaveAttribute("href", "/admin/eventos/novo")
     const shortcuts = page.getByRole("navigation", { name: "Atalhos" })
     for (const label of ["Nova corrida", "Corridas", "Tamanhos de camisa", "Auditoria"]) {
       await expect(shortcuts.getByRole("link", { name: new RegExp(label) })).toBeVisible()
     }
-    await expect(page.getByRole("region", { name: "Números" }).getByText("Em breve")).toHaveCount(4)
+    await expect(page.getByRole("region", { name: "Números" })).toContainText("relatórios do backend")
+  })
+
+  test("próximos topos: até 3 corridas futuras com o checklist de inscrições", async ({ page }) => {
+    await loginAsAdmin(page)
+
+    const upcoming = page.getByRole("region", { name: "Próximos topos" })
+    const cards = upcoming.getByRole("article")
+    await expect(cards).toHaveCount(3, { timeout: 20_000 })
+    // Ordem por data; publicada completa abre inscrições, rascunho completo só falta publicar.
+    await expect(cards.nth(0)).toContainText("Corrida Vertex Beira-Mar 2026")
+    await expect(cards.nth(0)).toContainText("Pronta para inscrições")
+    const draft = upcoming.getByRole("article", { name: "Corrida de Natal Vertex 2026" })
+    await expect(draft).toContainText("Tudo pronto: falta só publicar")
+    await expect(draft.getByRole("list", { name: /Checklist/ }).getByRole("listitem")).toHaveCount(3)
+    await expect(draft.getByRole("link", { name: /Gerenciar/ })).toHaveAttribute("href", /\/admin\/eventos\/\d+$/)
   })
 
   test("operador não vê o atalho Nova corrida", async ({ page }) => {

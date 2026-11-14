@@ -57,6 +57,10 @@ Vertex vem de vértice: o topo. Os textos falam de **topo, subida, degrau, larga
 - **O Vertex** (`/sobre`): "Por que Vertex" (o nome), "Nossa subida" (história), "Onde queremos chegar" (missão), números e CTA. Textos provisórios até o cliente enviar os oficiais.
 - **Topos conquistados** (`/corridas/encerradas`), **Outras trilhas** (`/corridas-parceiras`, cupom com botão copiar e link externo), **Loja** (eyebrow "Vista a subida"; sem medalhas), **Onde está minha inscrição?** (`/consulta`), **Parceiros**, **Fale com a gente** (`/contato`).
 
+### Admin
+- **Cabeçalho:** toda página do painel abre com o `AdminPageHero` (`src/components/admin/admin-page-hero.tsx`): faixa navy compacta, eyebrow com o pico, `h1`, selo e ações; o conteúdo vem no `AdminPageBody` (branco/slate). Erros de carregamento usam `AdminPageError` (mesma faixa). Sem animações (§4). Ações destrutivas (vermelhas) ficam no corpo, não na faixa: não têm contraste sobre o navy.
+- **Dashboard** ("Bom te ver, {nome}"): **Próximos topos** com até 3 corridas futuras e o checklist do que falta para abrir inscrições (distância com lote vigente, regulamento e termo vigentes; `getEventReadiness` + `loadEventReadiness`), atalhos e a faixa "Números" (aguarda relatórios do backend). O lote vigente usa a mesma regra do site (`isTierOpen`). Design em `docs/plans/2026-11-14-redesign-admin-design.md`.
+
 ### O que o Vertex é (e não é)
 - Corridas de rua **presenciais** abertas a todos: nada de desafios online ou "meus quilômetros"; no lugar, informações de prova (data, largada, local, percurso, kit, regulamento, resultados).
 - Listas renderizadas no servidor (SEO e skeleton com os 4 estados); contato e redes sempre preenchidos.
@@ -146,7 +150,7 @@ Mapear no tema do shadcn/ui (CSS variables em `globals.css`):
 | Rota | Conteúdo | API |
 |---|---|---|
 | `/admin/login` | Login (e-mail + senha) | `POST /admin/auth/login` |
-| `/admin` | Dashboard (perfil, atalhos; métricas quando houver endpoint) | `GET /admin/me` |
+| `/admin` | Dashboard: saudação, próximos topos com checklist de inscrições, atalhos (métricas quando houver endpoint) | `GET /admin/me`, `GET /admin/eventos`, distâncias, lotes e documentos |
 | `/admin/eventos` | Lista com filtro por status e paginação por cursor | `GET /admin/eventos` |
 | `/admin/eventos/novo` e `/admin/eventos/[id]` | Formulário do evento + ações de ciclo de vida | `POST/GET/PATCH/DELETE /admin/eventos/:id`, `POST .../publicar|despublicar|encerrar|cancelar|restaurar` |
 | `/admin/eventos/[id]/distancias` | CRUD de distâncias e, dentro de cada uma, lotes | `/admin/eventos/:id/distancias`, `/admin/distancias/:id`, `/admin/distancias/:id/lotes`, `/admin/lotes/:id` |

@@ -1,7 +1,8 @@
-import { ArrowLeft, ExternalLink } from "lucide-react"
+import { ExternalLink } from "lucide-react"
 import Link from "next/link"
 
-import { EventStatusBadge } from "@/components/admin"
+import { AdminBackLink, AdminPageHero, EventStatusBadge } from "@/components/admin"
+import { Button } from "@/components/ui/button"
 import { EVENT_STATUS } from "@/enums/event-status.enum"
 import { formatApiDate } from "@/lib/utils/format-api-date"
 import type { AdminEvent } from "@/types/api/admin-event.interface"
@@ -10,30 +11,26 @@ interface AdminEventHeaderProps {
   event: AdminEvent
 }
 
+/** Faixa navy da corrida: nome, status, data/local e "Ver no site" quando publicada. */
 export function AdminEventHeader({ event }: AdminEventHeaderProps) {
   return (
-    <div className="flex flex-col gap-3">
-      <Link href="/admin/eventos" className="inline-flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-brand-navy">
-        <ArrowLeft className="size-4" aria-hidden="true" /> Corridas
-      </Link>
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-2xl font-extrabold text-brand-navy">{event.nome}</h1>
-        <EventStatusBadge status={event.status} />
-      </div>
-      <p className="text-sm text-muted-foreground">
-        {formatApiDate(event.dataEvento)} · {event.horarioLargada} · {event.localizacaoResumo}
-      </p>
-      {event.status === EVENT_STATUS.PUBLISHED && (
-        <Link
-          href={`/corridas/${event.slug}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex w-fit items-center gap-1 text-sm font-semibold text-brand-navy hover:underline"
-        >
-          Ver no site <ExternalLink className="size-4" aria-hidden="true" />
-          <span className="sr-only">(abre em nova aba)</span>
-        </Link>
-      )}
-    </div>
+    <AdminPageHero
+      id="admin-event-title"
+      eyebrow="Corrida"
+      title={event.nome}
+      badge={<EventStatusBadge status={event.status} />}
+      description={`${formatApiDate(event.dataEvento)} · ${event.horarioLargada} · ${event.localizacaoResumo}`}
+      before={<AdminBackLink href="/admin/eventos">Suas provas</AdminBackLink>}
+      actions={
+        event.status === EVENT_STATUS.PUBLISHED && (
+          <Button asChild variant="outline">
+            <Link href={`/corridas/${event.slug}`} target="_blank" rel="noopener noreferrer">
+              Ver no site <ExternalLink aria-hidden="true" />
+              <span className="sr-only">(abre em nova aba)</span>
+            </Link>
+          </Button>
+        )
+      }
+    />
   )
 }

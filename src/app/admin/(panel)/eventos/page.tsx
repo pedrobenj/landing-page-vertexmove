@@ -1,24 +1,31 @@
 import type { Metadata } from "next"
 import { Suspense } from "react"
 
+import { AdminPageBody, AdminPageHero } from "@/components/admin"
+
 import { AdminEventsList, EventsListSkeleton, NewEventButton } from "./components"
 
 export const metadata: Metadata = { title: "Corridas" }
 
 export default function AdminEventsPage() {
   return (
-    <section aria-labelledby="admin-events-title" className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 id="admin-events-title" className="text-2xl font-extrabold text-brand-navy">
-          Corridas
-        </h1>
-        <Suspense fallback={null}>
-          <NewEventButton />
+    <>
+      <AdminPageHero
+        id="admin-events-title"
+        eyebrow="Corridas"
+        title="Suas provas"
+        description="Rascunhos, publicadas e encerradas. Cada uma com distâncias, kits e documentos."
+        actions={
+          <Suspense fallback={null}>
+            <NewEventButton />
+          </Suspense>
+        }
+      />
+      <AdminPageBody>
+        <Suspense fallback={<EventsListSkeleton />}>
+          <AdminEventsList />
         </Suspense>
-      </div>
-      <Suspense fallback={<EventsListSkeleton />}>
-        <AdminEventsList />
-      </Suspense>
-    </section>
+      </AdminPageBody>
+    </>
   )
 }

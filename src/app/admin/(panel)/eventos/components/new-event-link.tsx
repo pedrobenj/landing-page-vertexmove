@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 
 export function NewEventLink() {
   return (
-    <Button asChild>
+    <Button asChild variant="cta">
       <Link href="/admin/eventos/novo">
         <Plus aria-hidden="true" /> Nova corrida
       </Link>
