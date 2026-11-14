@@ -16,7 +16,7 @@ test.describe("Admin — auditoria", () => {
     await expect(main.getByText("Publicado", { exact: true })).toBeVisible({ timeout: 30_000 })
 
     await page.getByRole("navigation", { name: "Menu do admin" }).getByRole("link", { name: "Auditoria" }).click()
-    await expect(page.getByRole("heading", { level: 1, name: "Auditoria" })).toBeVisible()
+    await expect(page.getByRole("heading", { level: 1, name: "Quem fez o quê" })).toBeVisible()
     const entry = page.getByRole("row").filter({ hasText: "Corrida publicada" }).filter({ hasText: `Corrida #${event.id}` })
     await expect(entry.first()).toBeVisible({ timeout: 20_000 })
     await expect(entry.first()).toContainText("Organização Vertex")
