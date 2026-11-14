@@ -3,7 +3,7 @@ import Link from "next/link"
 
 import { EventStatusBadge } from "@/components/admin"
 import { cn } from "@/lib/utils"
-import { formatApiDate } from "@/lib/utils/format-api-date"
+import { formatAdminEventWhen } from "@/lib/utils/format-admin-event-when"
 import { getReadinessSummary } from "@/lib/utils/get-readiness-summary"
 import { READINESS_ITEMS } from "@/lib/utils/readiness-items"
 import type { EventReadinessResult } from "@/server/api/load-event-readiness"
@@ -30,7 +30,7 @@ export function UpcomingEventCard({ event, result }: UpcomingEventCardProps) {
             <EventStatusBadge status={event.status} />
           </div>
           <p className="text-sm text-muted-foreground">
-            {formatApiDate(event.dataEvento)} · {event.horarioLargada} · {event.localizacaoResumo}
+            {formatAdminEventWhen(event)} · {event.localizacaoResumo}
           </p>
         </header>
 

@@ -4,7 +4,7 @@ import Link from "next/link"
 import { EventStatusBadge } from "@/components/admin"
 import { Button } from "@/components/ui/button"
 import { TableCell, TableRow } from "@/components/ui/table"
-import { formatApiDate } from "@/lib/utils/format-api-date"
+import { formatAdminEventWhen } from "@/lib/utils/format-admin-event-when"
 import type { AdminEvent } from "@/types/api/admin-event.interface"
 
 interface EventsTableRowProps {
@@ -13,7 +13,7 @@ interface EventsTableRowProps {
 
 /** Um só link por linha ("Editar <nome>"), para o teclado e o leitor de tela não passarem duas vezes. */
 export function EventsTableRow({ event }: EventsTableRowProps) {
-  const date = `${formatApiDate(event.dataEvento)} · ${event.horarioLargada}`
+  const date = formatAdminEventWhen(event)
   return (
     <TableRow>
       <TableCell className="whitespace-normal">

@@ -7,6 +7,7 @@ const UPCOMING_STATUSES: readonly EVENT_STATUS[] = [EVENT_STATUS.DRAFT, EVENT_ST
 export function selectUpcomingAdminEvents(events: readonly AdminEvent[], today: string, limit = 3): AdminEvent[] {
   return events
     .filter((event) => UPCOMING_STATUSES.includes(event.status) && event.dataEvento >= today)
-    .sort((a, b) => `${a.dataEvento}T${a.horarioLargada}`.localeCompare(`${b.dataEvento}T${b.horarioLargada}`))
+    // A listagem do backend não traz `horarioLargada`: sem ele, ordena só pela data.
+    .sort((a, b) => `${a.dataEvento}T${a.horarioLargada ?? ""}`.localeCompare(`${b.dataEvento}T${b.horarioLargada ?? ""}`))
     .slice(0, limit)
 }
