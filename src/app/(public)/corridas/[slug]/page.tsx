@@ -4,7 +4,7 @@ import { notFound } from "next/navigation"
 import { ServerError } from "@/components/feedback"
 import { SectionBand, SectionHeading } from "@/components/sections"
 import { publicEnv } from "@/lib/public-env"
-import { buildEventJsonLd, getLowestPrice, serializeJsonLd, truncateText } from "@/lib/utils"
+import { buildEventJsonLd, getLowestPrice, isSoldOut, serializeJsonLd, truncateText } from "@/lib/utils"
 import { isApiError } from "@/server/api/api-error"
 import { getPublicEvent } from "@/server/api/endpoints/events"
 import type { PublicEventDetail } from "@/types/api/public-event-detail.interface"
@@ -72,6 +72,7 @@ export default async function EventPage({ params }: PageProps<"/corridas/[slug]"
   }
 
   const lowestPrice = getLowestPrice(event.distancias)
+  const soldOut = isSoldOut(event.distancias)
   // Absoluto: "./inscricao" a partir de /corridas/[slug] (sem barra final) resolveria para /corridas/inscricao.
   const registrationHref = `/corridas/${event.slug}/inscricao`
   const jsonLd = buildEventJsonLd(event, { siteUrl: publicEnv.siteUrl, lowestPrice })
@@ -80,7 +81,7 @@ export default async function EventPage({ params }: PageProps<"/corridas/[slug]"
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} />
 
-      <EventHero event={event} lowestPrice={lowestPrice} registrationHref={registrationHref} />
+      <EventHero event={event} lowestPrice={lowestPrice} soldOut={soldOut} registrationHref={registrationHref} />
 
       <SectionBand tone="muted" id="distancias" aria-labelledby="distancias-title">
         <SectionHeading
@@ -123,10 +124,10 @@ export default async function EventPage({ params }: PageProps<"/corridas/[slug]"
         <EventFaq />
       </SectionBand>
 
-      {/* Sem preço (tudo esgotado) não há para onde convidar: a faixa final some. */}
+      {/* Sem preço (esgotado ou sem lote vigente) não há para onde convidar: a faixa final some. */}
       {lowestPrice !== null && <EventCtaBand eventName={event.nome} registrationHref={registrationHref} />}
 
-      <MobileRegistrationBar lowestPrice={lowestPrice} registrationHref={registrationHref} />
+      <MobileRegistrationBar lowestPrice={lowestPrice} soldOut={soldOut} registrationHref={registrationHref} />
     </>
   )
 }

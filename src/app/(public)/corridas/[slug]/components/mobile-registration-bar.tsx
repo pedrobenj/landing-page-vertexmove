@@ -6,16 +6,17 @@ import { formatCurrency } from "@/lib/utils"
 
 interface MobileRegistrationBarProps {
   lowestPrice: number | null
+  soldOut: boolean
   registrationHref: string
 }
 
 /**
- * Barra fixa no rodapé, só no mobile, com o "a partir de" e o botão "Inscrever-se". Sem preço
- * (tudo esgotado), mostra "Inscrições esgotadas" sem botão.
+ * Barra fixa no rodapé, só no mobile, com o "a partir de" e o botão "Inscrever-se". Sem preço, mostra
+ * "Inscrições esgotadas" (tudo esgotado) ou "Inscrições em breve" (sem lote vigente), sem botão.
  *
  * O `data-sticky-cta` faz o `SiteFooter` reservar, depois do crédito, o espaço que a barra ocupa.
  */
-export function MobileRegistrationBar({ lowestPrice, registrationHref }: MobileRegistrationBarProps) {
+export function MobileRegistrationBar({ lowestPrice, soldOut, registrationHref }: MobileRegistrationBarProps) {
   return (
     <div
       data-testid="mobile-registration-bar"
@@ -38,7 +39,7 @@ export function MobileRegistrationBar({ lowestPrice, registrationHref }: MobileR
           </>
         ) : (
           <p className="flex h-12 items-center font-heading text-base font-black text-brand-navy-deep">
-            Inscrições esgotadas
+            {soldOut ? "Inscrições esgotadas" : "Inscrições em breve"}
           </p>
         )}
       </div>

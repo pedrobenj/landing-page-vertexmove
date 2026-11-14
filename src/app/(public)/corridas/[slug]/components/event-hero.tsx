@@ -12,6 +12,8 @@ import { EventInfoList } from "./event-info-list"
 interface EventHeroProps {
   event: PublicEvent
   lowestPrice: number | null
+  /** Sem preço: esgotado de fato, ou inscrições ainda não abertas (sem lote vigente). */
+  soldOut: boolean
   registrationHref: string
 }
 
@@ -19,7 +21,7 @@ interface EventHeroProps {
  * Topo da página do evento, na linguagem do hero da home: fundo navy com o pico esmaecido, capa
  * inclinada sobre a moldura verde, nome, data longa, largada, local e o CTA (no desktop).
  */
-export function EventHero({ event, lowestPrice, registrationHref }: EventHeroProps) {
+export function EventHero({ event, lowestPrice, soldOut, registrationHref }: EventHeroProps) {
   return (
     <section aria-labelledby="event-title" className="relative overflow-hidden bg-brand-navy-deep text-white">
       <Chevron className="pointer-events-none absolute -bottom-24 -left-20 w-[30rem] opacity-[0.07] lg:w-[42rem]" />
@@ -40,7 +42,7 @@ export function EventHero({ event, lowestPrice, registrationHref }: EventHeroPro
               {lowestPrice !== null ? (
                 <PillBadge className="absolute top-4 left-4">Inscrições abertas</PillBadge>
               ) : (
-                <PillBadge className="absolute top-4 left-4 bg-white">Esgotado</PillBadge>
+                <PillBadge className="absolute top-4 left-4 bg-white">{soldOut ? "Esgotado" : "Em breve"}</PillBadge>
               )}
             </div>
           </div>
@@ -79,7 +81,9 @@ export function EventHero({ event, lowestPrice, registrationHref }: EventHeroPro
                   </p>
                 </>
               ) : (
-                <p className="font-heading text-2xl font-black text-white">Inscrições esgotadas</p>
+                <p className="font-heading text-2xl font-black text-white">
+                  {soldOut ? "Inscrições esgotadas" : "Inscrições em breve"}
+                </p>
               )}
             </div>
           </div>
