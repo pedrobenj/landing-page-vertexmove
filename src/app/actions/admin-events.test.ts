@@ -131,7 +131,7 @@ describe("admin events actions", () => {
     })
 
     it("slug duplicado (409) aponta para o campo slug", async () => {
-      mocks.createAdminEvent.mockRejectedValue(new ApiError(409, "SLUG_DUPLICADO", "Já existe."))
+      mocks.createAdminEvent.mockRejectedValue(new ApiError(409, "EVENTO_SLUG_EM_USO", "Já existe."))
       const response = await createAdminEventAction(form)
       expect(response).toMatchObject({ status: 409, field: "slug", error: "Já existe um evento com este endereço (slug)." })
     })

@@ -564,7 +564,7 @@ describe("mockFetch", () => {
 
       const duplicate = await call("POST", "/admin/eventos", { body: newEvent, headers: auth })
       expect(duplicate.status).toBe(409)
-      expect(await errorCode(duplicate)).toBe("SLUG_DUPLICADO")
+      expect(await errorCode(duplicate)).toBe("EVENTO_SLUG_EM_USO")
     })
 
     it("atualiza só os campos enviados", async () => {

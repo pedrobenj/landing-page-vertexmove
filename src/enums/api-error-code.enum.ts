@@ -9,7 +9,8 @@ export enum API_ERROR_CODE {
   INVALID_DATA = "DADO_INVALIDO",
   // Usados pelo mock (Task 4); confirmar os literais com o backend.
   NOT_FOUND = "NAO_ENCONTRADO",
-  DUPLICATE_SLUG = "SLUG_DUPLICADO",
+  // Código do backend (`uq_evento_slug` → `postgres-error.mapper.ts`).
+  DUPLICATE_SLUG = "EVENTO_SLUG_EM_USO",
   INVALID_TRANSITION = "TRANSICAO_INVALIDA",
   SOLD_OUT = "DISTANCIA_ESGOTADA",
   // Presumido (o mock não valida duplicidade de tamanho); confirmar com o backend.
