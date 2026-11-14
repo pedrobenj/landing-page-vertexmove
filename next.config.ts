@@ -48,6 +48,11 @@ const imageHosts = [...new Set([...parseImageHosts(process.env.IMAGE_REMOTE_HOST
 const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
+  // Túnel HTTPS do teste integrado (retorno do Checkout Pro); só vale no `next dev`.
+  allowedDevOrigins: ["*.trycloudflare.com"],
+  // O `next dev` imprime os argumentos de cada server action (senha do login, CPF, WhatsApp e nascimento
+  // da inscrição e da consulta). Não dá para mascarar campo a campo, então fica desligado (§12 do CLAUDE.md).
+  logging: { serverFunctions: false },
   images: {
     remotePatterns: imageHosts.map((hostname) => ({ protocol: "https", hostname })),
   },
