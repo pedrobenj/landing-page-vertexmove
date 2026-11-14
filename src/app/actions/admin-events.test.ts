@@ -43,7 +43,7 @@ const form: AdminEventFormInput = {
   dataEvento: "2026-12-06",
   horarioLargada: "05:30",
   localNome: "Aterrinho",
-  endereco: "",
+  endereco: "Av. Almirante Tamandaré, s/n",
   complemento: "",
   bairro: "",
   cidade: "Fortaleza",
@@ -121,7 +121,7 @@ describe("admin events actions", () => {
       mocks.createAdminEvent.mockResolvedValue({ id: 9, slug: "corrida-nova" })
       const response = await createAdminEventAction(form)
       expect(response).toMatchObject({ status: 201, data: { id: 9 } })
-      expect(mocks.createAdminEvent).toHaveBeenCalledWith(expect.objectContaining({ endereco: null, latitude: null, uf: "CE" }))
+      expect(mocks.createAdminEvent).toHaveBeenCalledWith(expect.objectContaining({ complemento: null, latitude: null, uf: "CE" }))
     })
 
     it("entrada inválida → 422 com o campo", async () => {

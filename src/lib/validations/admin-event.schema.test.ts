@@ -9,7 +9,7 @@ const valid: AdminEventFormInput = {
   dataEvento: "2026-12-06",
   horarioLargada: "05:30",
   localNome: "Aterrinho da Praia de Iracema",
-  endereco: "",
+  endereco: "Av. Almirante Tamandaré, s/n",
   complemento: "",
   bairro: "",
   cidade: "Fortaleza",
@@ -35,7 +35,7 @@ describe("adminEventFormSchema", () => {
       dataEvento: "2026-12-06",
       horarioLargada: "05:30",
       localNome: "Aterrinho da Praia de Iracema",
-      endereco: null,
+      endereco: "Av. Almirante Tamandaré, s/n",
       complemento: null,
       bairro: null,
       cidade: "Fortaleza",
@@ -86,10 +86,12 @@ describe("adminEventFormSchema", () => {
   })
 
   it("campos obrigatórios", () => {
-    expect(errorPaths({ ...valid, nome: "", descricao: " ", localNome: "", cidade: "" })).toEqual([
+    // O backend exige o endereço (`criar-evento.dto.ts`): vazio dava 422 DADO_INVALIDO na API real.
+    expect(errorPaths({ ...valid, nome: "", descricao: " ", localNome: "", endereco: " ", cidade: "" })).toEqual([
       "nome",
       "descricao",
       "localNome",
+      "endereco",
       "cidade",
     ])
   })

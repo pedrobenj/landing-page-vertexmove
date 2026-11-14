@@ -90,7 +90,7 @@ export function EventForm({ defaultValues, eventId, readOnly = false }: EventFor
 
         <EventFormSection legend="Local">
           <FormTextField idPrefix="event" control={form.control} name="localNome" label="Local da largada" placeholder="Aterrinho da Praia de Iracema" />
-          <FormTextField idPrefix="event" control={form.control} name="endereco" label="Endereço (opcional)" />
+          <FormTextField idPrefix="event" control={form.control} name="endereco" label="Endereço" />
           <FormTextField idPrefix="event" control={form.control} name="complemento" label="Complemento (opcional)" />
           <FormTextField idPrefix="event" control={form.control} name="bairro" label="Bairro (opcional)" />
           <FormTextField idPrefix="event" control={form.control} name="cidade" label="Cidade" />

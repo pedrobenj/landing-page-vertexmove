@@ -15,7 +15,7 @@ const event: AdminEvent = {
   dataEvento: "2026-12-06",
   horarioLargada: "05:30",
   localNome: "Aterrinho",
-  endereco: null,
+  endereco: "Av. Almirante Tamandaré, s/n",
   complemento: null,
   bairro: "Praia de Iracema",
   cidade: "Fortaleza",
@@ -32,7 +32,7 @@ const event: AdminEvent = {
 describe("toAdminEventFormValues", () => {
   it("converte null em vazio e números em texto", () => {
     const values = toAdminEventFormValues(event)
-    expect(values).toMatchObject({ endereco: "", bairro: "Praia de Iracema", latitude: "-3.7253", longitude: "" })
+    expect(values).toMatchObject({ complemento: "", bairro: "Praia de Iracema", latitude: "-3.7253", longitude: "" })
   })
 
   it("ida e volta pelo schema devolve os campos editáveis", () => {

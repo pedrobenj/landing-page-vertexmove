@@ -62,6 +62,7 @@ test.describe("Admin — cadastro e publicação de corridas", () => {
     await page.getByLabel("Data", { exact: true }).fill("2027-05-10")
     await page.getByLabel("Horário de largada").fill("06:00")
     await page.getByLabel("Local da largada").fill("Aterrinho da Praia de Iracema")
+    await page.getByLabel("Endereço", { exact: true }).fill("Av. Almirante Tamandaré, s/n")
     await page.getByRole("button", { name: "Cadastrar corrida" }).click()
 
     await expect(page).toHaveURL(/\/admin\/eventos\/\d+$/, { timeout: 30_000 })

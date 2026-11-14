@@ -82,7 +82,7 @@ export const adminEventSchema = z.object({
   dataEvento: z.iso.date(),
   horarioLargada: hhmm,
   localNome: z.string().trim().min(1),
-  endereco: nullableText.default(null),
+  endereco: z.string().trim().min(1),
   complemento: nullableText.default(null),
   bairro: nullableText.default(null),
   cidade: z.string().trim().min(1),

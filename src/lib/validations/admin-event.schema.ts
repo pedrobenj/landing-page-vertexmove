@@ -63,7 +63,7 @@ export const adminEventFormSchema = z.object({
   dataEvento: z.string().trim().refine(isApiDate, "Informe a data da corrida"),
   horarioLargada: z.string().trim().regex(API_TIME_PATTERN, "Informe o horário de largada"),
   localNome: requiredText("Informe o local da largada"),
-  endereco: optionalText,
+  endereco: requiredText("Informe o endereço"),
   complemento: optionalText,
   bairro: optionalText,
   cidade: requiredText("Informe a cidade"),
