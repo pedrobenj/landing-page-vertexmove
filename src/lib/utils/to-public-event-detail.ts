@@ -6,15 +6,14 @@ import type {
 } from "@/types/api/api-event-detail.interface"
 import type { PublicDistance, PublicDocument, PublicEventDetail } from "@/types/api/public-event-detail.interface"
 
+import { isTierOpen } from "./is-tier-open"
+
 /**
  * Lote vigente = ativo cuja janela contém `now`, menor `ordem`. Só para exibição: quem cobra é o backend,
  * que reprecifica no `POST /inscricoes`. Não conhece vagas — `esgotado` só vem da API (fase 3 do plano).
  */
 function currentTier(tiers: readonly ApiPublicTier[], now: Date): PublicDistance["loteVigente"] {
-  const t = now.getTime()
-  const open = tiers
-    .filter((tier) => Date.parse(tier.inicioEm) <= t && (tier.fimEm === null || t < Date.parse(tier.fimEm)))
-    .sort((a, b) => a.ordem - b.ordem)
+  const open = tiers.filter((tier) => isTierOpen(tier, now)).sort((a, b) => a.ordem - b.ordem)
   const tier = open[0]
   return tier ? { nome: tier.nome, precoCentavos: tier.precoCentavos } : null
 }

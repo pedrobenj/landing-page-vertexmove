@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { notFound, unstable_rethrow } from "next/navigation"
 import { connection } from "next/server"
 
+import { AdminPageBody, AdminPageHero } from "@/components/admin"
 import { ServerError } from "@/components/feedback"
 import { StoreUnavailable } from "@/components/store/store-unavailable"
 import { canManageStore } from "@/lib/utils/admin-permissions"
@@ -38,16 +39,14 @@ export default async function EditProductPage({ params }: PageProps<"/admin/loja
     if (isApiError(error) && error.status === 404) notFound()
     if (!isStoreUnavailable(error)) console.error("[EditProductPage]", error instanceof Error ? error.name : "erro desconhecido")
     return (
-      <section className="flex flex-col gap-6">
-        <h1 className="text-2xl font-extrabold text-brand-navy">Editar produto</h1>
-        {isStoreUnavailable(error) ? <StoreUnavailable context="admin" /> : <ServerError title="Não foi possível carregar o produto" />}
-      </section>
+      <>
+        <AdminPageHero id="edit-product-title" eyebrow="Loja" title="Editar produto" />
+        <AdminPageBody>
+          {isStoreUnavailable(error) ? <StoreUnavailable context="admin" /> : <ServerError title="Não foi possível carregar o produto" />}
+        </AdminPageBody>
+      </>
     )
   }
 
-  return (
-    <section className="flex flex-col gap-6">
-      <EditProduct product={product} canManage={canManageStore(admin.papel)} />
-    </section>
-  )
+  return <EditProduct product={product} canManage={canManageStore(admin.papel)} />
 }

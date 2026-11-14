@@ -14,7 +14,7 @@ test.describe("Admin — lista de corridas", () => {
     await loginAsAdmin(page)
     await page.goto("/admin/eventos")
 
-    await expect(page.getByRole("heading", { level: 1, name: "Corridas" })).toBeVisible()
+    await expect(page.getByRole("heading", { level: 1, name: "Suas provas" })).toBeVisible()
     const rows = page.getByRole("table").getByRole("row")
     await expect(page.getByRole("link", { name: `Editar ${SEED_PUBLISHED}`, exact: true })).toBeVisible({ timeout: 20_000 })
     await expect(page.getByRole("link", { name: `Editar ${SEED_DRAFT}`, exact: true })).toBeVisible()

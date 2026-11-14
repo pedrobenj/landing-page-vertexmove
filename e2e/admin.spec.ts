@@ -18,7 +18,7 @@ test.describe("Área do admin", () => {
     await login(page, ADMIN_EMAIL, PASSWORD)
 
     await expect(page).toHaveURL("/admin", { timeout: 20_000 })
-    await expect(page.getByRole("heading", { level: 1, name: "Dashboard" })).toBeVisible()
+    await expect(page.getByRole("heading", { level: 1, name: "Bom te ver, Organização Vertex" })).toBeVisible()
     await expect(page.getByTestId("admin-user-badge")).toContainText("Organização Vertex")
     await expect(page.getByRole("navigation", { name: "Menu do admin" }).getByRole("link", { name: "Eventos" })).toBeVisible()
 

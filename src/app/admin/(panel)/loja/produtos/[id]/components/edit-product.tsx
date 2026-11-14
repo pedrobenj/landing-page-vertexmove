@@ -1,4 +1,4 @@
-import { ReadOnlyNotice } from "@/components/admin"
+import { AdminBackLink, AdminPageBody, AdminPageHero, ReadOnlyNotice } from "@/components/admin"
 import { toProductFormValues } from "@/lib/utils"
 import type { StoreProduct } from "@/types/store-product.interface"
 
@@ -12,9 +12,16 @@ interface EditProductProps {
 export function EditProduct({ product, canManage }: EditProductProps) {
   return (
     <>
-      <h1 className="text-2xl font-extrabold text-brand-navy">{product.name}</h1>
-      {!canManage && <ReadOnlyNotice>Seu perfil tem acesso somente leitura aos produtos da loja.</ReadOnlyNotice>}
-      <ProductForm defaultValues={toProductFormValues(product)} productId={product.id} canManage={canManage} />
+      <AdminPageHero
+        id="edit-product-title"
+        eyebrow="Loja"
+        title={product.name}
+        before={<AdminBackLink href="/admin/loja/produtos">Produtos da loja</AdminBackLink>}
+      />
+      <AdminPageBody>
+        {!canManage && <ReadOnlyNotice>Seu perfil tem acesso somente leitura aos produtos da loja.</ReadOnlyNotice>}
+        <ProductForm defaultValues={toProductFormValues(product)} productId={product.id} canManage={canManage} />
+      </AdminPageBody>
     </>
   )
 }
