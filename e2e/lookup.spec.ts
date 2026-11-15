@@ -35,7 +35,7 @@ test.describe("Consulta de inscrição", () => {
     const dialog = page.getByRole("dialog", { name: "Sua inscrição" })
     await dialog.getByLabel("Data de nascimento do atleta").fill("15031988")
     await dialog.getByRole("button", { name: "Ver inscrição" }).click()
-    await expect(dialog.getByText("A data de nascimento não confere com a inscrição.", { exact: false })).toBeVisible()
+    await expect(dialog.getByText("A data de nascimento não confere com a inscrição", { exact: false })).toBeVisible()
 
     await dialog.getByLabel("Data de nascimento do atleta").fill("14031988")
     await dialog.getByRole("button", { name: "Ver inscrição" }).click()
@@ -47,6 +47,31 @@ test.describe("Consulta de inscrição", () => {
     await dialog.getByRole("button", { name: "Baixar comprovante (PDF)" }).click()
     const download = await downloadPromise
     expect(download.suggestedFilename()).toMatch(/^comprovante-VX-\d{4}-\d{8}\.pdf$/)
+  })
+
+  test("paga pela consulta em outro aparelho (sem o cookie da inscrição)", async ({ page, browser }) => {
+    test.slow()
+    const cpf = generateValidCpf()
+    await registerAthlete(page, { name: "Lia Torres Melo", birthDate: "09/09/1991", cpf, whatsapp: generateWhatsapp() })
+
+    // Outro "aparelho": contexto novo, sem o cookie HttpOnly com o token da inscrição.
+    const otherDevice = await browser.newContext()
+    const other = await otherDevice.newPage()
+    await other.goto("/consulta")
+    await chooseOption(other, /^CPF$/)
+    await other.getByLabel("CPF usado na inscrição").fill(cpf)
+    await other.getByRole("button", { name: "Consultar" }).click()
+    await other.getByRole("button", { name: /^Ver inscrição: Corrida Vertex Beira-Mar 2026/ }).click()
+
+    const dialog = other.getByRole("dialog", { name: "Sua inscrição" })
+    await dialog.getByLabel("Data de nascimento do atleta").fill("09091991")
+    await dialog.getByRole("button", { name: "Ver inscrição" }).click()
+    const code = (await dialog.getByTestId("receipt-code").textContent())?.trim()
+    expect(code).toMatch(/^VX-\d{4}-\d{8}$/)
+
+    await dialog.getByRole("button", { name: "Pagar agora" }).click()
+    await expect(other).toHaveURL(`/dev/checkout-pro/${code}`, { timeout: 15_000 })
+    await otherDevice.close()
   })
 
   test("encontra a inscrição pelo WhatsApp", async ({ page }) => {

@@ -2,13 +2,16 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation } from "@tanstack/react-query"
-import { ArrowRight, Download } from "lucide-react"
-import Link from "next/link"
+import { CreditCard, Download } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 
-import { getRegistrationReceiptAction, downloadRegistrationReceiptAction } from "@/app/actions/registrations"
+import {
+  downloadRegistrationReceiptAction,
+  getRegistrationReceiptAction,
+  startReceiptCheckoutAction,
+} from "@/app/actions/registrations"
 import { MaskedTextField } from "@/app/(public)/corridas/[slug]/inscricao/components/masked-text-field"
 import { Button } from "@/components/ui/button"
 import { REGISTRATION_STATUS } from "@/enums/registration-status.enum"
@@ -66,7 +69,24 @@ export function RegistrationReceiptPanel({ referencia, onBusyChange }: Registrat
     onError: () => toast.error("Não foi possível gerar o comprovante", { description: NETWORK_ERROR }),
   })
 
-  const isBusy = verify.isPending || download.isPending
+  // Sucesso = sai para o Mercado Pago: o botão segue desabilitado até a navegação acontecer.
+  const [isRedirecting, setIsRedirecting] = useState(false)
+  const pay = useMutation({
+    mutationFn: startReceiptCheckoutAction,
+    gcTime: 0,
+    onSuccess: (response) => {
+      if (response.status === 201 && response.data) {
+        setIsRedirecting(true)
+        window.location.assign(response.data.checkoutUrl)
+        return
+      }
+      toast.error(response.title ?? "Não foi possível abrir o pagamento", { description: response.error })
+    },
+    onError: () => toast.error("Não foi possível abrir o pagamento", { description: NETWORK_ERROR }),
+  })
+
+  const isPaying = pay.isPending || isRedirecting
+  const isBusy = verify.isPending || download.isPending || isPaying
   useEffect(() => onBusyChange(isBusy), [isBusy, onBusyChange])
 
   if (receipt) {
@@ -75,16 +95,21 @@ export function RegistrationReceiptPanel({ referencia, onBusyChange }: Registrat
         <RegistrationReceiptDetails receipt={receipt} />
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
           {receipt.status === REGISTRATION_STATUS.PENDING && (
-            <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
-              <Link href={`/inscricao/${receipt.codigo}`}>
-                Ir para o pagamento
-                <ArrowRight aria-hidden="true" />
-              </Link>
+            <Button
+              type="button"
+              variant="cta"
+              size="lg"
+              className="w-full sm:w-auto"
+              disabled={isPaying}
+              onClick={() => pay.mutate({ referencia, dataNascimento: birthDate })}
+            >
+              <CreditCard aria-hidden="true" />
+              {isPaying ? "Abrindo pagamento..." : "Pagar agora"}
             </Button>
           )}
           <Button
             type="button"
-            variant="cta"
+            variant={receipt.status === REGISTRATION_STATUS.PENDING ? "outline" : "cta"}
             size="lg"
             className="w-full sm:w-auto"
             disabled={download.isPending}

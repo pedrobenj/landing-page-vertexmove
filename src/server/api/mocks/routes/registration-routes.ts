@@ -263,6 +263,27 @@ export const registrationRoutes: MockRoute[] = [
     },
   },
   {
+    // Checkout pela consulta (sem token): referência + nascimento, como o backend real.
+    method: "POST",
+    path: "/inscricoes/comprovante/pagamento",
+    handler: ({ body, headers }) => {
+      const input = validate(receiptSchema, body)
+      if (input instanceof Response) return input
+      if (!headers.get("Idempotency-Key")) {
+        return apiError(422, API_ERROR_CODE.INVALID_DATA, "Idempotency-Key obrigatório.")
+      }
+      const match = getMockDb().registrations.find(
+        (item) => item.referencia === input.referencia && item.dataNascimento === input.dataNascimento,
+      )
+      const registration = match ? findRegistration(match.codigo) : undefined
+      if (!registration) return apiError(404, API_ERROR_CODE.NOT_FOUND, "Inscrição não encontrada.")
+      if (registration.status !== REGISTRATION_STATUS.PENDING || registration.aprovacaoEm) {
+        return apiError(409, API_ERROR_CODE.PAYMENT_UNAVAILABLE, "A inscrição não está aguardando pagamento.")
+      }
+      return created(toCheckout(registration, PAYMENT_STATUS.PENDING), `/inscricoes/${registration.codigo}`)
+    },
+  },
+  {
     method: "GET",
     path: "/inscricoes/:codigo",
     handler: ({ params, headers }) => {

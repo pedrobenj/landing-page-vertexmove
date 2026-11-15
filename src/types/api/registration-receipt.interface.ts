@@ -1,6 +1,6 @@
 import type { REGISTRATION_STATUS } from "@/enums/registration-status.enum"
 
-/** Corpo de `POST /inscricoes/comprovante` (contrato PROPOSTO ao backend, §16). */
+/** Corpo de `POST /inscricoes/comprovante` (backend: módulo consulta). */
 export interface RegistrationReceiptInput {
   /** Referência opaca devolvida em cada item da consulta (`RegistrationLookupItem.referencia`). */
   referencia: string

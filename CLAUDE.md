@@ -137,7 +137,7 @@ Mapear no tema do shadcn/ui (CSS variables em `globals.css`):
 | `/inscricao/confirmada` | Confirmação pós-criação com código e valores (dados vindos da resposta do `POST /inscricoes`, guardados em memória no store) | — |
 | `/inscricao/retorno` | Página de volta do Checkout Pro (`back_urls`): lê `external_reference` e consulta o status real no backend | **pendente** (status por código) |
 | `/inscricao/[code]` | Status da inscrição e botão "Pagar agora" (gera novo link do Checkout Pro se ainda pendente) | **pendente** (`GET` por código não existe) |
-| `/consulta` | Consulta por WhatsApp **ou** CPF → lista mascarada; cada item tem "Ver inscrição" (confirma a data de nascimento → detalhes + "Baixar comprovante (PDF)") | `POST /inscricoes/consulta`, `POST /inscricoes/comprovante` (**proposto**) |
+| `/consulta` | Consulta por WhatsApp **ou** CPF → lista mascarada; cada item tem "Ver inscrição" (confirma a data de nascimento → detalhes + "Baixar comprovante (PDF)") | `POST /inscricoes/consulta`, `POST /inscricoes/comprovante`, `POST /inscricoes/comprovante/pagamento` |
 | `/loja`, `/loja/[slug]`, `/loja/carrinho`, `/loja/checkout`, `/pedido/[code]` | Loja de camisas e acessórios | **pendente** |
 | `/corridas-parceiras` | Corridas de parceiros com cupom exclusivo e link externo | **pendente** (conteúdo estático até haver endpoint) |
 | `/sobre` | Conheça o Vertex: história, missão, fotos, números | estático |
@@ -249,13 +249,16 @@ Papéis vistos no seed: organização (`admin@example.com`), operador (`operador
 - Formato do código: `/^VX-\d{4}-\d{8}$/`.
 
 **`POST /inscricoes/consulta`** — corpo com **exatamente um** de `{ cpf }` ou `{ whatsapp }` (os dois → 422).
-- Resposta: `{ items: [{ nomeMascarado, evento, distancia, status, inscritoEm }], nextCursor }`.
+- Resposta: `{ items: [{ referencia, nomeMascarado, evento, distancia, status, inscritoEm }], nextCursor }`.
 - **Não retorna código nem valores**; CPF sem inscrições → `200` com `items: []` (não revela se o CPF existe).
-- **Proposto:** cada item traz `referencia` (opaca, não é o código) para pedir o comprovante.
+- `referencia`: opaca e assinada pelo backend, vale **60 min** (depois disso o atleta refaz a consulta). Pendente com reserva vencida já vem como `expirada`.
 
-**`POST /inscricoes/comprovante`** (**proposto**, já no mock) — `{ referencia, dataNascimento: 'YYYY-MM-DD' }`.
+**`POST /inscricoes/comprovante`** — `{ referencia, dataNascimento: 'YYYY-MM-DD' }`.
 - Resposta `200`: `{ codigo, status, nomeCompleto, cpfMascarado, evento: { nome, dataEvento, horarioLargada, localizacaoResumo }, distancia, kit, tamanhoCamisa, valorBaseCentavos, valorDescontoCentavos, valorTotalCentavos, inscritoEm }`.
-- Referência inexistente **ou** nascimento errado → mesmo `404` (não revela qual falhou). Precisa de rate limit no backend.
+- Referência inexistente/vencida **ou** nascimento errado → mesmo `404` (não revela qual falhou). Rate limit no backend (10/min por IP).
+- `cpfMascarado` vem `null` da API real (o backend não decifra CPF para exibição).
+
+**`POST /inscricoes/comprovante/pagamento`** — mesmo corpo + `Idempotency-Key`. Devolve o checkout (`checkoutUrl`) da inscrição pendente, reaproveitando a cobrança ativa. É o "Pagar agora" do comprovante (`startReceiptCheckoutAction`): funciona em qualquer aparelho, sem o cookie `vm_insc_<codigo>`. `RESERVA_EXPIRADA` → "faça uma nova inscrição".
 - O PDF do comprovante é gerado no servidor do Next (`src/server/pdf/`, `pdf-lib`) e entregue por server action em base64 — nunca por URL com dados do atleta.
 
 ---
@@ -547,7 +550,7 @@ Antes de cada commit: `lint`, `typecheck` e `build` passando. Commits no padrão
 ### Backend (combinar com o time da API)
 - [ ] O detalhe público `GET /eventos/:slug` precisa expor: distâncias (com `id`), preço do lote vigente e vagas/esgotado, kits ativos (com `id` e fotos), tamanhos de camisa disponíveis e **IDs dos documentos vigentes** (regulamento e termo) — sem eles o front não consegue montar `documentosAceitos`, `kitId` e `tamanhoCamisaId`.
 - [ ] Preço do kit: `precoCentavos` no kit (admin e detalhe público), somado ao lote em `valorBaseCentavos`. Definir se o desconto 60+ incide sobre o kit.
-- [ ] Comprovante na consulta: `referencia` opaca em cada item de `POST /inscricoes/consulta` e `POST /inscricoes/comprovante` (`{ referencia, dataNascimento }` → dados da inscrição), com rate limit por IP/referência.
+- [x] Comprovante na consulta: `referencia` opaca em cada item de `POST /inscricoes/consulta` e `POST /inscricoes/comprovante` (`{ referencia, dataNascimento }` → dados da inscrição), com rate limit por IP. Pagar pela consulta: `POST /inscricoes/comprovante/pagamento`.
 - [ ] Endpoint para buscar inscrição por código (status/pagamento) — hoje a consulta não devolve código.
 - [ ] Pagamento via **Checkout Pro**: endpoint que cria a preferência e devolve `checkoutUrl` (`init_point`), webhook do Mercado Pago (validar assinatura `x-signature`, idempotente por `payment_id`), status da inscrição por código para a página de retorno, expiração de pendentes alinhada à preferência e novo link para "Pagar agora".
 - [ ] Listagem/exportação de inscrições no admin e marcação de retirada de kit.

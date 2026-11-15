@@ -11,8 +11,13 @@ vi.mock("next/headers", () => ({ headers: async () => new Headers() }))
 const saveRegistrationAccess = vi.hoisted(() => vi.fn(async () => undefined))
 vi.mock("@/server/api/registration-access", () => ({ saveRegistrationAccess }))
 
-const { createRegistrationAction, downloadRegistrationReceiptAction, getRegistrationReceiptAction, lookupRegistrationsAction } =
-  await import("./registrations")
+const {
+  createRegistrationAction,
+  downloadRegistrationReceiptAction,
+  getRegistrationReceiptAction,
+  lookupRegistrationsAction,
+  startReceiptCheckoutAction,
+} = await import("./registrations")
 const { resetMockDb } = await import("@/server/api/mocks/mock-db")
 
 const input: CreateRegistrationInput = {
@@ -119,7 +124,8 @@ describe("lookupRegistrationsAction", () => {
       const response = await getRegistrationReceiptAction({ referencia, dataNascimento: "07/12/1990" })
       expect(response).toMatchObject({
         status: 404,
-        error: "A data de nascimento não confere com a inscrição. Confira e tente de novo.",
+        error:
+          "A data de nascimento não confere com a inscrição, ou a consulta expirou. Confira a data ou refaça a consulta.",
       })
     })
 
@@ -134,6 +140,26 @@ describe("lookupRegistrationsAction", () => {
       expect(response.status).toBe(200)
       expect(response.data!.fileName).toMatch(/^comprovante-VX-\d{4}-\d{8}\.pdf$/)
       expect(Buffer.from(response.data!.base64, "base64").subarray(0, 5).toString()).toBe("%PDF-")
+    })
+
+    describe("pagar pelo comprovante", () => {
+      it("201 → link do checkout (falso, no mock) sem depender do cookie da inscrição", async () => {
+        const referencia = await lookupReference()
+        const response = await startReceiptCheckoutAction({ referencia, dataNascimento: "06/12/1990" })
+        expect(response.status).toBe(201)
+        expect(response.data!.checkoutUrl).toMatch(/\/dev\/checkout-pro/)
+      })
+
+      it("nascimento errado → 404 com a mensagem do comprovante e título do pagamento", async () => {
+        const referencia = await lookupReference()
+        const response = await startReceiptCheckoutAction({ referencia, dataNascimento: "07/12/1990" })
+        expect(response).toMatchObject({ status: 404, title: "Não foi possível abrir o pagamento" })
+      })
+
+      it("data inválida → 422 sem chamar a API", async () => {
+        const response = await startReceiptCheckoutAction({ referencia: "x", dataNascimento: "31/02/1990" })
+        expect(response).toMatchObject({ status: 422, title: "Não foi possível abrir o pagamento" })
+      })
     })
   })
 })

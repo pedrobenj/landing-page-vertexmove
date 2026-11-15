@@ -1,7 +1,9 @@
 "use server"
 
 import { API_ERROR_CODE } from "@/enums/api-error-code.enum"
+import { env } from "@/lib/env"
 import { getApiErrorMessage } from "@/lib/utils/api-errors"
+import { isAllowedCheckoutUrl } from "@/lib/utils/checkout-url"
 import { toApiDate } from "@/lib/utils/format-api-date"
 import { normalizeCpf } from "@/lib/utils/normalize-cpf"
 import { toE164Phone } from "@/lib/utils/to-e164-phone"
@@ -9,7 +11,12 @@ import { lookupSchema, type LookupInput } from "@/lib/validations/lookup.schema"
 import { receiptRequestSchema, type ReceiptRequestInput } from "@/lib/validations/receipt.schema"
 import { createRegistrationInputSchema } from "@/lib/validations/registration.schema"
 import { isApiError } from "@/server/api/api-error"
-import { createRegistration, getRegistrationReceipt, lookupRegistrations } from "@/server/api/endpoints/registrations"
+import {
+  createReceiptCheckout,
+  createRegistration,
+  getRegistrationReceipt,
+  lookupRegistrations,
+} from "@/server/api/endpoints/registrations"
 import { saveRegistrationAccess } from "@/server/api/registration-access"
 import { buildRegistrationReceiptPdf, getReceiptFileName } from "@/server/pdf/registration-receipt-pdf"
 import type { CursorPage } from "@/types/api/cursor-page.interface"
@@ -24,12 +31,15 @@ import type {
   RegistrationLookupInput,
   RegistrationLookupItem,
 } from "@/types/api/registration.interface"
+import type { RegistrationCheckout } from "@/types/api/registration-details.interface"
 import type { HttpResponse } from "@/types/http-response.interface"
 
 const CREATE_ERROR_TITLE = "Não foi possível concluir a inscrição"
 const LOOKUP_ERROR_TITLE = "Não foi possível consultar"
 const RECEIPT_ERROR_TITLE = "Não foi possível abrir a inscrição"
-const RECEIPT_NOT_FOUND_MESSAGE = "A data de nascimento não confere com a inscrição. Confira e tente de novo."
+const RECEIPT_CHECKOUT_ERROR_TITLE = "Não foi possível abrir o pagamento"
+const RECEIPT_NOT_FOUND_MESSAGE =
+  "A data de nascimento não confere com a inscrição, ou a consulta expirou. Confira a data ou refaça a consulta."
 
 /** `ApiError` → `HttpResponse` com mensagem amigável; outros erros viram 500. Nunca loga o erro inteiro (PII). */
 function toErrorResponse(error: unknown, title: string, context: string): HttpResponse<never> {
@@ -139,5 +149,30 @@ export async function downloadRegistrationReceiptAction(
     }
   } catch (error) {
     return toReceiptErrorResponse(error, "downloadRegistrationReceiptAction")
+  }
+}
+
+/**
+ * "Pagar agora" no comprovante da consulta: funciona em qualquer aparelho (não depende do cookie com o
+ * token). Só devolve links HTTPS do Mercado Pago (ou o checkout falso do mock); o client só redireciona.
+ */
+export async function startReceiptCheckoutAction(input: ReceiptRequestInput): Promise<HttpResponse<RegistrationCheckout>> {
+  const body = toReceiptRequest(input)
+  if (!body) return { ...INVALID_RECEIPT_REQUEST, title: RECEIPT_CHECKOUT_ERROR_TITLE }
+  try {
+    const { checkoutUrl } = await createReceiptCheckout(body)
+    if (checkoutUrl === null || !isAllowedCheckoutUrl(checkoutUrl, { allowMockCheckout: env.USE_MOCK_API })) {
+      console.error("[startReceiptCheckoutAction]", "checkoutUrl ausente ou fora do Mercado Pago")
+      return {
+        status: 502,
+        code: API_ERROR_CODE.INVALID_CHECKOUT_URL,
+        error: getApiErrorMessage(API_ERROR_CODE.INVALID_CHECKOUT_URL),
+        title: RECEIPT_CHECKOUT_ERROR_TITLE,
+      }
+    }
+    return { status: 201, data: { checkoutUrl } }
+  } catch (error) {
+    const response = toReceiptErrorResponse(error, "startReceiptCheckoutAction")
+    return { ...response, title: RECEIPT_CHECKOUT_ERROR_TITLE }
   }
 }

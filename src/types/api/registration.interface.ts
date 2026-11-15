@@ -34,7 +34,7 @@ export interface CreatedRegistration {
 export type RegistrationLookupInput = { cpf: string } | { whatsapp: string }
 
 export interface RegistrationLookupItem {
-  /** Referência opaca (não é o código) para pedir o comprovante. PROPOSTO ao backend (§16): ausente na API real hoje. */
+  /** Referência opaca (não é o código, vale 60 min) para pedir o comprovante ou pagar pela consulta. */
   referencia?: string
   nomeMascarado: string
   evento: string

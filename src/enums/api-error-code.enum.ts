@@ -24,6 +24,9 @@ export enum API_ERROR_CODE {
   EMPTY_CART = "CARRINHO_VAZIO",
   // Pagamento (Checkout Pro): proposto ao backend (§16); usado pelo mock.
   PAYMENT_UNAVAILABLE = "PAGAMENTO_INDISPONIVEL",
+  // Códigos reais do backend no checkout.
+  RESERVATION_EXPIRED = "RESERVA_EXPIRADA",
+  GATEWAY_UNAVAILABLE = "GATEWAY_INDISPONIVEL",
   // Gerados pelo BFF (não vêm da API).
   TIMEOUT = "TIMEOUT",
   UNAVAILABLE = "INDISPONIVEL",

@@ -1,6 +1,9 @@
 import "server-only"
 
+import { randomUUID } from "node:crypto"
+
 import type { CursorPage } from "@/types/api/cursor-page.interface"
+import type { ApiCheckout } from "@/types/api/registration-details.interface"
 import type { RegistrationReceipt, RegistrationReceiptInput } from "@/types/api/registration-receipt.interface"
 import type {
   CreatedRegistration,
@@ -26,7 +29,20 @@ export async function lookupRegistrations(
   return apiFetch("/inscricoes/consulta", { method: "POST", body: input, query: { cursor } })
 }
 
-/** `POST /inscricoes/comprovante` — referência da consulta + nascimento (contrato proposto, §16). */
+/** `POST /inscricoes/comprovante` — referência da consulta + nascimento (rate limit no backend). */
 export async function getRegistrationReceipt(input: RegistrationReceiptInput): Promise<RegistrationReceipt> {
   return apiFetch("/inscricoes/comprovante", { method: "POST", body: input })
+}
+
+/**
+ * `POST /inscricoes/comprovante/pagamento` — checkout sem o token da inscrição (outro aparelho): mesma
+ * referência + nascimento do comprovante. Idempotency-Key nova a cada clique; o backend reaproveita a
+ * cobrança ativa.
+ */
+export async function createReceiptCheckout(input: RegistrationReceiptInput): Promise<ApiCheckout> {
+  return apiFetch("/inscricoes/comprovante/pagamento", {
+    method: "POST",
+    body: input,
+    headers: { "Idempotency-Key": randomUUID() },
+  })
 }
