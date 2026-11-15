@@ -59,7 +59,7 @@ export function EventHero({ event, lowestPrice, soldOut, registrationHref }: Eve
               >
                 {event.nome}
               </h1>
-              <p className="max-w-xl text-base text-white/80 sm:text-lg">{event.descricao}</p>
+              {event.descricao && <p className="max-w-xl text-base text-white/80 sm:text-lg">{event.descricao}</p>}
             </div>
 
             <EventInfoList event={event} />

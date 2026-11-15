@@ -29,7 +29,7 @@ export function toAdminEventFormValues(event: AdminEvent): AdminEventFormInput {
   return {
     slug: event.slug,
     nome: event.nome,
-    descricao: event.descricao,
+    descricao: event.descricao ?? "",
     dataEvento: event.dataEvento,
     horarioLargada: event.horarioLargada,
     localNome: event.localNome,

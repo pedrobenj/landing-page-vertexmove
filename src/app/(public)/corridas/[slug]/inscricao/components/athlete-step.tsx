@@ -109,7 +109,7 @@ export function AthleteStep({ eventDate, defaultValues, identityConflict, onBack
           control={form.control}
           name="email"
           id="athlete-email"
-          label="E-mail (opcional)"
+          label="E-mail (obrigatório se não informar WhatsApp)"
           type="email"
           autoComplete="email"
         />

@@ -26,7 +26,7 @@ export function buildEventJsonLd(event: PublicEventDetail, { siteUrl, lowestPric
     "@context": "https://schema.org",
     "@type": "SportsEvent",
     name: event.nome,
-    description: event.descricao,
+    description: event.descricao ?? undefined,
     url,
     startDate: buildStartDate(event.dataEvento, event.horarioLargada),
     eventStatus: "https://schema.org/EventScheduled",

@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: PageProps<"/corridas/[slug]">
     return { title: "Corrida" }
   }
 
-  const description = truncateText(event.descricao, META_DESCRIPTION_MAX_LENGTH)
+  const description = event.descricao ? truncateText(event.descricao, META_DESCRIPTION_MAX_LENGTH) : undefined
   return {
     title: event.nome,
     description,

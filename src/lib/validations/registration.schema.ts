@@ -116,6 +116,12 @@ export function createAthleteStepSchema(eventDate: string) {
       path: ["cpf"],
       when: hasStringFields("cpf", "whatsapp"),
     })
+    // Regra da API: só com CPF (sem WhatsApp), o e-mail é o canal de contato e passa a ser obrigatório.
+    .refine((value) => onlyDigits(value.cpf) === "" || onlyDigits(value.whatsapp) !== "" || value.email !== "", {
+      message: "Informe o e-mail (ou o WhatsApp) para recebermos a confirmação",
+      path: ["email"],
+      when: hasStringFields("cpf", "whatsapp", "email"),
+    })
     .refine((value) => value.responsavelLegal === true || !isMinorOnDate(value.dataNascimento, eventDate), {
       message: "Confirme que você é o responsável legal ou tem autorização dele",
       path: ["responsavelLegal"],
@@ -165,10 +171,14 @@ export const createRegistrationInputSchema = z
       .regex(/^\+55\d{10,11}$/)
       .optional(),
     email: z.email().max(254).optional(),
-    documentosAceitos: z.array(positiveId).max(20),
+    documentosAceitos: z.array(positiveId).min(1).max(10),
   })
   .strict()
   .refine((input) => input.cpf !== undefined || input.whatsapp !== undefined, {
     message: "Informe o CPF ou o WhatsApp",
     path: ["cpf"],
+  })
+  .refine((input) => input.cpf === undefined || input.whatsapp !== undefined || input.email !== undefined, {
+    message: "Informe o e-mail quando houver só CPF",
+    path: ["email"],
   })

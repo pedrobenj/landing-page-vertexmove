@@ -14,7 +14,7 @@ export interface EventLocation {
 export interface PublicEvent {
   slug: string
   nome: string
-  descricao: string
+  descricao: string | null
   dataEvento: string // YYYY-MM-DD
   horarioLargada: string // HH:mm
   localizacao: EventLocation

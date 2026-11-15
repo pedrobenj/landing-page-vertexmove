@@ -85,6 +85,11 @@ describe("athleteStepSchema", () => {
     expect(athleteStepSchema.safeParse({ ...valid, whatsapp: "" }).success).toBe(true)
   })
 
+  it("exige e-mail quando há só CPF (regra da API)", () => {
+    const result = athleteStepSchema.safeParse({ ...valid, whatsapp: "", email: "" })
+    expect(messagesOf(result)).toEqual(["email: Informe o e-mail (ou o WhatsApp) para recebermos a confirmação"])
+  })
+
   it("exige pelo menos um entre CPF e WhatsApp", () => {
     const result = athleteStepSchema.safeParse({ ...valid, cpf: "", whatsapp: "" })
     expect(messagesOf(result)).toEqual(["cpf: Informe o CPF ou o WhatsApp"])
