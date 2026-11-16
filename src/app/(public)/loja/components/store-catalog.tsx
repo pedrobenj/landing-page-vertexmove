@@ -14,6 +14,8 @@ import type { StoreProduct } from "@/types/store-product.interface"
 import { ProductSection } from "./product-section"
 import { StoreSectionNav } from "./store-section-nav"
 
+const PRODUCT_TYPES = Object.values(PRODUCT_TYPE)
+
 interface StoreCatalogProps {
   searchParams: PageProps<"/loja">["searchParams"]
 }
@@ -36,13 +38,14 @@ export async function StoreCatalog({ searchParams }: StoreCatalogProps) {
     return <EmptyState icon={ShoppingBag} title="Nenhum produto disponível no momento." description="Volte em breve!" />
   }
 
-  const showShirts = activeType === null || activeType === PRODUCT_TYPE.SHIRT
-  const shirts = showShirts ? products.filter((product) => product.type === PRODUCT_TYPE.SHIRT) : []
+  const sections = PRODUCT_TYPES.filter((type) => activeType === null || activeType === type)
+    .map((type) => ({ type, products: products.filter((product) => product.type === type) }))
+    .filter((section) => section.products.length > 0)
 
   return (
     <div className="flex flex-col gap-10">
       <StoreSectionNav activeType={activeType} />
-      {shirts.length === 0 && (
+      {sections.length === 0 && (
         <EmptyState
           icon={SearchX}
           title="Nenhum produto nesta categoria no momento."
@@ -53,13 +56,14 @@ export async function StoreCatalog({ searchParams }: StoreCatalogProps) {
           }
         />
       )}
-      {shirts.length > 0 && (
+      {sections.map(({ type, products: sectionProducts }) => (
         <ProductSection
-          id={PRODUCT_TYPE_SECTION[PRODUCT_TYPE.SHIRT].anchor}
-          title={PRODUCT_TYPE_SECTION[PRODUCT_TYPE.SHIRT].title}
-          products={shirts}
+          key={type}
+          id={PRODUCT_TYPE_SECTION[type].anchor}
+          title={PRODUCT_TYPE_SECTION[type].title}
+          products={sectionProducts}
         />
-      )}
+      ))}
     </div>
   )
 }

@@ -16,8 +16,8 @@ test.describe("Loja", () => {
   test("catálogo lista as camisas e esconde produtos inativos", async ({ page }) => {
     await page.goto("/loja")
     const shirts = page.getByRole("region", { name: "Camisas", exact: true })
-    await expect(shirts.getByRole("listitem").filter({ hasNotText: E2E_PRODUCT })).toHaveCount(3)
-    for (const name of ["Camisa Oficial Vertex 2026", "Camisa Treino Dry-Fit", "Regata Vertex Run"]) {
+    await expect(shirts.getByRole("listitem").filter({ hasNotText: E2E_PRODUCT })).toHaveCount(4)
+    for (const name of ["Camisa Oficial Vertex 2026", "Camisa Baby Look Vertex 2026", "Camisa Treino Dry-Fit", "Regata Vertex Run"]) {
       await expect(shirts.getByRole("listitem").filter({ hasText: name })).toHaveCount(1)
     }
     await expect(page.getByText(/medalha/i)).toHaveCount(0)

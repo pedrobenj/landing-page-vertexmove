@@ -9,12 +9,16 @@ describe("store filter", () => {
     expect(STORE_FILTER_OPTIONS.map((option) => [option.label, option.href])).toEqual([
       ["Todos", "/loja"],
       ["Camisas", "/loja?tipo=camisas"],
+      ["Viseiras", "/loja?tipo=viseiras"],
+      ["Acessórios", "/loja?tipo=acessorios"],
     ])
   })
 
   it("lê o tipo da query", () => {
     expect(parseStoreFilter("camisas")).toBe(PRODUCT_TYPE.SHIRT)
     expect(parseStoreFilter(["camisas", "viseiras"])).toBe(PRODUCT_TYPE.SHIRT)
+    expect(parseStoreFilter("viseiras")).toBe(PRODUCT_TYPE.VISOR)
+    expect(parseStoreFilter("acessorios")).toBe(PRODUCT_TYPE.ACCESSORY)
   })
 
   it("ausente ou desconhecido = todos", () => {
