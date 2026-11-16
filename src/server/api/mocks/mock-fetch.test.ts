@@ -155,14 +155,14 @@ describe("mockFetch", () => {
       for (const slug of ["corrida-de-natal-vertex-2026", "corrida-vertex-beira-mar-2025", "nao-existe"]) {
         const res = await call("GET", `/eventos/${slug}`)
         expect(res.status).toBe(404)
-        expect(await errorCode(res)).toBe("NAO_ENCONTRADO")
+        expect(await errorCode(res)).toBe("RECURSO_NAO_ENCONTRADO")
       }
     })
 
-    it("responde 404 NAO_ENCONTRADO para rota desconhecida", async () => {
+    it("responde 404 RECURSO_NAO_ENCONTRADO para rota desconhecida", async () => {
       const res = await call("GET", "/rota-que-nao-existe")
       expect(res.status).toBe(404)
-      expect(await errorCode(res)).toBe("NAO_ENCONTRADO")
+      expect(await errorCode(res)).toBe("RECURSO_NAO_ENCONTRADO")
     })
   })
 
@@ -275,7 +275,7 @@ describe("mockFetch", () => {
         }),
       })
       expect(res.status).toBe(409)
-      expect(await errorCode(res)).toBe("DISTANCIA_ESGOTADA")
+      expect(await errorCode(res)).toBe("VAGA_ESGOTADA")
     })
   })
 
@@ -461,7 +461,7 @@ describe("mockFetch", () => {
       ]) {
         const res = await call("POST", "/inscricoes/comprovante", { body })
         expect(res.status).toBe(404)
-        expect(await errorCode(res)).toBe("NAO_ENCONTRADO")
+        expect(await errorCode(res)).toBe("RECURSO_NAO_ENCONTRADO")
       }
     })
 
@@ -577,12 +577,12 @@ describe("mockFetch", () => {
       expect(event.endereco).toBe("Av. Almirante Tamandaré, s/n")
     })
 
-    it("recusa transição inválida com 422 e grava auditoria na válida", async () => {
+    it("recusa transição inválida com 409 e grava auditoria na válida", async () => {
       const auth = await bearer()
 
       const invalid = await call("POST", "/admin/eventos/4/encerrar", { headers: auth })
-      expect(invalid.status).toBe(422)
-      expect(await errorCode(invalid)).toBe("TRANSICAO_INVALIDA")
+      expect(invalid.status).toBe(409)
+      expect(await errorCode(invalid)).toBe("CONFLITO_DE_ESTADO")
 
       const publish = await call("POST", "/admin/eventos/4/publicar", { headers: auth })
       expect(publish.status).toBe(204)

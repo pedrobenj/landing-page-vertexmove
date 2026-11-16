@@ -14,10 +14,17 @@ const MESSAGES: Partial<Record<string, string>> = {
   [API_ERROR_CODE.DOCUMENT_ACCEPTANCE_REQUIRED]: "Aceite o regulamento e o termo de responsabilidade para continuar.",
   [API_ERROR_CODE.INVALID_DATA]: "Confira os dados informados e tente novamente.",
   [API_ERROR_CODE.DUPLICATE_SLUG]: "Já existe um evento com este endereço (slug).",
-  // CODIGO_DUPLICADO: código presumido, confirmar com o backend (§16).
-  [API_ERROR_CODE.DUPLICATE_SHIRT_SIZE]: "Já existe um tamanho com este código.",
-  [API_ERROR_CODE.INVALID_TRANSITION]: "Esta ação não é permitida no status atual do evento.",
+  [API_ERROR_CODE.STATE_CONFLICT]:
+    "Não foi possível salvar: a ação não é permitida no status atual ou já existe um item com esse nome ou código. Recarregue a página e confira.",
   [API_ERROR_CODE.SOLD_OUT]: "As vagas desta distância esgotaram.",
+  [API_ERROR_CODE.EVENT_UNAVAILABLE]: "Esta corrida, distância ou kit não está mais disponível para inscrição.",
+  [API_ERROR_CODE.TIER_UNAVAILABLE]: "Não há lote de preço aberto para esta distância no momento.",
+  [API_ERROR_CODE.DOCUMENT_VERSION_INVALID]:
+    "O regulamento ou o termo foi atualizado. Leia e aceite a versão nova para continuar.",
+  [API_ERROR_CODE.CAPACITY_BELOW_OCCUPANCY]: "A capacidade não pode ficar abaixo do número de inscritos.",
+  [API_ERROR_CODE.RATE_LIMITED]: "Muitas tentativas. Aguarde alguns minutos e tente de novo.",
+  [API_ERROR_CODE.SYSTEM_BUSY]: "O sistema está ocupado. Tente novamente em instantes.",
+  [API_ERROR_CODE.SERVICE_UNAVAILABLE]: "Serviço indisponível no momento. Tente em alguns minutos.",
   [API_ERROR_CODE.TIMEOUT]: "A conexão demorou demais. Tente novamente.",
   [API_ERROR_CODE.UNAVAILABLE]: "Serviço indisponível no momento. Tente em alguns minutos.",
   [API_ERROR_CODE.STORE_UNAVAILABLE]: "A loja estará disponível em breve.",

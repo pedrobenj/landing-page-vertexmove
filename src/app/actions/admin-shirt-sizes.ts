@@ -14,10 +14,15 @@ import type { HttpResponse } from "@/types/http-response.interface"
 const SHIRT_SIZE_ERROR_TITLE = "Não foi possível salvar o tamanho"
 
 /**
- * Código duplicado (409) aponta para o campo `codigo`. O `codigo` exato do erro é a confirmar com o
- * backend (§16): o mock não valida duplicidade; `CODIGO_DUPLICADO` é o nome presumido.
+ * Código repetido: o backend devolve `409 CONFLITO_DE_ESTADO` (`uq_tamanho_camisa_codigo`, a única
+ * constraint da tabela). Aponta para o campo `codigo`, com mensagem própria.
  */
-const SHIRT_SIZE_FIELD_BY_CODE = { [API_ERROR_CODE.DUPLICATE_SHIRT_SIZE]: "codigo" }
+const SHIRT_SIZE_FIELD_BY_CODE = { [API_ERROR_CODE.STATE_CONFLICT]: "codigo" }
+const DUPLICATE_CODE_MESSAGE = "Já existe um tamanho com este código."
+
+function withDuplicateCodeMessage(response: HttpResponse<never>): HttpResponse<never> {
+  return response.code === API_ERROR_CODE.STATE_CONFLICT ? { ...response, error: DUPLICATE_CODE_MESSAGE } : response
+}
 
 /*
  * Catálogo global: os tamanhos aparecem em todas as páginas de corrida, então as mutações revalidam a
@@ -37,7 +42,7 @@ export async function createShirtSizeAction(input: ShirtSizeFormInput): Promise<
     revalidateEventTags()
     return { status: 201, data, title: "Tamanho cadastrado" }
   } catch (error) {
-    return toErrorResponse(error, { title: SHIRT_SIZE_ERROR_TITLE, context: "createShirtSizeAction", fieldByCode: SHIRT_SIZE_FIELD_BY_CODE })
+    return withDuplicateCodeMessage(toErrorResponse(error, { title: SHIRT_SIZE_ERROR_TITLE, context: "createShirtSizeAction", fieldByCode: SHIRT_SIZE_FIELD_BY_CODE }))
   }
 }
 
@@ -56,6 +61,6 @@ export async function updateShirtSizeAction(id: number, input: ShirtSizeFormInpu
     revalidateEventTags()
     return { status: 200, data, title: "Tamanho atualizado" }
   } catch (error) {
-    return toErrorResponse(error, { title: SHIRT_SIZE_ERROR_TITLE, context: "updateShirtSizeAction", fieldByCode: SHIRT_SIZE_FIELD_BY_CODE })
+    return withDuplicateCodeMessage(toErrorResponse(error, { title: SHIRT_SIZE_ERROR_TITLE, context: "updateShirtSizeAction", fieldByCode: SHIRT_SIZE_FIELD_BY_CODE }))
   }
 }

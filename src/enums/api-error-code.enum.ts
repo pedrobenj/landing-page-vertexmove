@@ -7,14 +7,19 @@ export enum API_ERROR_CODE {
   CONFLICTING_IDENTITIES = "IDENTIDADES_CONFLITANTES",
   DOCUMENT_ACCEPTANCE_REQUIRED = "DOCUMENTO_ACEITE_OBRIGATORIO",
   INVALID_DATA = "DADO_INVALIDO",
-  // Usados pelo mock (Task 4); confirmar os literais com o backend.
-  NOT_FOUND = "NAO_ENCONTRADO",
+  NOT_FOUND = "RECURSO_NAO_ENCONTRADO",
   // Código do backend (`uq_evento_slug` → `postgres-error.mapper.ts`).
   DUPLICATE_SLUG = "EVENTO_SLUG_EM_USO",
-  INVALID_TRANSITION = "TRANSICAO_INVALIDA",
-  SOLD_OUT = "DISTANCIA_ESGOTADA",
-  // Presumido (o mock não valida duplicidade de tamanho); confirmar com o backend.
-  DUPLICATE_SHIRT_SIZE = "CODIGO_DUPLICADO",
+  // 409 genérico do backend: transição de status inválida ou nome/código repetido (constraint única).
+  STATE_CONFLICT = "CONFLITO_DE_ESTADO",
+  SOLD_OUT = "VAGA_ESGOTADA",
+  EVENT_UNAVAILABLE = "EVENTO_NAO_DISPONIVEL",
+  TIER_UNAVAILABLE = "LOTE_INDISPONIVEL",
+  DOCUMENT_VERSION_INVALID = "DOCUMENTO_VERSAO_INVALIDA",
+  CAPACITY_BELOW_OCCUPANCY = "CAPACIDADE_INSUFICIENTE",
+  RATE_LIMITED = "LIMITE_EXCEDIDO",
+  SYSTEM_BUSY = "SISTEMA_OCUPADO",
+  SERVICE_UNAVAILABLE = "SERVICO_INDISPONIVEL",
   // Loja: o backend ainda não tem a loja (§16); usados pelo mock da Task 20. Confirmar quando a API existir.
   PRODUCT_DUPLICATE_SLUG = "PRODUTO_SLUG_DUPLICADO",
   DUPLICATE_VARIANT_LABEL = "TAMANHO_DUPLICADO",

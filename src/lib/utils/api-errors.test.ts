@@ -14,6 +14,14 @@ describe("getApiErrorMessage", () => {
     )
   })
 
+  it("mapeia os literais reais do backend (error-codes.ts), não só os do mock", () => {
+    expect(getApiErrorMessage("VAGA_ESGOTADA")).toBe("As vagas desta distância esgotaram.")
+    expect(getApiErrorMessage("LOTE_INDISPONIVEL")).toBe("Não há lote de preço aberto para esta distância no momento.")
+    expect(getApiErrorMessage("RECURSO_NAO_ENCONTRADO")).toBe("Não encontramos o que você procurava.")
+    expect(getApiErrorMessage("LIMITE_EXCEDIDO")).toBe("Muitas tentativas. Aguarde alguns minutos e tente de novo.")
+    expect(getApiErrorMessage("CONFLITO_DE_ESTADO")).toMatch(/não é permitida no status atual/)
+  })
+
   it("mapeia os códigos internos do BFF", () => {
     expect(getApiErrorMessage("TIMEOUT")).toBe("A conexão demorou demais. Tente novamente.")
     expect(getApiErrorMessage("INDISPONIVEL")).toBe("Serviço indisponível no momento. Tente em alguns minutos.")

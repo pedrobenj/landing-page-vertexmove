@@ -56,8 +56,8 @@ describe("endpoints da loja", () => {
     expect(products.every((product) => product.isActive)).toBe(true)
   })
 
-  it("produto inexistente → 404 NAO_ENCONTRADO", async () => {
-    expect(await catchError(store.getStoreProduct("nao-existe"))).toMatchObject({ status: 404, codigo: "NAO_ENCONTRADO" })
+  it("produto inexistente → 404 RECURSO_NAO_ENCONTRADO", async () => {
+    expect(await catchError(store.getStoreProduct("nao-existe"))).toMatchObject({ status: 404, codigo: "RECURSO_NAO_ENCONTRADO" })
   })
 
   it("cria o pedido e devolve o resumo sem dados sensíveis", async () => {
@@ -91,7 +91,7 @@ describe("endpoints da loja", () => {
     expect(await catchError(store.saveAdminProduct(newProduct()))).toMatchObject({ status: 409, codigo: "PRODUTO_SLUG_DUPLICADO" })
     expect(await catchError(store.saveAdminProduct(newProduct({ slug: "x" }), "nao-existe"))).toMatchObject({
       status: 404,
-      codigo: "NAO_ENCONTRADO",
+      codigo: "RECURSO_NAO_ENCONTRADO",
     })
   })
 })

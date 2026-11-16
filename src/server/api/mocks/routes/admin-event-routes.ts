@@ -117,7 +117,7 @@ export const adminEventRoutes: MockRoute[] = [
 
       const transition = TRANSITIONS[action]
       if (!transition.from.includes(event.status)) {
-        return apiError(422, API_ERROR_CODE.INVALID_TRANSITION, `Não é possível ${action} um evento com status ${event.status}.`)
+        return apiError(409, API_ERROR_CODE.STATE_CONFLICT, `Não é possível ${action} um evento com status ${event.status}.`)
       }
       event.status = transition.to
       recordAudit(admin, { acao: transition.audit, entidade: "evento", entidadeId: event.id })

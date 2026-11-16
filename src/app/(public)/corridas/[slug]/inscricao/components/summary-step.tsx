@@ -112,12 +112,15 @@ export function SummaryStep({
           onIdentityConflict()
           return
         case API_ERROR_CODE.DOCUMENT_ACCEPTANCE_REQUIRED:
+        case API_ERROR_CODE.DOCUMENT_VERSION_INVALID:
           // Documento com versão nova: busca as versões vigentes e pede o aceite de novo (desmarcado).
           toast.error(title, { description: response.error })
           router.refresh()
           onDocumentsOutdated()
           return
         case API_ERROR_CODE.SOLD_OUT:
+        case API_ERROR_CODE.TIER_UNAVAILABLE:
+        case API_ERROR_CODE.EVENT_UNAVAILABLE:
           toast.error(title, { description: response.error })
           router.refresh()
           onEdit(REGISTRATION_STEP.DISTANCE)

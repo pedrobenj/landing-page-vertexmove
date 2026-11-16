@@ -167,7 +167,7 @@ describe("admin events actions", () => {
     })
 
     it("404 da API → 404 sem revalidar", async () => {
-      mocks.getAdminEvent.mockRejectedValue(new ApiError(404, "NAO_ENCONTRADO", "Evento não encontrado(a)."))
+      mocks.getAdminEvent.mockRejectedValue(new ApiError(404, "RECURSO_NAO_ENCONTRADO", "Evento não encontrado(a)."))
       const response = await updateAdminEventAction(99, form)
       expect(response.status).toBe(404)
       expect(mocks.updateTag).not.toHaveBeenCalled()
@@ -202,13 +202,13 @@ describe("admin events actions", () => {
       expect(mocks.runEventAction).not.toHaveBeenCalled()
     })
 
-    it("transição inválida → 422 com a mensagem amigável", async () => {
+    it("transição inválida (409 CONFLITO_DE_ESTADO) → mensagem amigável", async () => {
       mocks.getAdminEvent.mockResolvedValue({ id: 1, slug: "corrida-x" })
       mocks.runEventAction.mockRejectedValue(
-        new ApiError(422, "TRANSICAO_INVALIDA", "Não é possível publicar um evento com status publicado."),
+        new ApiError(409, "CONFLITO_DE_ESTADO", "A operação conflita com o estado atual do recurso."),
       )
       const response = await runEventActionAction(1, EVENT_ACTION.PUBLISH)
-      expect(response).toMatchObject({ status: 422, error: "Esta ação não é permitida no status atual do evento." })
+      expect(response).toMatchObject({ status: 409, error: expect.stringContaining("não é permitida no status atual") })
       expect(response.field).toBeUndefined()
     })
   })

@@ -62,7 +62,7 @@ describe("endpoints de eventos (contra o mock)", () => {
 
     expect(error).toBeInstanceOf(ApiError)
     expect(isApiError(error)).toBe(true)
-    expect(error).toMatchObject({ status: 404, codigo: "NAO_ENCONTRADO" })
+    expect(error).toMatchObject({ status: 404, codigo: "RECURSO_NAO_ENCONTRADO" })
     expect(cache.cacheLife).toHaveBeenCalledWith({ stale: 60, revalidate: 60, expire: 300 })
   })
 
@@ -73,7 +73,7 @@ describe("endpoints de eventos (contra o mock)", () => {
   })
 
   it("trata 404 das rotas propostas como lista vazia", async () => {
-    override.transport = respondWith(404, "NAO_ENCONTRADO")
+    override.transport = respondWith(404, "RECURSO_NAO_ENCONTRADO")
 
     expect(await listPastEvents()).toEqual({ items: [], nextCursor: null })
     expect(await listPartnerRaces()).toEqual([])

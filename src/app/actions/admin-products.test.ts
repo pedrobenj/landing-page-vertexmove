@@ -91,10 +91,10 @@ describe("saveProductAction", () => {
     expect(response).toMatchObject({ status: 503, code: "LOJA_INDISPONIVEL", error: "A loja estará disponível em breve." })
   })
 
-  it("produto inexistente (404) → NAO_ENCONTRADO", async () => {
-    mocks.saveAdminProduct.mockRejectedValue(new ApiError(404, "NAO_ENCONTRADO", "Produto não encontrado"))
+  it("produto inexistente (404) → RECURSO_NAO_ENCONTRADO", async () => {
+    mocks.saveAdminProduct.mockRejectedValue(new ApiError(404, "RECURSO_NAO_ENCONTRADO", "Produto não encontrado"))
     const response = await saveProductAction(input, "nao-existe")
-    expect(response).toMatchObject({ status: 404, code: "NAO_ENCONTRADO" })
+    expect(response).toMatchObject({ status: 404, code: "RECURSO_NAO_ENCONTRADO" })
   })
 
   it("erro inesperado → 500", async () => {

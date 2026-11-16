@@ -70,7 +70,7 @@ describe("documentos e tamanhos de camisa", () => {
 
   it("código duplicado (409) aponta para o campo codigo", async () => {
     const { ApiError } = await import("@/server/api/api-error")
-    mocks.createShirtSize.mockRejectedValue(new ApiError(409, "CODIGO_DUPLICADO", "duplicado"))
+    mocks.createShirtSize.mockRejectedValue(new ApiError(409, "CONFLITO_DE_ESTADO", "duplicado"))
     const response = await createShirtSizeAction({ codigo: "GG", descricao: "", ordem: "1", ativo: true })
     expect(response).toMatchObject({ status: 409, field: "codigo", error: "Já existe um tamanho com este código." })
   })
