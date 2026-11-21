@@ -17,6 +17,7 @@ export const queryKeys = {
     documents: (eventId: number) => [...queryKeys.admin.all, "documents", eventId] as const,
     shirtSizes: () => [...queryKeys.admin.all, "shirt-sizes"] as const,
     audit: (cursor: string | null) => [...queryKeys.admin.all, "audit", cursor] as const,
+    storeOrders: (filters: { status: string; cursor: string | null }) => [...queryKeys.admin.all, "store-orders", filters] as const,
   },
   registrations: {
     all: ["registrations"] as const,

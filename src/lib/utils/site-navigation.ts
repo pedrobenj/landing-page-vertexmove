@@ -25,4 +25,5 @@ export const ADMIN_PANEL_NAV_ITEMS: readonly NavItem[] = [
   { label: "Tamanhos de camisa", href: "/admin/tamanhos-camisa" },
   { label: "Auditoria", href: "/admin/auditoria" },
   { label: "Loja", href: "/admin/loja/produtos" },
+  { label: "Pedidos", href: "/admin/loja/pedidos" },
 ]

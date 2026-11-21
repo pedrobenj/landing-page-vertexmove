@@ -43,7 +43,8 @@ export function isStoreEnabled(): boolean {
   return env.STORE_ENABLED
 }
 
-function ensureStoreEnabled(): void {
+/** `503 LOJA_INDISPONIVEL` com a loja desligada (as páginas mostram "Loja em breve"). */
+export function ensureStoreEnabled(): void {
   if (!isStoreEnabled()) throw new ApiError(503, API_ERROR_CODE.STORE_UNAVAILABLE, "Loja em breve")
 }
 

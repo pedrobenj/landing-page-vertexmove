@@ -4,6 +4,8 @@ import { EVENT_STATUS } from "@/enums/event-status.enum"
 import { REGISTRATION_STATUS } from "@/enums/registration-status.enum"
 
 import {
+  getOrderStatusBadgeClass,
+  getOrderStatusLabel,
   getAdminRoleLabel,
   getEventStatusBadgeClass,
   getEventStatusLabel,
@@ -59,5 +61,13 @@ describe("status-labels", () => {
 
   it("traduz estornada", () => {
     expect(getRegistrationStatusLabel(REGISTRATION_STATUS.REFUNDED)).toBe("Estornada")
+  })
+
+  it("rotula os status do pedido da loja (literais do backend)", () => {
+    expect(getOrderStatusLabel("pronto_retirada")).toBe("Pronto para retirada")
+    expect(getOrderStatusLabel("pago")).toBe("Pago")
+    expect(getOrderStatusBadgeClass("pago")).toBe("bg-cta text-cta-foreground")
+    expect(getOrderStatusLabel("novo")).toBe("novo")
+    expect(getOrderStatusBadgeClass("novo")).toBe("bg-muted text-muted-foreground")
   })
 })

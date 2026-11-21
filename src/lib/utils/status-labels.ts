@@ -1,5 +1,6 @@
 import { ADMIN_ROLE } from "@/enums/admin-role.enum"
 import { EVENT_STATUS } from "@/enums/event-status.enum"
+import { ORDER_STATUS, ORDER_STATUS_LABEL } from "@/enums/order-status.enum"
 import { REGISTRATION_STATUS } from "@/enums/registration-status.enum"
 
 const FALLBACK_BADGE = "bg-muted text-muted-foreground"
@@ -56,6 +57,25 @@ export function getRegistrationStatusLabel(status: REGISTRATION_STATUS | string)
 
 export function getRegistrationStatusBadgeClass(status: REGISTRATION_STATUS | string): string {
   return lookup(REGISTRATION_STATUS_BADGES, status) ?? FALLBACK_BADGE
+}
+
+const ORDER_STATUS_BADGES: Record<ORDER_STATUS, string> = {
+  [ORDER_STATUS.PENDING]: "bg-secondary text-secondary-foreground",
+  [ORDER_STATUS.PAID]: "bg-cta text-cta-foreground",
+  [ORDER_STATUS.READY_FOR_PICKUP]: "bg-primary text-primary-foreground",
+  [ORDER_STATUS.PICKED_UP]: "bg-muted text-foreground",
+  [ORDER_STATUS.CANCELLED]: "bg-destructive/10 text-destructive",
+  [ORDER_STATUS.EXPIRED]: "bg-muted text-muted-foreground",
+  [ORDER_STATUS.REFUNDED]: "bg-muted text-muted-foreground",
+}
+
+/** Status do pedido da loja (aceita `string`: status novos do backend caem no fallback). */
+export function getOrderStatusLabel(status: ORDER_STATUS | string): string {
+  return lookup(ORDER_STATUS_LABEL, status) ?? status
+}
+
+export function getOrderStatusBadgeClass(status: ORDER_STATUS | string): string {
+  return lookup(ORDER_STATUS_BADGES, status) ?? FALLBACK_BADGE
 }
 
 const ADMIN_ROLE_LABELS: Record<ADMIN_ROLE, string> = {
