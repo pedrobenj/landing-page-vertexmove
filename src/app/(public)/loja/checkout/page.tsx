@@ -18,7 +18,7 @@ export default function CheckoutPage() {
         title="Finalizar compra"
         description="Informe seus dados para reservar os itens. O estoque fica reservado por 30 minutos."
       />
-      {/* Sem backend da loja: avisa já, mesmo com o carrinho vazio (sem itens o client não consulta nada). */}
+      {/* Loja desligada (`STORE_ENABLED=false`): avisa já, mesmo com o carrinho vazio (sem itens o client não consulta nada). */}
       {isStoreEnabled() ? <CheckoutView /> : <StoreUnavailable />}
     </SectionBand>
   )

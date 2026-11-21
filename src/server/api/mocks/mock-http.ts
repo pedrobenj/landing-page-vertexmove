@@ -35,8 +35,8 @@ export function noContent(headers?: Headers): Response {
   return new Response(null, { status: 204, headers })
 }
 
-export function apiError(status: number, codigo: string, mensagem: string): Response {
-  const body: ApiErrorBody = { error: { codigo, mensagem } }
+export function apiError(status: number, codigo: string, mensagem: string, dados?: Record<string, unknown>): Response {
+  const body: ApiErrorBody = { error: { codigo, mensagem, ...(dados ? { dados } : {}) } }
   return json(status, body)
 }
 

@@ -8,6 +8,8 @@ export class ApiError extends Error {
     readonly mensagem: string,
     /** Primeiro campo de `detalhes` num 422 do backend (ex.: `endereco`). */
     readonly campo?: string,
+    /** `error.dados` do backend (ex.: o carrinho recalculado do `409 CARRINHO_ALTERADO`). */
+    readonly dados?: Readonly<Record<string, unknown>>,
   ) {
     super(`${status} ${codigo}: ${mensagem}`)
   }

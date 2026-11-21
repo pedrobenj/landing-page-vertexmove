@@ -11,6 +11,8 @@ const serverEnvSchema = z.object({
   API_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
   /** Responde as chamadas à API com dados fictícios (sem backend). Somente fora de produção. */
   USE_MOCK_API: z.stringbool().default(false),
+  /** Loja ligada (API real ou mock). `false` mostra "A loja estará disponível em breve." até o lançamento. */
+  STORE_ENABLED: z.stringbool().default(true),
   /**
    * Hosts das imagens remotas (capas, fotos de kit, logos), separados por vírgula. Lido pelo
    * `next.config.ts` (images.remotePatterns, só https) no build; validado aqui para falhar cedo.

@@ -1,6 +1,6 @@
 import { API_ERROR_CODE } from "@/enums/api-error-code.enum"
 
-/** Erros do repositório mock da loja. O `mock-store-api` os converte em `ApiError` (como a API faria). */
+/** Erros do repositório mock da loja. As rotas do mock os convertem na resposta de erro da API. */
 export class DuplicateSlugError extends Error {
   constructor() {
     super("Já existe um produto com esse slug")
@@ -37,7 +37,7 @@ export class ProductNotFoundError extends Error {
 }
 
 /**
- * Nomes dos erros de conflito (409) do `saveProduct`. Compara-se pelo `name` e não com `instanceof`:
+ * Nomes dos erros de conflito do `saveProduct`. Compara-se pelo `name` e não com `instanceof`:
  * o repositório mock vive em `globalThis` e sobrevive ao HMR com as classes antigas.
  */
 export const STORE_CONFLICT_ERROR_NAMES = [
@@ -53,10 +53,13 @@ export function isStoreConflictErrorName(name: string): name is StoreConflictErr
   return (STORE_CONFLICT_ERROR_NAMES as readonly string[]).includes(name)
 }
 
-/** Conflito do repositório → `error.codigo` da resposta 409 (literais a confirmar quando a API da loja existir). */
-export const STORE_CONFLICT_ERROR_CODES: Record<StoreConflictErrorName, API_ERROR_CODE> = {
-  DuplicateSlugError: API_ERROR_CODE.PRODUCT_DUPLICATE_SLUG,
-  DuplicateVariantLabelError: API_ERROR_CODE.DUPLICATE_VARIANT_LABEL,
-  StockChangedError: API_ERROR_CODE.STOCK_CHANGED,
-  VariantNotOwnedError: API_ERROR_CODE.VARIANT_NOT_OWNED,
+/**
+ * Conflito do repositório → status e `error.codigo` do backend (`error-codes.ts` e `postgres-error.mapper.ts`):
+ * rótulo repetido no mesmo produto cai na constraint `uq_produto_variante_rotulo` → `409 CONFLITO_DE_ESTADO`.
+ */
+export const STORE_CONFLICT_ERRORS: Record<StoreConflictErrorName, { status: number; codigo: API_ERROR_CODE }> = {
+  DuplicateSlugError: { status: 409, codigo: API_ERROR_CODE.PRODUCT_DUPLICATE_SLUG },
+  DuplicateVariantLabelError: { status: 409, codigo: API_ERROR_CODE.STATE_CONFLICT },
+  StockChangedError: { status: 409, codigo: API_ERROR_CODE.STOCK_CHANGED },
+  VariantNotOwnedError: { status: 422, codigo: API_ERROR_CODE.VARIANT_NOT_OWNED },
 }

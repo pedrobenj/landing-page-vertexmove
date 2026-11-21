@@ -2,7 +2,7 @@ import { QrCode } from "lucide-react"
 
 import { Chevron } from "@/components/brand"
 import { PillBadge } from "@/components/sections"
-import { ORDER_STATUS_LABEL } from "@/enums/order-status.enum"
+import { ORDER_STATUS, ORDER_STATUS_LABEL } from "@/enums/order-status.enum"
 import { formatCurrency, formatDateTime } from "@/lib/utils"
 import type { OrderSummary } from "@/types/order.interface"
 
@@ -26,7 +26,7 @@ export function OrderDetails({ order }: OrderDetailsProps) {
         <PillBadge tone="soft">{ORDER_STATUS_LABEL[order.status]}</PillBadge>
       </header>
 
-      {order.status === "PENDING" && (
+      {order.status === ORDER_STATUS.PENDING && (
         <section aria-labelledby="pix-title" className="flex flex-col items-center gap-3 rounded-2xl border border-dashed bg-slate-50 p-6 text-center">
           <QrCode className="size-10 text-muted-foreground" aria-hidden="true" />
           <h2 id="pix-title" className="font-heading font-black text-brand-navy-deep">Pagamento via Pix</h2>

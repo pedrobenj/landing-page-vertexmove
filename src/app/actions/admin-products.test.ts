@@ -62,11 +62,11 @@ describe("saveProductAction", () => {
   })
 
   it("slug duplicado (409) → erro no campo slug", async () => {
-    mocks.saveAdminProduct.mockRejectedValue(new ApiError(409, "PRODUTO_SLUG_DUPLICADO", "Já existe"))
+    mocks.saveAdminProduct.mockRejectedValue(new ApiError(409, "PRODUTO_SLUG_EM_USO", "Já existe"))
     const response = await saveProductAction(input)
     expect(response).toEqual({
       status: 409,
-      code: "PRODUTO_SLUG_DUPLICADO",
+      code: "PRODUTO_SLUG_EM_USO",
       error: "Já existe um produto com este endereço (slug).",
       title: "Não foi possível salvar o produto",
       field: "slug",

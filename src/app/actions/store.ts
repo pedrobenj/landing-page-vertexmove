@@ -8,6 +8,7 @@ import { invalidInputResponse } from "@/lib/utils/invalid-input-response"
 import { cartItemsSchema } from "@/lib/validations/cart.schema"
 import { checkoutSchema, type CheckoutInput } from "@/lib/validations/checkout.schema"
 import { createStoreOrder, priceCart } from "@/server/api/endpoints/store"
+import { saveStoreOrderAccess } from "@/server/api/store-order-access"
 import { toErrorResponse } from "@/server/api/to-error-response"
 import type { CartIssue, CartItem, PricedCart } from "@/types/cart.interface"
 import type { HttpResponse } from "@/types/http-response.interface"
@@ -28,7 +29,10 @@ export interface CheckoutResponseData {
   issues?: CartIssue[]
 }
 
-/** Cria o pedido pendente. O rate limit fica com o backend da loja (hoje, o mock não limita). */
+/**
+ * Cria o pedido pendente. O `accessToken` do pedido fica num cookie HttpOnly (`vm_pedido_<codigo>`):
+ * é a credencial para pagar e nunca vai ao navegador. O rate limit fica com o backend.
+ */
 export async function createOrderAction(input: CheckoutInput): Promise<HttpResponse<CheckoutResponseData>> {
   const parsed = checkoutSchema.safeParse(input)
   if (!parsed.success) return invalidInputResponse("Verifique seus dados", parsed.error.issues[0])
@@ -37,6 +41,7 @@ export async function createOrderAction(input: CheckoutInput): Promise<HttpRespo
     const result = await createStoreOrder(parsed.data)
 
     if (result.ok) {
+      await saveStoreOrderAccess(result.code, result.accessToken, result.expiresAt)
       // Estoque mudou: catálogo e páginas de produto.
       revalidatePath("/loja", "layout")
       return { status: 201, data: { code: result.code }, title: "Pedido criado!" }

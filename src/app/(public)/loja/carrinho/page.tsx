@@ -18,7 +18,7 @@ export default function CartPage() {
         title="Carrinho"
         description="Confira os itens antes de finalizar. Pagamento via Pix e retirada presencial."
       />
-      {/* Sem backend da loja: avisa já, mesmo com o carrinho vazio (sem itens o client não consulta nada). */}
+      {/* Loja desligada (`STORE_ENABLED=false`): avisa já, mesmo com o carrinho vazio (sem itens o client não consulta nada). */}
       {isStoreEnabled() ? <CartView /> : <StoreUnavailable />}
     </SectionBand>
   )

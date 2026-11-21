@@ -60,6 +60,7 @@ async function toApiError(res: Response): Promise<ApiError> {
     body?.error?.codigo ?? API_ERROR_CODE.UNKNOWN,
     body?.error?.mensagem ?? res.statusText,
     body?.error?.detalhes?.[0]?.campo,
+    body?.error?.dados,
   )
 }
 

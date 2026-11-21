@@ -119,6 +119,15 @@ describe("apiFetch", () => {
     expect(error).toMatchObject({ status: 422, codigo: "DADO_INVALIDO", campo: "endereco" })
   })
 
+  it("guarda `error.dados` (ex.: o carrinho do 409 CARRINHO_ALTERADO)", async () => {
+    const carrinho = { linhas: [], avisos: [], totalCentavos: 0, quantidadeItens: 0 }
+    transport.mockResolvedValue(jsonResponse(409, { error: { codigo: "CARRINHO_ALTERADO", mensagem: "mudou", dados: { carrinho } } }))
+
+    const error = await catchError(apiFetch("/loja/pedidos", { method: "POST", body: {} }))
+
+    expect(error).toMatchObject({ status: 409, codigo: "CARRINHO_ALTERADO", dados: { carrinho } })
+  })
+
   it("usa DESCONHECIDO quando o corpo de erro não é JSON", async () => {
     transport.mockResolvedValue(new Response("<html>Bad Gateway</html>", { status: 502, statusText: "Bad Gateway" }))
 

@@ -22,6 +22,15 @@ describe("getApiErrorMessage", () => {
     expect(getApiErrorMessage("CONFLITO_DE_ESTADO")).toMatch(/não é permitida no status atual/)
   })
 
+  it("mapeia os códigos da loja do backend (fase 10)", () => {
+    expect(getApiErrorMessage("PRODUTO_SLUG_EM_USO")).toBe("Já existe um produto com este endereço (slug).")
+    expect(getApiErrorMessage("CARRINHO_ALTERADO")).toBe("Seu carrinho mudou. Confira os itens.")
+    expect(getApiErrorMessage("CARRINHO_VAZIO")).toBe("Seu carrinho está vazio.")
+    expect(getApiErrorMessage("ESTOQUE_ALTERADO")).toMatch(/estoque mudou/)
+    expect(getApiErrorMessage("VARIANTE_DE_OUTRO_PRODUTO")).toMatch(/não pertence a este produto/)
+    expect(getApiErrorMessage("PEDIDO_EXPIRADO")).toMatch(/prazo para pagar este pedido acabou/)
+  })
+
   it("mapeia os códigos internos do BFF", () => {
     expect(getApiErrorMessage("TIMEOUT")).toBe("A conexão demorou demais. Tente novamente.")
     expect(getApiErrorMessage("INDISPONIVEL")).toBe("Serviço indisponível no momento. Tente em alguns minutos.")

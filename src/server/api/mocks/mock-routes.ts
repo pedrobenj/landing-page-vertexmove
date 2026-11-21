@@ -6,6 +6,7 @@ import { adminEventRoutes } from "./routes/admin-event-routes"
 import { authRoutes } from "./routes/auth-routes"
 import { publicRoutes } from "./routes/public-routes"
 import { registrationRoutes } from "./routes/registration-routes"
+import { storeRoutes } from "./routes/store-routes"
 
 /**
  * Tabela de rotas do mock, na ordem de prioridade: as rotas de catálogo vêm antes das ações
@@ -14,6 +15,7 @@ import { registrationRoutes } from "./routes/registration-routes"
 export const mockRoutes: MockRoute[] = [
   ...publicRoutes,
   ...registrationRoutes,
+  ...storeRoutes,
   ...authRoutes,
   ...adminCatalogRoutes,
   ...adminEventRoutes,

@@ -29,7 +29,7 @@ export function usePricedCart() {
     staleTime: 0,
     // Mantém o carrinho anterior na tela enquanto recalcula (sem skeleton nem perda de foco a cada +/−).
     placeholderData: keepPreviousData,
-    // Loja sem backend: não adianta tentar de novo.
+    // Loja desligada: não adianta tentar de novo.
     retry: (failureCount, error) => !isStoreUnavailableError(error) && failureCount < 3,
   })
 

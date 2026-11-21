@@ -27,4 +27,6 @@ export interface OrderSummary {
  * Resultado do checkout da loja: pedido criado, ou carrinho alterado (preço/estoque mudou entre a
  * revisão e o envio) com o carrinho recalculado para a UI mostrar os avisos.
  */
-export type CreateStoreOrderResult = { ok: true; code: string } | { ok: false; cart: PricedCart }
+export type CreateStoreOrderResult =
+  | { ok: true; code: string; /** Só no servidor: vai para o cookie HttpOnly `vm_pedido_<codigo>`. */ accessToken: string; expiresAt: string }
+  | { ok: false; cart: PricedCart }

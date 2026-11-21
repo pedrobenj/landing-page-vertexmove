@@ -75,7 +75,7 @@ test.describe("Loja", () => {
     await page.getByLabel(/Li e aceito/).check()
     await page.getByRole("button", { name: "Ir para o pagamento" }).click()
 
-    await expect(page).toHaveURL(/\/pedido\/VTX-P-[2-9A-HJKMNP-Z]{5}-[2-9A-HJKMNP-Z]{5}$/, { timeout: 20_000 })
+    await expect(page).toHaveURL(/\/pedido\/VTX-P-[2-9A-HJ-NP-Z]{5}-[2-9A-HJ-NP-Z]{5}$/, { timeout: 20_000 })
     await expect(page.getByText("Pedido criado!")).toBeVisible()
     await expect(page.getByText("Aguardando pagamento")).toBeVisible()
     await expect(page.getByText("Olá, Maria!")).toBeVisible()

@@ -6,7 +6,7 @@ const valid = {
   name: "Camisa Oficial",
   slug: "camisa-oficial",
   description: "Camisa dry-fit oficial do Vertex.",
-  type: "SHIRT",
+  type: "camisa",
   price: "89,90",
   pickupInfo: "Retirada na sede, sábados 8h–12h",
   isActive: true,

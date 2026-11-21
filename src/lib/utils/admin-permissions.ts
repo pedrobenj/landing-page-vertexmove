@@ -17,7 +17,7 @@ export function canManageEvents(papel: ADMIN_ROLE | string): boolean {
 
 /**
  * Papéis que cadastram e alteram produtos da loja. Por ora, os mesmos que gerenciam corridas.
- * Matriz a confirmar (§16): a loja ainda não existe no backend.
+ * O backend tem papel único `admin` (ADR-008) e o `AdminAuthGuard` decide.
  */
 export function canManageStore(papel: ADMIN_ROLE | string): boolean {
   return canManageEvents(papel)

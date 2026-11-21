@@ -6,7 +6,7 @@ test.describe("Admin da loja", () => {
   // Login + action + navegação somam mais que os 30s padrão no dev server (o beforeEach conta no limite).
   test.describe.configure({ timeout: 60_000 })
 
-  // Login no mock da API VertexMove (admin@example.com); a loja do admin usa o backend falso da loja.
+  // Login no mock da API VertexMove (admin@example.com); a loja do admin usa as rotas `/admin/loja/*` do mock.
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page)
   })

@@ -20,13 +20,13 @@ export enum API_ERROR_CODE {
   RATE_LIMITED = "LIMITE_EXCEDIDO",
   SYSTEM_BUSY = "SISTEMA_OCUPADO",
   SERVICE_UNAVAILABLE = "SERVICO_INDISPONIVEL",
-  // Loja: o backend ainda não tem a loja (§16); usados pelo mock da Task 20. Confirmar quando a API existir.
-  PRODUCT_DUPLICATE_SLUG = "PRODUTO_SLUG_DUPLICADO",
-  DUPLICATE_VARIANT_LABEL = "TAMANHO_DUPLICADO",
-  VARIANT_NOT_OWNED = "TAMANHO_DE_OUTRO_PRODUTO",
+  // Loja (backend `error-codes.ts`, fase 10). Rótulo de tamanho repetido vem como `CONFLITO_DE_ESTADO`.
+  PRODUCT_DUPLICATE_SLUG = "PRODUTO_SLUG_EM_USO",
+  VARIANT_NOT_OWNED = "VARIANTE_DE_OUTRO_PRODUTO",
   STOCK_CHANGED = "ESTOQUE_ALTERADO",
   CART_CHANGED = "CARRINHO_ALTERADO",
   EMPTY_CART = "CARRINHO_VAZIO",
+  ORDER_EXPIRED = "PEDIDO_EXPIRADO",
   // Pagamento (Checkout Pro): proposto ao backend (§16); usado pelo mock.
   PAYMENT_UNAVAILABLE = "PAGAMENTO_INDISPONIVEL",
   // Códigos reais do backend no checkout.

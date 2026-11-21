@@ -20,7 +20,7 @@ const STATIC_PAGES: Array<Pick<SitemapEntry, "changeFrequency" | "priority"> & {
   { path: "/privacidade", changeFrequency: "yearly", priority: 0.2 },
 ]
 
-// A loja ainda não tem backend (§16): sem o mock, /loja só mostra "em breve" e não entra no sitemap.
+// Loja desligada (`STORE_ENABLED=false`): /loja só mostra "em breve" e não entra no sitemap.
 const STORE_PAGE: (typeof STATIC_PAGES)[number] = { path: "/loja", changeFrequency: "weekly", priority: 0.7 }
 
 /** Corridas publicadas; sem API (build, backend fora do ar) → nenhuma. */
