@@ -27,20 +27,27 @@ export function getOrderPaymentView({
   return pollingExpired ? "not-confirmed-yet" : "confirming"
 }
 
-const CHECKOUT_RETURN_PARAMS = ["collection_status", "status", "payment_id", "external_reference"]
+/**
+ * Parâmetros da volta do Checkout Pro. O backend recebe o `back_urls` do pedido
+ * (`/loja/pedidos/:codigo/retorno/:resultado`) e redireciona para `/pedido/<codigo>?pagamento=<sucesso|pendente|falha>`;
+ * os do Mercado Pago ficam aceitos caso o `back_urls` aponte direto para o front.
+ */
+const CHECKOUT_RETURN_PARAMS = ["pagamento", "collection_status", "status", "payment_id", "external_reference"]
 
-/** O Mercado Pago anexa estes parâmetros ao voltar para o `back_urls` (`/pedido/<codigo>`). */
+/** Voltou do Checkout Pro para `/pedido/<codigo>`? */
 export function hasCheckoutReturnParams(params: Record<string, string | string[] | undefined>): boolean {
   return CHECKOUT_RETURN_PARAMS.some((name) => params[name] !== undefined)
 }
 
 const FAILED_COLLECTION_STATUSES = new Set(["rejected", "cancelled", "null"])
+const FAILED_RETURN_RESULT = "falha"
 
 /**
  * O Mercado Pago voltou com o pagamento recusado/cancelado? Só evita esperar 1 min por uma confirmação
  * que não virá: a tela oferece nova tentativa e o status do pedido continua vindo do backend.
  */
 export function isFailedCheckoutReturn(params: Record<string, string | string[] | undefined>): boolean {
+  if (params.pagamento !== undefined) return params.pagamento === FAILED_RETURN_RESULT
   const value = params.collection_status ?? params.status
   return typeof value === "string" && FAILED_COLLECTION_STATUSES.has(value)
 }

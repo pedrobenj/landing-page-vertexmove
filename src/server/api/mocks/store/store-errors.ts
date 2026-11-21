@@ -8,13 +8,6 @@ export class DuplicateSlugError extends Error {
   }
 }
 
-export class DuplicateVariantLabelError extends Error {
-  constructor() {
-    super("Já existe um tamanho com esse nome")
-    this.name = "DuplicateVariantLabelError"
-  }
-}
-
 export class VariantNotOwnedError extends Error {
   constructor() {
     super("Tamanho não pertence a este produto")
@@ -42,7 +35,6 @@ export class ProductNotFoundError extends Error {
  */
 export const STORE_CONFLICT_ERROR_NAMES = [
   "DuplicateSlugError",
-  "DuplicateVariantLabelError",
   "StockChangedError",
   "VariantNotOwnedError",
 ] as const
@@ -53,13 +45,9 @@ export function isStoreConflictErrorName(name: string): name is StoreConflictErr
   return (STORE_CONFLICT_ERROR_NAMES as readonly string[]).includes(name)
 }
 
-/**
- * Conflito do repositório → status e `error.codigo` do backend (`error-codes.ts` e `postgres-error.mapper.ts`):
- * rótulo repetido no mesmo produto cai na constraint `uq_produto_variante_rotulo` → `409 CONFLITO_DE_ESTADO`.
- */
+/** Conflito do repositório → status e `error.codigo` do backend (`error-codes.ts`). */
 export const STORE_CONFLICT_ERRORS: Record<StoreConflictErrorName, { status: number; codigo: API_ERROR_CODE }> = {
   DuplicateSlugError: { status: 409, codigo: API_ERROR_CODE.PRODUCT_DUPLICATE_SLUG },
-  DuplicateVariantLabelError: { status: 409, codigo: API_ERROR_CODE.STATE_CONFLICT },
   StockChangedError: { status: 409, codigo: API_ERROR_CODE.STOCK_CHANGED },
   VariantNotOwnedError: { status: 422, codigo: API_ERROR_CODE.VARIANT_NOT_OWNED },
 }

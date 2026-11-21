@@ -28,6 +28,9 @@ describe("pagamento recusado na volta do Mercado Pago", () => {
   })
 
   it.each([
+    [{ pagamento: "falha" }, true],
+    [{ pagamento: "sucesso" }, false],
+    [{ pagamento: "pendente" }, false],
     [{ collection_status: "rejected" }, true],
     [{ collection_status: "null", status: "null" }, true],
     [{ status: "cancelled" }, true],
@@ -40,9 +43,10 @@ describe("pagamento recusado na volta do Mercado Pago", () => {
 })
 
 describe("hasCheckoutReturnParams", () => {
-  it("reconhece os parâmetros que o Mercado Pago anexa no back_url", () => {
+  it("reconhece o retorno do backend (?pagamento=) e os parâmetros do Mercado Pago", () => {
     expect(hasCheckoutReturnParams({ collection_status: "approved", external_reference: "VTX-P-AAAAA-BBBBB" })).toBe(true)
     expect(hasCheckoutReturnParams({ payment_id: "123" })).toBe(true)
+    expect(hasCheckoutReturnParams({ pagamento: "sucesso" })).toBe(true)
     expect(hasCheckoutReturnParams({})).toBe(false)
     expect(hasCheckoutReturnParams({ utm_source: "instagram" })).toBe(false)
   })

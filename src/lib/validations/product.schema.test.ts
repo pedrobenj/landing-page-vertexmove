@@ -49,6 +49,12 @@ describe("productFormSchema", () => {
     ])
   })
 
+  it("respeita os limites de texto do backend (nome 120, descrição 5.000, retirada 500)", () => {
+    expect(productFormSchema.safeParse({ ...valid, name: "x".repeat(121) }).success).toBe(false)
+    expect(productFormSchema.safeParse({ ...valid, description: "x".repeat(5001) }).success).toBe(false)
+    expect(productFormSchema.safeParse({ ...valid, pickupInfo: "x".repeat(501) }).success).toBe(false)
+  })
+
   it("exige pelo menos um tamanho", () => {
     const result = productFormSchema.safeParse({ ...valid, variants: [] })
     expect(result.error?.issues).toEqual([expect.objectContaining({ path: ["variants"], message: "Adicione pelo menos um tamanho" })])

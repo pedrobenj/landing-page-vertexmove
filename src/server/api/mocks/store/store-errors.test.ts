@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest"
 
 import {
   DuplicateSlugError,
-  DuplicateVariantLabelError,
   isStoreConflictErrorName,
   ProductNotFoundError,
   STORE_CONFLICT_ERRORS,
@@ -14,7 +13,7 @@ import {
 // As rotas do mock mapeiam os erros pelo `name`: ele precisa bater com a lista exportada.
 describe("store errors", () => {
   it("cada erro de conflito tem o name listado em STORE_CONFLICT_ERROR_NAMES", () => {
-    const names = [new DuplicateSlugError(), new DuplicateVariantLabelError(), new StockChangedError(), new VariantNotOwnedError()].map(
+    const names = [new DuplicateSlugError(), new StockChangedError(), new VariantNotOwnedError()].map(
       (error) => error.name,
     )
     expect(names).toEqual([...STORE_CONFLICT_ERROR_NAMES])
@@ -30,7 +29,6 @@ describe("store errors", () => {
   it("usa os status e códigos do backend", () => {
     expect(STORE_CONFLICT_ERRORS).toEqual({
       DuplicateSlugError: { status: 409, codigo: "PRODUTO_SLUG_EM_USO" },
-      DuplicateVariantLabelError: { status: 409, codigo: "CONFLITO_DE_ESTADO" },
       StockChangedError: { status: 409, codigo: "ESTOQUE_ALTERADO" },
       VariantNotOwnedError: { status: 422, codigo: "VARIANTE_DE_OUTRO_PRODUTO" },
     })

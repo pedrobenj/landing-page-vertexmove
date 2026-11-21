@@ -32,8 +32,18 @@ export function presentPublicProduct(product: MockStoreProduct): ApiStoreProduct
   }
 }
 
+/** O mock não guarda datas de produto: um instante fixo basta para o formato. */
+const MOCK_PRODUCT_TIMESTAMP = "2026-11-01T12:00:00.000Z"
+
 export function presentAdminProduct(product: MockStoreProduct): ApiAdminStoreProduct {
-  return { ...presentPublicProduct(product), ativo: product.ativo, ordem: product.ordem }
+  return {
+    ...presentPublicProduct(product),
+    ativo: product.ativo,
+    ordem: product.ordem,
+    variantes: activeVariants(product).map((variant, ordem) => ({ ...variant, ordem })),
+    criadoEm: MOCK_PRODUCT_TIMESTAMP,
+    atualizadoEm: MOCK_PRODUCT_TIMESTAMP,
+  }
 }
 
 /** Resumo público: só o primeiro nome, sem CPF, WhatsApp e e-mail. */
@@ -65,6 +75,7 @@ export function presentAdminOrder(order: MockStoreOrder): ApiAdminStoreOrder {
     criadoEm: order.criadoEm,
     expiraEm: order.expiraEm,
     pagoEm: order.pagoEm,
+    retiradoEm: order.retiradoEm,
   }
 }
 
@@ -75,7 +86,6 @@ export function presentAdminOrderDetails(order: MockStoreOrder): ApiAdminStoreOr
     whatsapp: order.whatsapp,
     email: order.email,
     cpfMascarado: maskCpf(order.cpf),
-    retiradoEm: order.retiradoEm,
     itens,
     retiradas,
   }

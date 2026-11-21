@@ -29,10 +29,18 @@ export interface ApiStoreProduct {
   variantes: ApiStoreVariant[]
 }
 
-/** `GET /admin/loja/produtos[/:id]`: o produto público mais os campos de gestão. */
-export interface ApiAdminStoreProduct extends ApiStoreProduct {
+/** Variante no admin: só as ativas, com a ordem. */
+export interface ApiAdminStoreVariant extends ApiStoreVariant {
+  ordem: number
+}
+
+/** `GET /admin/loja/produtos[/:id]` (`produto-admin.presenter.ts`): o produto público mais os campos de gestão. */
+export interface ApiAdminStoreProduct extends Omit<ApiStoreProduct, "variantes"> {
   ativo: boolean
   ordem: number
+  variantes: ApiAdminStoreVariant[]
+  criadoEm: string
+  atualizadoEm: string
 }
 
 /** Variante no corpo de `POST/PATCH /admin/loja/produtos`. Salvas mandam `id` e `estoqueOriginal`. */

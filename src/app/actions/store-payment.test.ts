@@ -80,13 +80,13 @@ describe("store-payment actions", () => {
     expect(mocks.getStoreOrderAccessToken).not.toHaveBeenCalled()
   })
 
-  it("checkout falso só funciona no mock e volta para o pedido com os parâmetros do Mercado Pago", async () => {
+  it("checkout falso só funciona no mock e volta para o pedido como o retorno do backend", async () => {
     await simulateMockStorePaymentAction(CODE, "aprovado" as never)
     expect(mocks.simulateMockStorePayment).not.toHaveBeenCalled()
 
     mockEnv.USE_MOCK_API = true
-    await expect(simulateMockStorePaymentAction(CODE, "aprovado" as never)).rejects.toThrow(/^REDIRECT:\/pedido\/VTX-P-7K3PQ-M9X2D\?/)
+    await expect(simulateMockStorePaymentAction(CODE, "aprovado" as never)).rejects.toThrow(`REDIRECT:/pedido/${CODE}?pagamento=sucesso`)
     expect(mocks.simulateMockStorePayment).toHaveBeenCalledWith(CODE, "aprovado")
-    expect(mocks.redirect.mock.calls[0][0]).toContain(`external_reference=${CODE}`)
+    await expect(simulateMockStorePaymentAction(CODE, "recusado" as never)).rejects.toThrow(`REDIRECT:/pedido/${CODE}?pagamento=falha`)
   })
 })

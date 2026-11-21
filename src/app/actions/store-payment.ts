@@ -64,25 +64,25 @@ export async function startStoreCheckoutAction(codigo: string): Promise<HttpResp
   }
 }
 
-const MOCK_RETURN_STATUS: Partial<Record<PAYMENT_STATUS, string>> = {
-  [PAYMENT_STATUS.APPROVED]: "approved",
-  [PAYMENT_STATUS.PENDING]: "pending",
-  [PAYMENT_STATUS.REJECTED]: "rejected",
-  [PAYMENT_STATUS.CANCELLED]: "null",
+/** `:resultado` do retorno do backend (`loja-pedidos-retorno.controller.ts`). */
+const MOCK_RETURN_RESULT: Partial<Record<PAYMENT_STATUS, string>> = {
+  [PAYMENT_STATUS.APPROVED]: "sucesso",
+  [PAYMENT_STATUS.PENDING]: "pendente",
+  [PAYMENT_STATUS.REJECTED]: "falha",
+  [PAYMENT_STATUS.CANCELLED]: "falha",
 }
 
 /**
  * Checkout falso (só com `USE_MOCK_API`): registra o resultado como o webhook faria e volta para
- * `/pedido/<codigo>` (o `back_urls` do pedido) com os parâmetros que o Mercado Pago anexa.
+ * `/pedido/<codigo>?pagamento=<resultado>`, como o redirect de retorno do backend.
  */
 export async function simulateMockStorePaymentAction(codigo: string, resultado: PAYMENT_STATUS): Promise<void> {
-  const status = MOCK_RETURN_STATUS[resultado]
-  if (!env.USE_MOCK_API || !isOrderCode(codigo) || status === undefined) return
+  const result = MOCK_RETURN_RESULT[resultado]
+  if (!env.USE_MOCK_API || !isOrderCode(codigo) || result === undefined) return
   try {
     await simulateMockStorePayment(codigo, resultado)
   } catch (error) {
     console.error("[simulateMockStorePaymentAction]", error instanceof Error ? error.name : "erro desconhecido")
   }
-  const query = new URLSearchParams({ collection_status: status, status, external_reference: codigo, payment_id: `MOCK-${Date.now()}` })
-  redirect(`/pedido/${codigo}?${query.toString()}`)
+  redirect(`/pedido/${codigo}?pagamento=${result}`)
 }

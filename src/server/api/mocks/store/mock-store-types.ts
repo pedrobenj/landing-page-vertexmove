@@ -9,7 +9,8 @@ export interface MockStoreVariant extends ApiStoreVariant {
   ativo?: boolean
 }
 
-export interface MockStoreProduct extends Omit<ApiAdminStoreProduct, "variantes"> {
+/** Datas e ordem das variantes saem no presenter (o mock não as acompanha). */
+export interface MockStoreProduct extends Omit<ApiAdminStoreProduct, "variantes" | "criadoEm" | "atualizadoEm"> {
   variantes: MockStoreVariant[]
 }
 

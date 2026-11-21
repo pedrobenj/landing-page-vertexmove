@@ -126,7 +126,7 @@ describe("rotas da loja no mock (contrato do backend)", () => {
       descricao: "Viseira leve.",
       tipo: "viseira",
       precoCentavos: 4990,
-      retirada: "Sede",
+      retirada: "Na sede do Vertex",
       ativo: true,
       destaque: false,
       variantes: [{ rotulo: "único", estoque: 3 }],
@@ -166,6 +166,9 @@ describe("rotas da loja no mock (contrato do backend)", () => {
     const next = (await (await call("GET", `/admin/loja/pedidos?status=pendente&limit=1&cursor=${page.nextCursor}`, { headers: auth })).json()) as CursorPage<ApiAdminStoreOrder>
     expect([page.items[0].codigo, next.items[0].codigo].sort()).toEqual([first.codigo, second.codigo].sort())
 
+    expect(Object.keys(page.items[0]).sort()).toEqual(
+      ["codigo", "criadoEm", "expiraEm", "nomeCompleto", "pagoEm", "quantidadeItens", "retiradoEm", "status", "valorTotalCentavos"].sort(),
+    )
     const details = (await (await call("GET", `/admin/loja/pedidos/${first.codigo}`, { headers: auth })).json()) as ApiAdminStoreOrderDetails
     expect(details).toMatchObject({ nomeCompleto: "Maria Silva", whatsapp: "+5585988887777", email: "m@x.com", cpfMascarado: "***.982.247-**" })
 

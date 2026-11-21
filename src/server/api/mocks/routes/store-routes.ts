@@ -67,11 +67,11 @@ const createOrderSchema = z.strictObject({
 
 const saveProductSchema = z.strictObject({
   slug: z.string().regex(SLUG_PATTERN),
-  nome: z.string().trim().min(3).max(200),
-  descricao: z.string().trim().min(1),
+  nome: z.string().trim().min(3).max(120),
+  descricao: z.string().trim().min(10).max(5000),
   tipo: z.enum(PRODUCT_TYPE),
   precoCentavos: z.number().int().min(1).max(MAX_PRODUCT_PRICE_CENTS),
-  retirada: z.string().trim().min(1),
+  retirada: z.string().trim().min(5).max(500),
   ativo: z.boolean(),
   destaque: z.boolean(),
   ordem: z.number().int().min(0).optional(),
@@ -82,7 +82,8 @@ const saveProductSchema = z.strictObject({
         rotulo: z.string().trim().toUpperCase().min(1).max(MAX_VARIANT_LABEL_LENGTH),
         estoque: z.number().int().min(0).max(MAX_VARIANT_STOCK),
         estoqueOriginal: z.number().int().min(0).max(MAX_VARIANT_STOCK).optional(),
-      }),
+      })
+      .refine((variant) => variant.id === undefined || variant.estoqueOriginal !== undefined, "variante salva precisa de estoqueOriginal"),
     )
     .min(1)
     .refine((variantes) => new Set(variantes.map((variant) => variant.rotulo)).size === variantes.length, "rótulo repetido"),

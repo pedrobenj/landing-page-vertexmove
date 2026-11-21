@@ -24,12 +24,16 @@ const variantSchema = z.object({
 })
 
 export const productFormSchema = z.object({
-  name: z.string().trim().min(3, "Informe o nome do produto"),
+  name: z.string().trim().min(3, "Informe o nome do produto").max(120, "Nome com no máximo 120 caracteres"),
   slug: z
     .string()
     .trim()
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use só letras minúsculas, números e hífens"),
-  description: z.string().trim().min(10, "Descreva o produto (mínimo de 10 caracteres)"),
+  description: z
+    .string()
+    .trim()
+    .min(10, "Descreva o produto (mínimo de 10 caracteres)")
+    .max(5000, "Descrição com no máximo 5.000 caracteres"),
   type: z.enum(PRODUCT_TYPE, { error: "Escolha o tipo" }),
   price: z
     .string()
@@ -45,7 +49,7 @@ export const productFormSchema = z.object({
       }
       return cents
     }),
-  pickupInfo: z.string().trim().min(5, "Informe local e horário de retirada"),
+  pickupInfo: z.string().trim().min(5, "Informe local e horário de retirada").max(500, "Retirada com no máximo 500 caracteres"),
   isActive: z.boolean(),
   isFeatured: z.boolean(),
   variants: z

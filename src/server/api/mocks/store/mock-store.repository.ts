@@ -11,7 +11,6 @@ import { priceCart } from "./cart.service"
 import type { MockStoreOrder, MockStoreProduct, MockStoreVariant } from "./mock-store-types"
 import {
   DuplicateSlugError,
-  DuplicateVariantLabelError,
   ProductNotFoundError,
   StockChangedError,
   VariantNotOwnedError,
@@ -51,8 +50,8 @@ export interface MockStoreRepository {
   scheduleApproval(codigo: string, at: number): void
   /**
    * Cria (sem id) ou atualiza. Variante salva manda `estoqueOriginal` e o estoque muda só pela diferença;
-   * variante salva que não veio fica inativa. Lança DuplicateSlugError, DuplicateVariantLabelError,
-   * VariantNotOwnedError, StockChangedError ou ProductNotFoundError.
+   * variante salva que não veio fica inativa e variante nova com o rótulo de uma inativa a reativa.
+   * Lança DuplicateSlugError, VariantNotOwnedError, StockChangedError ou ProductNotFoundError.
    */
   saveProduct(data: ApiSaveStoreProduct, id?: string): MockStoreProduct
 }
@@ -200,25 +199,30 @@ export function createMockStoreRepository(seed: MockStoreProduct[]): MockStoreRe
         const incomingIds = new Set(variantes.flatMap((variant) => (variant.id ? [variant.id] : [])))
         if ([...incomingIds].some((variantId) => !savedById.has(variantId))) throw new VariantNotOwnedError()
 
-        // Variante salva omitida fica inativa, mas o rótulo continua ocupado (índice único no banco).
+        // Como o backend: variante salva omitida fica inativa (não é apagada); variante nova com o rótulo
+        // de uma omitida ou inativa reativa essa variante (o índice único do rótulo não deixa criar outra).
         const omitted = existing.variantes.filter((variant) => !incomingIds.has(variant.id))
-        const omittedLabels = new Set(omitted.map((variant) => variant.rotulo.toUpperCase()))
-        if (variantes.some((variant) => !variant.id && omittedLabels.has(variant.rotulo.toUpperCase()))) {
-          throw new DuplicateVariantLabelError()
-        }
+        const omittedByLabel = new Map(omitted.map((variant) => [variant.rotulo.toUpperCase(), variant]))
+        const reactivated = new Set<string>()
 
         // Estoque editado vira diferença sobre o estoque ATUAL: não apaga reservas feitas durante a edição.
         let newId = Number(nextNumericId(allVariantIds))
         const nextVariants: MockStoreVariant[] = variantes.map((variant) => {
           const saved = variant.id ? savedById.get(variant.id) : undefined
-          if (!saved) return { id: String(newId++), rotulo: variant.rotulo, estoque: variant.estoque }
+          if (!saved) {
+            const previous = omittedByLabel.get(variant.rotulo.toUpperCase())
+            if (!previous) return { id: String(newId++), rotulo: variant.rotulo, estoque: variant.estoque }
+            reactivated.add(previous.id)
+            return { id: previous.id, rotulo: variant.rotulo, estoque: variant.estoque }
+          }
           const estoque = saved.estoque + variant.estoque - (variant.estoqueOriginal ?? variant.estoque)
           if (estoque < 0) throw new StockChangedError()
           return { id: saved.id, rotulo: variant.rotulo, estoque }
         })
 
         Object.assign(existing, fields)
-        existing.variantes = [...nextVariants, ...omitted.map((variant) => ({ ...variant, ativo: false }))]
+        const deactivated = omitted.filter((variant) => !reactivated.has(variant.id)).map((variant) => ({ ...variant, ativo: false }))
+        existing.variantes = [...nextVariants, ...deactivated]
         return clone(existing)
       }
 

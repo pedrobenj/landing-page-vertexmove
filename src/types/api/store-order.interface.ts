@@ -53,6 +53,7 @@ export interface ApiAdminStoreOrder {
   criadoEm: string
   expiraEm: string | null
   pagoEm: string | null
+  retiradoEm: string | null
 }
 
 /** `GET /admin/loja/pedidos/:codigo`: com contato do comprador (CPF mascarado). */
@@ -60,7 +61,6 @@ export interface ApiAdminStoreOrderDetails extends ApiAdminStoreOrder {
   whatsapp: string
   email: string
   cpfMascarado: string
-  retiradoEm: string | null
   itens: ApiStoreOrderItem[]
   retiradas: string[]
 }

@@ -48,7 +48,7 @@ const newProduct = (overrides: Partial<ProductFormData> = {}): ProductFormData =
   description: "Viseira leve para treinos.",
   type: PRODUCT_TYPE.VISOR,
   price: 4990,
-  pickupInfo: "Sede",
+  pickupInfo: "Na sede do Vertex",
   isActive: true,
   isFeatured: false,
   variants: [{ label: "U", stock: 3 }],

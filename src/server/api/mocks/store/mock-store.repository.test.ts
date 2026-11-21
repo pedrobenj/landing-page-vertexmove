@@ -8,7 +8,6 @@ import type { ApiSaveStoreProduct } from "@/types/api/store-product.interface"
 import { createMockStoreRepository } from "./mock-store.repository"
 import {
   DuplicateSlugError,
-  DuplicateVariantLabelError,
   ProductNotFoundError,
   StockChangedError,
   VariantNotOwnedError,
@@ -171,9 +170,17 @@ describe("mock store repository", () => {
       ])
     })
 
-    it("recusa variante nova com o rótulo de uma salva omitida", () => {
+    it("variante nova com o rótulo de uma inativa reativa a mesma variante", () => {
       const repo = createMockStoreRepository([buildMockProduct()])
-      expect(() => repo.saveProduct(productData({ variantes: [{ rotulo: "M", estoque: 1 }] }), "1")).toThrow(DuplicateVariantLabelError)
+      repo.saveProduct(productData({ variantes: [{ id: "11", rotulo: "P", estoque: 5, estoqueOriginal: 5 }] }), "1")
+      const saved = repo.saveProduct(
+        productData({ variantes: [{ id: "11", rotulo: "P", estoque: 5, estoqueOriginal: 5 }, { rotulo: "m", estoque: 4 }] }),
+        "1",
+      )
+      expect(saved.variantes).toEqual([
+        { id: "11", rotulo: "P", estoque: 5 },
+        { id: "12", rotulo: "m", estoque: 4 },
+      ])
     })
 
     it("id desconhecido nunca cria produto (e tem prioridade sobre slug duplicado)", () => {

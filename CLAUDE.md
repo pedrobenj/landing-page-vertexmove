@@ -138,7 +138,7 @@ Mapear no tema do shadcn/ui (CSS variables em `globals.css`):
 | `/inscricao/retorno` | Página de volta do Checkout Pro (`back_urls`): lê `external_reference` e consulta o status real no backend | **pendente** (status por código) |
 | `/inscricao/[code]` | Status da inscrição e botão "Pagar agora" (gera novo link do Checkout Pro se ainda pendente) | **pendente** (`GET` por código não existe) |
 | `/consulta` | Consulta por WhatsApp **ou** CPF → lista mascarada; cada item tem "Ver inscrição" (confirma a data de nascimento → detalhes + "Baixar comprovante (PDF)") | `POST /inscricoes/consulta`, `POST /inscricoes/comprovante`, `POST /inscricoes/comprovante/pagamento` |
-| `/loja`, `/loja/[slug]`, `/loja/carrinho`, `/loja/checkout`, `/pedido/[code]` | Loja de camisas e acessórios | **pendente** |
+| `/loja`, `/loja/[slug]`, `/loja/carrinho`, `/loja/checkout`, `/pedido/[code]` | Loja de camisas e acessórios; `/pedido/[code]` tem "Pagar agora" (Checkout Pro, token em cookie `vm_pedido_<codigo>`) e é a volta do pagamento (`?pagamento=`) | `GET /loja/produtos[/:slug]`, `POST /loja/carrinho/precificar`, `POST /loja/pedidos`, `GET /loja/pedidos/:codigo`, `POST /loja/pedidos/:codigo/pagamentos` (fase 10) |
 | `/corridas-parceiras` | Corridas de parceiros com cupom exclusivo e link externo | **pendente** (conteúdo estático até haver endpoint) |
 | `/sobre` | Conheça o Vertex: história, missão, fotos, números | estático |
 | `/parceiros` | Apoiadores (logos e links) | estático |
@@ -159,7 +159,7 @@ Mapear no tema do shadcn/ui (CSS variables em `globals.css`):
 | `/admin/tamanhos-camisa` | Catálogo global de tamanhos | `/admin/tamanhos-camisa` |
 | `/admin/auditoria` | Trilha de auditoria (cursor) | `GET /admin/auditoria` |
 | `/admin/eventos/[id]/inscricoes` | Inscritos, exportação CSV, retirada de kit | **pendente** |
-| `/admin/loja/*` | Produtos e pedidos | **pendente** |
+| `/admin/loja/produtos`, `/admin/loja/pedidos` | Produtos (estoque por diferença) e pedidos (filtro por status, pronto/retirado/cancelar) | `/admin/loja/produtos[/:id]`, `/admin/loja/pedidos[/:codigo]`, `POST .../pronto|retirado|cancelar` (fase 10) |
 
 Proteger `/admin/*` (exceto `/admin/login`) no `proxy.ts`, que também renova o access token (ver §8). Admin com `noindex`.
 
@@ -514,6 +514,7 @@ export interface HttpResponse<T = unknown> {
 ```
 API_URL=http://localhost:3000        # Backend VertexMove (sem /api/v1)
 API_TIMEOUT_MS=10000
+STORE_ENABLED=true                   # false mostra "Loja em breve" até o lançamento da loja
 NEXT_PUBLIC_SITE_URL=
 NEXT_PUBLIC_WHATSAPP_NUMBER=
 NEXT_PUBLIC_INSTAGRAM_URL=

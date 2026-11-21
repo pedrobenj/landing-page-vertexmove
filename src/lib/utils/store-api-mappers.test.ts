@@ -50,7 +50,14 @@ describe("toStoreProduct", () => {
   })
 
   it("usa `ativo` do produto do admin", () => {
-    const admin: ApiAdminStoreProduct = { ...apiProduct, ativo: false, ordem: 0 }
+    const admin: ApiAdminStoreProduct = {
+      ...apiProduct,
+      variantes: [{ id: "74", rotulo: "P", estoque: 10, ordem: 0 }],
+      ativo: false,
+      ordem: 0,
+      criadoEm: "2026-11-01T12:00:00.000Z",
+      atualizadoEm: "2026-11-01T12:00:00.000Z",
+    }
     expect(toStoreProduct(admin).isActive).toBe(false)
   })
 })
