@@ -6,6 +6,7 @@ import { toast } from "sonner"
 
 import { startStoreCheckoutAction } from "@/app/actions/store-payment"
 import { Button } from "@/components/ui/button"
+import { useHydrated } from "@/hooks/use-hydrated"
 
 interface PayOrderButtonProps {
   code: string
@@ -18,6 +19,9 @@ interface PayOrderButtonProps {
  */
 export function PayOrderButton({ code, label = "Pagar agora" }: PayOrderButtonProps) {
   const [isRedirecting, setIsRedirecting] = useState(false)
+  // A página do pedido chega pronta do servidor (às vezes por carregamento completo, na volta do
+  // pagamento): sem esperar a hidratação, um clique rápido caía num botão ainda sem handler.
+  const hydrated = useHydrated()
 
   async function handleClick() {
     setIsRedirecting(true)
@@ -32,7 +36,7 @@ export function PayOrderButton({ code, label = "Pagar agora" }: PayOrderButtonPr
   }
 
   return (
-    <Button type="button" variant="cta" size="xl" className="w-full normal-case tracking-normal sm:w-auto" disabled={isRedirecting} onClick={handleClick}>
+    <Button type="button" variant="cta" size="xl" className="w-full normal-case tracking-normal sm:w-auto" disabled={!hydrated || isRedirecting} onClick={handleClick}>
       {isRedirecting ? <Loader2 aria-hidden="true" className="animate-spin" /> : null}
       {isRedirecting ? "Abrindo o Mercado Pago…" : label}
       {!isRedirecting && <ArrowRight aria-hidden="true" />}
