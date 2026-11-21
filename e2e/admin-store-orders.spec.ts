@@ -37,9 +37,11 @@ test.describe("Admin: pedidos da loja", () => {
 
     await expect(page).toHaveURL(`/admin/loja/pedidos/${code}`, { timeout: 20_000 })
     await expect(page.getByRole("heading", { name: code })).toBeVisible()
-    await expect(page.getByText("Joana Pereira")).toBeVisible()
-    await expect(page.getByText("joana@exemplo.com")).toBeVisible()
-    await expect(page.getByText("***.982.247-**")).toBeVisible()
+    // O Next 16 mantém a rota anterior (a lista) escondida no DOM: delimita pela seção do comprador.
+    const buyer = page.getByRole("region", { name: "Comprador" })
+    await expect(buyer.getByText("Joana Pereira")).toBeVisible()
+    await expect(buyer.getByText("joana@exemplo.com")).toBeVisible()
+    await expect(buyer.getByText("***.982.247-**")).toBeVisible()
     await expect(page.getByRole("button", { name: "Pronto para retirada" })).toHaveCount(0)
 
     await page.getByRole("button", { name: "Cancelar pedido" }).click()
@@ -48,7 +50,7 @@ test.describe("Admin: pedidos da loja", () => {
     await dialog.getByRole("button", { name: "Cancelar pedido" }).click()
 
     await expect(page.getByText("Pedido cancelado")).toBeVisible({ timeout: 20_000 })
-    await expect(page.getByText("Cancelado", { exact: true })).toBeVisible()
+    await expect(page.getByRole("region", { name: code }).getByText("Cancelado", { exact: true })).toBeVisible()
     await expect(page.getByRole("button", { name: "Cancelar pedido" })).toHaveCount(0)
   })
 
