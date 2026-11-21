@@ -3,10 +3,12 @@ import { notFound, unstable_rethrow } from "next/navigation"
 
 import { PAYMENT_STATUS } from "@/enums/payment-status.enum"
 import { env } from "@/lib/env"
-import { formatCurrency, isRegistrationCode } from "@/lib/utils"
+import { formatCurrency, isOrderCode, isRegistrationCode } from "@/lib/utils"
 import { isApiError } from "@/server/api/api-error"
+import { getStoreOrder } from "@/server/api/endpoints/store"
 import { getRegistrationDetails } from "@/server/api/endpoints/registration-payment"
 import { getRegistrationAccessToken } from "@/server/api/registration-access"
+import { getStoreOrderAccessToken } from "@/server/api/store-order-access"
 
 import { MockPaymentOption } from "./components"
 
@@ -24,20 +26,31 @@ const OPTIONS = [
   { resultado: PAYMENT_STATUS.REJECTED, label: "Recusar", hint: "Cartão recusado" },
 ]
 
+/** Total da inscrição ou do pedido, exigindo o cookie com o token (como o pagamento real exige). */
+async function loadTotal(code: string): Promise<number> {
+  if (isOrderCode(code)) {
+    if (!(await getStoreOrderAccessToken(code))) notFound()
+    return (await getStoreOrder(code)).amount
+  }
+  const token = await getRegistrationAccessToken(code)
+  if (!token) notFound()
+  return (await getRegistrationDetails(code, token)).valorTotalCentavos
+}
+
 /**
  * Checkout falso do modo mock (`USE_MOCK_API`), no lugar da página do Mercado Pago: escolhe o resultado,
- * simula o webhook e volta para `/inscricao/retorno` como o Checkout Pro faria.
+ * simula o webhook e volta para `/inscricao/retorno` (inscrição) ou `/pedido/<codigo>` (loja), como o
+ * Checkout Pro faria.
  */
 export default async function MockCheckoutPage({ params }: PageProps<"/dev/checkout-pro/[code]">) {
   if (!env.USE_MOCK_API) notFound()
   const { code } = await params
-  if (!isRegistrationCode(code)) notFound()
-  const token = await getRegistrationAccessToken(code)
-  if (!token) notFound()
+  const kind = isOrderCode(code) ? "order" : isRegistrationCode(code) ? "registration" : null
+  if (!kind) notFound()
 
   let total: number
   try {
-    total = (await getRegistrationDetails(code, token)).valorTotalCentavos
+    total = await loadTotal(code)
   } catch (error) {
     unstable_rethrow(error)
     if (isApiError(error) && error.status === 404) notFound()
@@ -53,12 +66,12 @@ export default async function MockCheckoutPage({ params }: PageProps<"/dev/check
             Checkout simulado
           </h1>
           <p className="text-sm text-muted-foreground">
-            Inscrição <strong>{code}</strong> · {formatCurrency(total)}
+            {kind === "order" ? "Pedido" : "Inscrição"} <strong>{code}</strong> · {formatCurrency(total)}
           </p>
         </div>
         <div className="flex flex-col gap-3">
           {OPTIONS.map((option) => (
-            <MockPaymentOption key={option.resultado} code={code} {...option} />
+            <MockPaymentOption key={option.resultado} code={code} kind={kind} {...option} />
           ))}
         </div>
       </section>

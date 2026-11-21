@@ -28,5 +28,7 @@ export const queryKeys = {
   store: {
     all: ["store"] as const,
     cart: (items: CartItem[]) => [...queryKeys.store.all, "cart", items] as const,
+    /** Status do pedido por código (polling da volta do Checkout Pro). */
+    orderStatus: (code: string) => [...queryKeys.store.all, "order-status", code] as const,
   },
 }

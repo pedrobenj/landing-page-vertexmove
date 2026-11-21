@@ -1,19 +1,22 @@
-import { QrCode } from "lucide-react"
-
 import { Chevron } from "@/components/brand"
 import { PillBadge } from "@/components/sections"
-import { ORDER_STATUS, ORDER_STATUS_LABEL } from "@/enums/order-status.enum"
-import { formatCurrency, formatDateTime } from "@/lib/utils"
+import { ORDER_STATUS_LABEL } from "@/enums/order-status.enum"
+import { formatCurrency } from "@/lib/utils"
 import type { OrderSummary } from "@/types/order.interface"
 
 import { OrderItemRow } from "./order-item-row"
+import { OrderPaymentSection } from "./order-payment-section"
 import { PickupInfoItem } from "./pickup-info-item"
 
 interface OrderDetailsProps {
   order: OrderSummary
+  /** Voltou do Checkout Pro (parâmetros do Mercado Pago na URL). */
+  awaitingConfirmation?: boolean
+  /** O Mercado Pago voltou com o pagamento recusado ou cancelado. */
+  checkoutFailed?: boolean
 }
 
-export function OrderDetails({ order }: OrderDetailsProps) {
+export function OrderDetails({ order, awaitingConfirmation = false, checkoutFailed = false }: OrderDetailsProps) {
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-3">
@@ -26,17 +29,13 @@ export function OrderDetails({ order }: OrderDetailsProps) {
         <PillBadge tone="soft">{ORDER_STATUS_LABEL[order.status]}</PillBadge>
       </header>
 
-      {order.status === ORDER_STATUS.PENDING && (
-        <section aria-labelledby="pix-title" className="flex flex-col items-center gap-3 rounded-2xl border border-dashed bg-slate-50 p-6 text-center">
-          <QrCode className="size-10 text-muted-foreground" aria-hidden="true" />
-          <h2 id="pix-title" className="font-heading font-black text-brand-navy-deep">Pagamento via Pix</h2>
-          {/* TODO (Etapa 2): QR Code, copia-e-cola e polling do status. */}
-          <p className="text-sm text-muted-foreground">O pagamento via Pix será liberado em breve.</p>
-          {order.expiresAt && (
-            <p className="text-xs text-muted-foreground">Reserva válida até {formatDateTime(order.expiresAt)}.</p>
-          )}
-        </section>
-      )}
+      <OrderPaymentSection
+        code={order.code}
+        status={order.status}
+        expiresAt={order.expiresAt}
+        awaitingConfirmation={awaitingConfirmation}
+        checkoutFailed={checkoutFailed}
+      />
 
       <section aria-labelledby="itens-title" className="flex flex-col gap-2 rounded-2xl border bg-card p-5 shadow-sm">
         <h2 id="itens-title" className="font-heading font-black text-brand-navy-deep">Itens</h2>

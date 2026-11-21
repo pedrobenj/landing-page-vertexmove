@@ -3,6 +3,7 @@ import { expect, test, type Page } from "@playwright/test"
 // Produtos criados pelo e2e do admin (admin-store.spec.ts) entram no mesmo catálogo mock
 // em memória do dev server; as contagens abaixo consideram só os produtos do seed.
 const E2E_PRODUCT = /Camisa E2E/
+const ORDER_URL = /\/pedido\/VTX-P-[2-9A-HJ-NP-Z]{5}-[2-9A-HJ-NP-Z]{5}$/
 
 async function addToCart(page: Page, slug: string, size?: string) {
   await page.goto(`/loja/${slug}`)
@@ -10,6 +11,20 @@ async function addToCart(page: Page, slug: string, size?: string) {
   if (size) await page.getByText(size, { exact: true }).click()
   await page.getByRole("button", { name: "Adicionar ao carrinho" }).click()
   await expect(page.getByText("Adicionado ao carrinho")).toBeVisible()
+}
+
+/** Compra uma camisa de estoque alto e devolve o código do pedido (já na página do pedido). */
+async function placeOrder(page: Page): Promise<string> {
+  await addToCart(page, "camisa-treino-dry-fit", "M")
+  await page.goto("/loja/checkout")
+  await page.getByLabel("Nome completo").fill("Maria da Silva")
+  await page.getByLabel("CPF").fill("52998224725")
+  await page.getByLabel("WhatsApp").fill("85988887777")
+  await page.getByLabel("E-mail").fill("maria@exemplo.com")
+  await page.getByLabel(/Li e aceito/).check()
+  await page.getByRole("button", { name: "Ir para o pagamento" }).click()
+  await expect(page).toHaveURL(ORDER_URL, { timeout: 20_000 })
+  return new URL(page.url()).pathname.split("/").pop()!
 }
 
 test.describe("Loja", () => {
@@ -84,6 +99,32 @@ test.describe("Loja", () => {
     await expect(page.getByText(/529\.?982\.?247-?25/)).toHaveCount(0)
     await expect(page.getByText("maria@exemplo.com")).toHaveCount(0)
     await expect(page.getByTestId("cart-count")).toHaveCount(0)
+  })
+
+  test("compra e paga: Pagar agora → checkout simulado → confirmação pelo polling", async ({ page }) => {
+    test.slow()
+    const code = await placeOrder(page)
+    await expect(page.getByRole("heading", { name: "Pague para garantir seus itens" })).toBeVisible()
+    await page.getByRole("button", { name: "Pagar agora" }).click()
+    await expect(page).toHaveURL(`/dev/checkout-pro/${code}`, { timeout: 20_000 })
+    await page.getByRole("button", { name: /Aprovar pagamento/ }).click()
+
+    // O webhook simulado demora ~4 s: a página mostra "Confirmando…" e o polling traz a confirmação.
+    await expect(page.getByRole("heading", { name: "Pagamento confirmado!" })).toBeVisible({ timeout: 30_000 })
+    await expect(page).toHaveURL(`/pedido/${code}`)
+    await expect(page.getByText("Pago", { exact: true })).toBeVisible()
+  })
+
+  test("pagamento recusado oferece nova tentativa", async ({ page }) => {
+    test.slow()
+    const code = await placeOrder(page)
+    await page.getByRole("button", { name: "Pagar agora" }).click()
+    await expect(page).toHaveURL(`/dev/checkout-pro/${code}`, { timeout: 20_000 })
+    await page.getByRole("button", { name: /Recusar/ }).click()
+
+    await expect(page.getByRole("heading", { name: "Pagamento não aprovado" })).toBeVisible({ timeout: 20_000 })
+    await page.getByRole("button", { name: "Tentar novamente" }).click()
+    await expect(page).toHaveURL(`/dev/checkout-pro/${code}`, { timeout: 20_000 })
   })
 
   test("filtro por categoria: Todos + tipos", async ({ page }) => {

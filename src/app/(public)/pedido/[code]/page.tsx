@@ -5,6 +5,7 @@ import { ServerError } from "@/components/feedback"
 import { SectionBand } from "@/components/sections"
 import { StoreUnavailable } from "@/components/store"
 import { isOrderCode } from "@/lib/utils"
+import { hasCheckoutReturnParams, isFailedCheckoutReturn } from "@/lib/utils/get-order-payment-view"
 import { isApiError } from "@/server/api/api-error"
 import { getStoreOrder } from "@/server/api/endpoints/store"
 import { isStoreUnavailable } from "@/server/api/is-store-unavailable"
@@ -17,8 +18,15 @@ export const metadata: Metadata = { title: "Meu pedido", robots: { index: false 
 /** Bloqueia (sem <Suspense>) para que o notFound() rode antes do streaming e devolva 404 de verdade. */
 export const instant = false
 
-export default async function OrderPage({ params }: PageProps<"/pedido/[code]">) {
+/**
+ * Pedido da loja. Também é o `back_urls` do Checkout Pro do pedido: com os parâmetros do Mercado Pago na
+ * URL, mostra "Confirmando seu pagamento…" e consulta o status real (os parâmetros não são confiáveis, §7).
+ */
+export default async function OrderPage({ params, searchParams }: PageProps<"/pedido/[code]">) {
   const code = (await params).code.toUpperCase()
+  const query = await searchParams
+  const awaitingConfirmation = hasCheckoutReturnParams(query)
+  const checkoutFailed = isFailedCheckoutReturn(query)
   if (!isOrderCode(code)) notFound()
 
   let order: OrderSummary | null = null
@@ -40,7 +48,7 @@ export default async function OrderPage({ params }: PageProps<"/pedido/[code]">)
       {order && (
         <>
           <FinishCheckoutOnMount code={order.code} />
-          <OrderDetails order={order} />
+          <OrderDetails order={order} awaitingConfirmation={awaitingConfirmation} checkoutFailed={checkoutFailed} />
         </>
       )}
       {failure === "unavailable" && <StoreUnavailable />}
