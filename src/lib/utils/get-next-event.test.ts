@@ -8,10 +8,10 @@ function event(slug: string, dataEvento: string, horarioLargada = "05:30"): Publ
   return {
     slug,
     nome: slug,
-    descricao: "",
     dataEvento,
     horarioLargada,
     localizacao: { localNome: "Praça", cidade: "Fortaleza", uf: "CE" },
+    localizacaoResumo: "Praça — Fortaleza/CE",
     imagemCapaUrl: null,
   }
 }

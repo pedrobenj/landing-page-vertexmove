@@ -40,6 +40,7 @@ export interface PublicDocument {
  * (§16 do CLAUDE.md) e ainda não fazem parte do contrato — por isso opcionais.
  */
 export interface PublicEventDetail extends PublicEvent {
+  descricao: string | null
   galeriaUrl?: string | null
   retiradaKit?: ApiKitPickup | null
   distancias?: PublicDistance[]

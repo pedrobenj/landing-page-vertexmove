@@ -103,6 +103,18 @@ describe("mockFetch", () => {
       expect(second.nextCursor).toBeNull()
     })
 
+    it("item da lista como o presenter do backend: sem descricao, com localizacaoResumo", async () => {
+      const page = (await (await call("GET", "/eventos")).json()) as CursorPage<PublicEvent>
+      const first = page.items[0]!
+      expect(Object.keys(first).sort()).toEqual(
+        ["dataEvento", "horarioLargada", "imagemCapaUrl", "localizacao", "localizacaoResumo", "nome", "slug"],
+      )
+      expect(first.localizacaoResumo).toBe("Aterrinho da Praia de Iracema — Praia de Iracema, Fortaleza/CE")
+      const detail = await getDetail()
+      expect(detail.descricao).toMatch(/tradicional/)
+      expect(detail.localizacaoResumo).toBe(first.localizacaoResumo)
+    })
+
     it("recusa limit fora de 1–100", async () => {
       const res = await call("GET", "/eventos?limit=500")
       expect(res.status).toBe(422)

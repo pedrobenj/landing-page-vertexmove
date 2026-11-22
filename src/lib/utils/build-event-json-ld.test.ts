@@ -12,6 +12,7 @@ function event(overrides: Partial<PublicEventDetail> = {}): PublicEventDetail {
     dataEvento: "2026-12-06",
     horarioLargada: "05:30",
     localizacao: { localNome: "Beira-Mar", cidade: "Fortaleza", uf: "CE" },
+    localizacaoResumo: "Beira-Mar — Fortaleza/CE",
     imagemCapaUrl: null,
     ...overrides,
   }

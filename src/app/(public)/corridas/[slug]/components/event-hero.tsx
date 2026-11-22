@@ -5,12 +5,12 @@ import { Chevron } from "@/components/brand"
 import { CoverImage, PillBadge } from "@/components/sections"
 import { Button } from "@/components/ui/button"
 import { formatCurrency } from "@/lib/utils"
-import type { PublicEvent } from "@/types/api/event.interface"
+import type { PublicEventDetail } from "@/types/api/public-event-detail.interface"
 
 import { EventInfoList } from "./event-info-list"
 
 interface EventHeroProps {
-  event: PublicEvent
+  event: PublicEventDetail
   lowestPrice: number | null
   /** Sem preço: esgotado de fato, ou inscrições ainda não abertas (sem lote vigente). */
   soldOut: boolean

@@ -23,6 +23,7 @@ function buildEvent(overrides: Partial<PublicEventDetail> = {}): PublicEventDeta
     dataEvento: "2026-12-06",
     horarioLargada: "05:30",
     localizacao: { localNome: "Aterro", cidade: "Fortaleza", uf: "CE" },
+    localizacaoResumo: "Aterro — Fortaleza/CE",
     imagemCapaUrl: null,
     distancias: [distance],
     documentosVigentes: [regulation, term],

@@ -33,14 +33,21 @@ function toLocation(event: MockEvent): EventLocation {
   }
 }
 
+/** `resumoDaLocalizacao` do backend: "Local — Bairro, Cidade/UF" (sem bairro: "Local — Cidade/UF"). */
+export function toLocationSummary(event: Pick<MockEvent, "localNome" | "bairro" | "cidade" | "uf">): string {
+  const bairro = event.bairro?.trim() ?? ""
+  return `${event.localNome} — ${bairro ? `${bairro}, ` : ""}${event.cidade}/${event.uf}`
+}
+
+/** Item de `GET /eventos` e `/eventos/encerrados` (`presentEventoPublico`: sem `descricao`). */
 export function toPublicEvent(event: MockEvent): PublicEvent {
   return {
     slug: event.slug,
     nome: event.nome,
-    descricao: event.descricao,
     dataEvento: event.dataEvento,
     horarioLargada: event.horarioLargada,
     localizacao: toLocation(event),
+    localizacaoResumo: toLocationSummary(event),
     imagemCapaUrl: event.imagemCapaUrl,
   }
 }
@@ -51,7 +58,7 @@ export function toAdminEvent(event: MockEvent): AdminEvent {
   return {
     ...rest,
     localizacao: toLocation(event),
-    localizacaoResumo: `${event.localNome} — ${event.cidade}/${event.uf}`,
+    localizacaoResumo: toLocationSummary(event),
   }
 }
 
@@ -136,6 +143,7 @@ export function toPublicEventDetail(event: MockEvent): ApiPublicEventDetail {
   const db = getMockDb()
   return {
     ...toPublicEvent(event),
+    descricao: event.descricao,
     galeriaUrl: event.galeriaUrl,
     retiradaKit: event.retiradaKit,
     distancias: publicDistancesOf(event).map(toPublicDistance),

@@ -15,7 +15,14 @@ import type { CreatedRegistration, RegistrationLookupItem } from "@/types/api/re
 
 import { getMockDb, nextId } from "../mock-db"
 import { apiError, created, json, noContent, type MockRoute } from "../mock-http"
-import { findCurrentDocuments, findCurrentTier, isActiveRegistrationStatus, isSoldOut, maskName } from "../mock-mappers"
+import {
+  findCurrentDocuments,
+  findCurrentTier,
+  isActiveRegistrationStatus,
+  isSoldOut,
+  maskName,
+  toLocationSummary,
+} from "../mock-mappers"
 import { paginate } from "../mock-pagination"
 import { createRegistrationSchema, lookupSchema, mockPaymentSchema, receiptSchema, validate } from "../mock-schemas"
 import { ageOn, toFortalezaIso, todayInFortaleza } from "../mock-time"
@@ -99,7 +106,7 @@ function toReceipt(registration: MockRegistration): RegistrationReceipt {
       nome: event?.nome ?? "",
       dataEvento: event?.dataEvento ?? "",
       horarioLargada: event?.horarioLargada ?? "",
-      localizacaoResumo: event ? `${event.localNome} — ${event.cidade}/${event.uf}` : "",
+      localizacaoResumo: event ? toLocationSummary(event) : "",
     },
     distancia: db.distances.find((item) => item.id === registration.distanciaId)?.nome ?? "",
     kit: db.kits.find((item) => item.id === registration.kitId)?.nome ?? null,

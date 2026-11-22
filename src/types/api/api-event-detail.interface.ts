@@ -57,6 +57,7 @@ export interface ApiKitPickup {
 
 /** Resposta bruta de `GET /eventos/:slug` (backend real ou mock). */
 export interface ApiPublicEventDetail extends PublicEvent {
+  descricao: string | null
   galeriaUrl?: string | null
   retiradaKit?: ApiKitPickup | null
   distancias?: ApiPublicDistance[]

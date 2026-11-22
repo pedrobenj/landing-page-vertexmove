@@ -10,13 +10,14 @@ export interface EventLocation {
   longitude?: number | null
 }
 
-/** Item de `GET /eventos` (sem `id` nem `status`). */
+/** Item de `GET /eventos` e `GET /eventos/encerrados` (sem `id`, `status` nem `descricao`). */
 export interface PublicEvent {
   slug: string
   nome: string
-  descricao: string | null
   dataEvento: string // YYYY-MM-DD
   horarioLargada: string // HH:mm
   localizacao: EventLocation
+  /** "Local — Bairro, Cidade/UF" */
+  localizacaoResumo: string
   imagemCapaUrl: string | null
 }

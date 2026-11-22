@@ -17,6 +17,7 @@ function event(overrides: Partial<ApiPublicEventDetail> = {}): ApiPublicEventDet
     dataEvento: "2026-12-10",
     horarioLargada: "05:30",
     localizacao: { localNome: "Praça", cidade: "Fortaleza", uf: "CE" },
+    localizacaoResumo: "Praça — Fortaleza/CE",
     imagemCapaUrl: null,
     ...overrides,
   }
