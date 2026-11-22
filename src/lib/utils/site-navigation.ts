@@ -23,6 +23,7 @@ export const ADMIN_NAV_ITEM: NavItem = { label: "Área administrativa", href: "/
 export const ADMIN_PANEL_NAV_ITEMS: readonly NavItem[] = [
   { label: "Eventos", href: "/admin/eventos" },
   { label: "Tamanhos de camisa", href: "/admin/tamanhos-camisa" },
+  { label: "Corridas parceiras", href: "/admin/corridas-parceiras" },
   { label: "Pagamentos", href: "/admin/pagamentos" },
   { label: "Auditoria", href: "/admin/auditoria" },
   { label: "Loja", href: "/admin/loja/produtos" },

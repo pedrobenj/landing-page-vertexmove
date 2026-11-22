@@ -6,6 +6,7 @@ import { adminEventRoutes } from "./routes/admin-event-routes"
 import { adminPaymentRoutes } from "./routes/admin-payment-routes"
 import { adminRegistrationRoutes } from "./routes/admin-registration-routes"
 import { authRoutes } from "./routes/auth-routes"
+import { partnerRaceRoutes } from "./routes/partner-race-routes"
 import { publicRoutes } from "./routes/public-routes"
 import { registrationRoutes } from "./routes/registration-routes"
 import { storeRoutes } from "./routes/store-routes"
@@ -16,6 +17,7 @@ import { storeRoutes } from "./routes/store-routes"
  */
 export const mockRoutes: MockRoute[] = [
   ...publicRoutes,
+  ...partnerRaceRoutes,
   ...registrationRoutes,
   ...storeRoutes,
   ...authRoutes,

@@ -84,10 +84,11 @@ describe("endpoints de eventos (contra o mock)", () => {
     expect(cache.cacheLife).toHaveBeenCalledWith("seconds")
   })
 
-  it("trata 404 da rota proposta de corridas parceiras como lista vazia", async () => {
+  it("corridas parceiras: 404 é erro (a rota existe no backend), cacheado só por segundos", async () => {
     override.transport = respondWith(404, "RECURSO_NAO_ENCONTRADO")
 
-    expect(await listPartnerRaces()).toEqual([])
+    expect(await catchError(listPartnerRaces())).toMatchObject({ status: 404, codigo: "RECURSO_NAO_ENCONTRADO" })
+    expect(cache.cacheLife).toHaveBeenCalledWith("seconds")
   })
 
   it("relança falha transitória como ApiError e cacheia só por segundos", async () => {

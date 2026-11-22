@@ -8,7 +8,7 @@ import { EVENT_STATUS } from "@/enums/event-status.enum"
 import type { AuditEntry } from "@/types/api/audit-entry.interface"
 import type { EventDocument } from "@/types/api/document.interface"
 import type { Kit } from "@/types/api/kit.interface"
-import type { PartnerRace } from "@/types/api/partner-race.interface"
+import type { AdminPartnerRace } from "@/types/api/partner-race.interface"
 import type { PriceTier } from "@/types/api/price-tier.interface"
 import type { ShirtSize } from "@/types/api/shirt-size.interface"
 
@@ -348,7 +348,8 @@ function seedAudit(now: Date): AuditEntry[] {
 }
 
 /** Corridas de outras organizações (fictícias), com cupom exclusivo do Vertex. */
-function seedPartnerRaces(): PartnerRace[] {
+function seedPartnerRaces(now: Date): AdminPartnerRace[] {
+  const control = { ativo: true, ordem: 0, criadoEm: now.toISOString(), atualizadoEm: now.toISOString() }
   return [
     {
       id: 1,
@@ -363,6 +364,7 @@ function seedPartnerRaces(): PartnerRace[] {
       realizacao: "Assessoria Passo Firme",
       urlInscricao: "https://example.com/corridas/lagoa-de-messejana",
       imagemCapaUrl: null,
+      ...control,
     },
     {
       id: 2,
@@ -377,6 +379,7 @@ function seedPartnerRaces(): PartnerRace[] {
       realizacao: "Clube de Corrida Maré Alta",
       urlInscricao: "https://example.com/corridas/meia-do-por-do-sol",
       imagemCapaUrl: null,
+      ...control,
     },
     {
       id: 3,
@@ -391,6 +394,7 @@ function seedPartnerRaces(): PartnerRace[] {
       realizacao: null,
       urlInscricao: "https://example.com/corridas/noturna-centro-historico",
       imagemCapaUrl: null,
+      ...control,
     },
   ]
 }
@@ -435,7 +439,7 @@ export function createSeed(now: Date = new Date()): MockDb {
     registrations,
     payments,
     audit: seedAudit(now),
-    partnerRaces: seedPartnerRaces(),
+    partnerRaces: seedPartnerRaces(now),
     loginFailures: {},
   }
 }

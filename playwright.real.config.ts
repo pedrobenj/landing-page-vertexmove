@@ -29,6 +29,7 @@ export default defineConfig({
     "static-pages.spec.ts",
     "admin.spec.ts",
     "admin-events.spec.ts",
+    "admin-partner-races.spec.ts",
     "real/**/*.spec.ts",
   ],
   grepInvert: /@mock/,

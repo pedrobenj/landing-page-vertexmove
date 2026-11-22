@@ -1,7 +1,5 @@
 import "server-only"
 
-import { cacheLife } from "next/cache"
-
 import { ApiError, isApiError } from "../api-error"
 
 /**
@@ -41,17 +39,3 @@ export function unwrapCached<T>(result: CachedResult<T>): T {
  * de 300 s ou mais). `connection()` nas seções evitaria o aviso, mas tiraria do shell estático as listas
  * que hoje são pré-renderizadas quando a API responde.
  */
-
-/**
- * Falha de uma rota PROPOSTA (ainda pendente no backend, §16): 404 vira `empty` com o cacheLife normal;
- * as demais falhas ficam só alguns segundos. Chamar dentro do escopo `"use cache"`.
- */
-export function proposedRouteFailure<T>(error: unknown, empty: T): CachedResult<T> {
-  const failure = toCachedFailure(error)
-  if (failure.status === 404) {
-    cacheLife(SLOW_LIST_CACHE_LIFE)
-    return { ok: true, data: empty }
-  }
-  cacheLife("seconds")
-  return failure
-}

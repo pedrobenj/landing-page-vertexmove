@@ -140,7 +140,7 @@ Mapear no tema do shadcn/ui (CSS variables em `globals.css`):
 | `/inscricao/[code]` | Status da inscrição e botão "Pagar agora" (gera novo link do Checkout Pro se ainda pendente) | **pendente** (`GET` por código não existe) |
 | `/consulta` | Consulta por WhatsApp **ou** CPF → lista mascarada; cada item tem "Ver inscrição" (confirma a data de nascimento → detalhes + "Baixar comprovante (PDF)") | `POST /inscricoes/consulta`, `POST /inscricoes/comprovante`, `POST /inscricoes/comprovante/pagamento` |
 | `/loja`, `/loja/[slug]`, `/loja/carrinho`, `/loja/checkout`, `/pedido/[code]` | Loja de camisas e acessórios; `/pedido/[code]` tem "Pagar agora" (Checkout Pro, token em cookie `vm_pedido_<codigo>`) e é a volta do pagamento (`?pagamento=`) | `GET /loja/produtos[/:slug]`, `POST /loja/carrinho/precificar`, `POST /loja/pedidos`, `GET /loja/pedidos/:codigo`, `POST /loja/pedidos/:codigo/pagamentos` (fase 10) |
-| `/corridas-parceiras` | Corridas de parceiros com cupom exclusivo e link externo | **pendente** (conteúdo estático até haver endpoint) |
+| `/corridas-parceiras` | Corridas de parceiros com cupom exclusivo e link externo (ativas, de hoje em diante, pela `ordem`) | `GET /corridas-parceiras` |
 | `/sobre` | Conheça o Vertex: história, missão, fotos, números | estático |
 | `/parceiros` | Apoiadores (logos e links) | estático |
 | `/contato` | WhatsApp, Instagram, e-mail, treinos | estático |
@@ -163,6 +163,7 @@ Mapear no tema do shadcn/ui (CSS variables em `globals.css`):
 | `/admin/eventos/[id]/inscricoes/[inscricaoId]` | Detalhe com contato (o backend audita o acesso a PII), histórico, aceites, pagamentos; marcar/desfazer retirada; cancelar com motivo e confirmação dupla | `GET /admin/inscricoes/:id`, `POST\|DELETE /admin/inscricoes/:id/retirada-kit`, `POST /admin/inscricoes/:id/cancelar` |
 | `/admin/inscricoes/[id]` | Atalho da fila de pagamentos (a origem não traz a corrida): lê a inscrição e redireciona ao detalhe | `GET /admin/inscricoes/:id` |
 | `/admin/pagamentos` | Fila por situação (estorno pendente, em análise, valor divergente) com Conciliar e Estornar (motivo + confirmação dupla) conforme `acoes` | `GET /admin/pagamentos?situacao`, `POST /admin/pagamentos/:id/conciliar\|estornar` |
+| `/admin/corridas-parceiras`, `/nova`, `/[id]` | Corridas parceiras: lista (ativar/desativar na linha), cadastro, edição (ordem, ativo) e exclusão com confirmação. Actions invalidam a tag `partner-races` | `GET\|POST /admin/corridas-parceiras`, `GET\|PATCH\|DELETE /admin/corridas-parceiras/:id` (fase 8) |
 | `/admin/loja/produtos`, `/admin/loja/pedidos` | Produtos (estoque por diferença) e pedidos (filtro por status, pronto/retirado/cancelar) | `/admin/loja/produtos[/:id]`, `/admin/loja/pedidos[/:codigo]`, `POST .../pronto|retirado|cancelar` (fase 10) |
 
 Proteger `/admin/*` (exceto `/admin/login`) no `proxy.ts`, que também renova o access token (ver §8). Admin com `noindex`.
@@ -583,7 +584,7 @@ Antes de cada commit: `lint`, `typecheck` e `build` passando. Commits no padrão
 - [ ] Domínio/`SameSite` dos cookies em produção e CORS (se algum dia o browser chamar a API direto).
 - [ ] Loja (produtos, variantes, pedidos, estoque).
 - [x] Listagem pública de corridas encerradas: `GET /eventos/encerrados?cursor&limit` → `CursorPage<PublicEvent>` (fase 8). Falta: "Carregar mais" além de 50 edições, resultados/galeria.
-- [ ] Corridas parceiras (nome, data, distâncias, cupom, link externo, imagem) com CRUD no admin. Proposta: `GET /corridas-parceiras` → `PartnerRace[]` (já implementada no mock).
+- [x] Corridas parceiras com CRUD no admin: `GET /corridas-parceiras` → `PartnerRace[]` e `/admin/corridas-parceiras` (fase 8; links só https, objeto estrito).
 - [ ] Parceiros/apoiadores e números da comunidade: estáticos no front até haver endpoint (mock fornece dados de demonstração).
 
 ### Cliente

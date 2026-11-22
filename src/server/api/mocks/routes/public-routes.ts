@@ -71,13 +71,4 @@ export const publicRoutes: MockRoute[] = [
       return json(200, toEventAvailability(event), { headers: new Headers({ "Cache-Control": "no-store" }) })
     },
   },
-  {
-    // ROTA PROPOSTA — ainda pendente no backend (§16 do CLAUDE.md).
-    method: "GET",
-    path: "/corridas-parceiras",
-    handler: () => {
-      const races = [...getMockDb().partnerRaces].sort((a, b) => a.dataEvento.localeCompare(b.dataEvento))
-      return json(200, races)
-    },
-  },
 ]

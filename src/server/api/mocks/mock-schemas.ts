@@ -139,3 +139,34 @@ export const documentSchema = z.object({
   hashSha256: z.string().regex(/^[a-f0-9]{64}$/, "hashSha256 deve ter 64 caracteres hexadecimais."),
   vigenteEm: isoInstant,
 })
+
+/** Link externo só https (o backend recusa http e esquemas como `javascript:`). */
+const httpsUrl = z.url({ protocol: /^https$/ }).max(2048)
+/** Texto opcional como `textoOpcional` do backend: `""` vira `null`. */
+const optionalText = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .nullish()
+    .transform((value) => (value === "" ? null : value))
+
+/** `criarCorridaParceiraSchema` do backend (módulo `parceiras`): objeto estrito. */
+export const partnerRaceSchema = z.strictObject({
+  nome: z.string().trim().min(1).max(160),
+  dataEvento: z.iso.date(),
+  localNome: z.string().trim().min(1).max(160),
+  cidade: z.string().trim().min(1).max(80),
+  uf: z
+    .string()
+    .transform((value) => value.trim().toUpperCase())
+    .pipe(z.string().regex(/^[A-Z]{2}$/, "deve ter duas letras")),
+  distancias: z.array(z.string().trim().min(1).max(20)).max(10).optional(),
+  cupom: z.string().trim().min(1).max(40),
+  descontoPercentual: z.number().int().min(1).max(100),
+  realizacao: optionalText(160),
+  urlInscricao: httpsUrl,
+  imagemCapaUrl: httpsUrl.nullish(),
+  ativo: z.boolean().optional(),
+  ordem: z.number().int().min(0).max(32_767).optional(),
+})

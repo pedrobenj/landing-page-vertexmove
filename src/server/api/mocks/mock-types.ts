@@ -10,7 +10,7 @@ import type { AuditEntry } from "@/types/api/audit-entry.interface"
 import type { Distance } from "@/types/api/distance.interface"
 import type { EventDocument } from "@/types/api/document.interface"
 import type { Kit } from "@/types/api/kit.interface"
-import type { PartnerRace } from "@/types/api/partner-race.interface"
+import type { AdminPartnerRace } from "@/types/api/partner-race.interface"
 import type { PriceTier } from "@/types/api/price-tier.interface"
 import type { ShirtSize } from "@/types/api/shirt-size.interface"
 
@@ -110,7 +110,7 @@ export interface MockDb {
   registrations: MockRegistration[]
   payments: MockPayment[]
   audit: AuditEntry[]
-  partnerRaces: PartnerRace[]
+  partnerRaces: AdminPartnerRace[]
   /** Falhas de login seguidas por e-mail (lockout simplificado). */
   loginFailures: Record<string, number>
 }
