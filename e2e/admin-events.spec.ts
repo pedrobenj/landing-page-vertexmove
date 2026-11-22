@@ -70,8 +70,7 @@ test.describe("Admin — cadastro e publicação de corridas", () => {
     await expect(page.getByRole("heading", { level: 1, name: nome })).toBeVisible()
     await expect(main.getByText("Rascunho", { exact: true })).toBeVisible()
     await expect(page.getByRole("link", { name: "Distâncias e lotes" })).toBeVisible()
-    // Inscrições ainda sem endpoint: aparece como "Em breve", sem link.
-    await expect(page.getByRole("link", { name: /Inscrições/ })).toHaveCount(0)
+    await expect(page.getByRole("link", { name: "Inscrições" })).toHaveAttribute("href", /\/admin\/eventos\/\d+\/inscricoes$/)
 
     await page.getByRole("button", { name: "Publicar" }).click()
     await expect(main.getByText("Publicado", { exact: true })).toBeVisible({ timeout: 30_000 })

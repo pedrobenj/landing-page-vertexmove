@@ -24,7 +24,7 @@ E onde o organizador (admin), numa área protegida:
 - Cria e edita corridas, distâncias, lotes de preço, kits, tamanhos de camisa e documentos (regulamento/termo);
 - Controla o ciclo de vida da corrida (publicar, despublicar, encerrar, cancelar, restaurar, excluir);
 - Consulta a trilha de auditoria administrativa;
-- Acompanha inscrições e exporta a lista de inscritos (**endpoints pendentes no backend**).
+- Acompanha inscrições, marca a retirada de kit, cancela inscrições, exporta a lista de inscritos e resolve pagamentos pendentes (conciliar/estornar).
 
 **Público:** corredores amadores de Fortaleza e região, acessando majoritariamente **pelo celular, vindo do Instagram ou WhatsApp**. Mobile-first é obrigatório.
 
@@ -159,7 +159,10 @@ Mapear no tema do shadcn/ui (CSS variables em `globals.css`):
 | `/admin/eventos/[id]/documentos` | Regulamento e termo de responsabilidade versionados | `/admin/documentos?eventoId=` |
 | `/admin/tamanhos-camisa` | Catálogo global de tamanhos | `/admin/tamanhos-camisa` |
 | `/admin/auditoria` | Trilha de auditoria (cursor) | `GET /admin/auditoria` |
-| `/admin/eventos/[id]/inscricoes` | Inscritos, exportação CSV, retirada de kit | **pendente** |
+| `/admin/eventos/[id]/inscricoes` | Inscritos (filtros status/distância/busca, cursor), retirada de kit, exportação CSV (`inscricoes/export/route.ts`, streaming do backend) | `GET /admin/eventos/:id/inscricoes`, `GET /admin/eventos/:id/inscricoes.csv` |
+| `/admin/eventos/[id]/inscricoes/[inscricaoId]` | Detalhe com contato (o backend audita o acesso a PII), histórico, aceites, pagamentos; marcar/desfazer retirada; cancelar com motivo e confirmação dupla | `GET /admin/inscricoes/:id`, `POST\|DELETE /admin/inscricoes/:id/retirada-kit`, `POST /admin/inscricoes/:id/cancelar` |
+| `/admin/inscricoes/[id]` | Atalho da fila de pagamentos (a origem não traz a corrida): lê a inscrição e redireciona ao detalhe | `GET /admin/inscricoes/:id` |
+| `/admin/pagamentos` | Fila por situação (estorno pendente, em análise, valor divergente) com Conciliar e Estornar (motivo + confirmação dupla) conforme `acoes` | `GET /admin/pagamentos?situacao`, `POST /admin/pagamentos/:id/conciliar\|estornar` |
 | `/admin/loja/produtos`, `/admin/loja/pedidos` | Produtos (estoque por diferença) e pedidos (filtro por status, pronto/retirado/cancelar) | `/admin/loja/produtos[/:id]`, `/admin/loja/pedidos[/:codigo]`, `POST .../pronto|retirado|cancelar` (fase 10) |
 
 Proteger `/admin/*` (exceto `/admin/login`) no `proxy.ts`, que também renova o access token (ver §8). Admin com `noindex`.
@@ -568,7 +571,7 @@ Antes de cada commit: `lint`, `typecheck` e `build` passando. Commits no padrão
 - [x] Comprovante na consulta: `referencia` opaca em cada item de `POST /inscricoes/consulta` e `POST /inscricoes/comprovante` (`{ referencia, dataNascimento }` → dados da inscrição), com rate limit por IP. Pagar pela consulta: `POST /inscricoes/comprovante/pagamento`.
 - [ ] Endpoint para buscar inscrição por código (status/pagamento) — hoje a consulta não devolve código.
 - [ ] Pagamento via **Checkout Pro**: endpoint que cria a preferência e devolve `checkoutUrl` (`init_point`), webhook do Mercado Pago (validar assinatura `x-signature`, idempotente por `payment_id`), status da inscrição por código para a página de retorno, expiração de pendentes alinhada à preferência e novo link para "Pagar agora".
-- [ ] Listagem/exportação de inscrições no admin e marcação de retirada de kit.
+- [x] Listagem/exportação de inscrições no admin, marcação de retirada de kit, cancelamento pelo admin e fila de pagamentos (fase 5).
 - [ ] Campos extras na inscrição: sexo, equipe/assessoria, contato de emergência.
 - [ ] Campo de aceite/identificação do responsável legal para atletas menores de 18 anos.
 - [ ] Lista exata de `status` de evento e inscrição; matriz de permissões por `papel`.

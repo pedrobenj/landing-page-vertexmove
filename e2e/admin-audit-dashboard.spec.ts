@@ -66,11 +66,4 @@ test.describe("Admin — dashboard", () => {
     await expect(shortcuts.getByRole("link", { name: /Corridas/ })).toBeVisible()
     await expect(shortcuts.getByRole("link", { name: /Nova corrida/ })).toHaveCount(0)
   })
-
-  test("inscrições da corrida: em breve", async ({ page }) => {
-    await loginAsAdmin(page)
-    await page.goto("/admin/eventos/1/inscricoes")
-    await expect(page.getByRole("heading", { level: 1, name: "Inscrições" })).toBeVisible()
-    await expect(page.getByText("Em breve: aguardando endpoint do backend.")).toBeVisible()
-  })
 })
