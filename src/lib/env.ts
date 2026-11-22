@@ -17,6 +17,15 @@ const serverEnvSchema = z.object({
    * Hosts das imagens remotas (capas, fotos de kit, logos), separados por vírgula. Lido pelo
    * `next.config.ts` (images.remotePatterns, só https) no build; validado aqui para falhar cedo.
    */
+  /**
+   * Segredo compartilhado com o backend (fase 9): quando definido, toda chamada do Next à API leva
+   * `X-BFF-Secret` (em `apiFetchRaw`) e o backend pode recusar rotas públicas sem ele. Só servidor.
+   * Vazio = desligado.
+   */
+  BFF_SHARED_SECRET: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().min(32, "Use pelo menos 32 caracteres.").optional(),
+  ),
   IMAGE_REMOTE_HOSTS: z
     .string()
     .optional()

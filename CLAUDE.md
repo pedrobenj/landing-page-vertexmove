@@ -314,7 +314,7 @@ O navegador **nunca** chama a API diretamente nem vê tokens. Todo acesso passa 
 ### Estrutura
 ```
 src/server/api/
-├── api-client.ts          # apiFetch<T>(): base URL, JSON, timeout, X-Forwarded-For, parse de erro → ApiError
+├── api-client.ts          # apiFetch<T>(): base URL, JSON, timeout, X-Forwarded-For, X-BFF-Secret, parse de erro → ApiError
 ├── api-error.ts           # class ApiError { status, codigo, mensagem }
 ├── admin-session.ts       # leitura/gravação dos cookies de sessão, getAccessToken(), clearSession()
 ├── admin-fetch.ts         # adminFetch<T>(): apiFetch + Bearer; em 401 → redireciona ao login
@@ -323,6 +323,8 @@ src/server/api/
                            #   shirt-sizes.ts, documents.ts, registrations.ts, admin-auth.ts, audit.ts)
 ```
 Tudo em `src/server/` importa `server-only`.
+
+**Segredo do BFF (`X-BFF-Secret`):** com `BFF_SHARED_SECRET` definido (validado em `src/lib/env.ts`, mín. 32 caracteres), `apiFetchRaw` acrescenta `X-BFF-Secret` em **toda** chamada, inclusive admin, refresh do `proxy.ts` e rotas cacheadas; nenhum chamador o sobrescreve. É o ponto único: não montar esse header em outro lugar. Sem a variável nada muda. Nunca expor ao navegador (sem `NEXT_PUBLIC_`).
 
 ### Sessão do admin
 Cookies no domínio do Next, todos `HttpOnly`, `Secure`, `SameSite=Lax`, `path=/`:
@@ -515,6 +517,7 @@ export interface HttpResponse<T = unknown> {
 ```
 API_URL=http://localhost:3000        # Backend VertexMove (sem /api/v1)
 API_TIMEOUT_MS=10000
+BFF_SHARED_SECRET=                   # Opcional, mín. 32 chars, só servidor: vira o header X-BFF-Secret em toda chamada à API
 STORE_ENABLED=true                   # false mostra "Loja em breve" até o lançamento da loja
 NEXT_PUBLIC_SITE_URL=
 NEXT_PUBLIC_WHATSAPP_NUMBER=

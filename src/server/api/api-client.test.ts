@@ -2,7 +2,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const transport = vi.fn<(url: string, init: RequestInit) => Promise<Response>>()
 
-const mockEnv = vi.hoisted(() => ({ API_URL: "http://api.test", API_TIMEOUT_MS: 5_000, USE_MOCK_API: false }))
+const mockEnv = vi.hoisted(() => ({
+  API_URL: "http://api.test",
+  API_TIMEOUT_MS: 5_000,
+  USE_MOCK_API: false,
+  BFF_SHARED_SECRET: undefined as string | undefined,
+}))
 vi.mock("@/lib/env", () => ({ env: mockEnv }))
 vi.mock("./transport", () => ({ getTransport: async () => transport }))
 vi.mock("next/headers", () => ({
@@ -60,6 +65,26 @@ describe("apiFetch", () => {
     expect(init.method).toBe("POST")
     expect(init.body).toBe('{"distanciaId":1}')
     expect(headers.get("Content-Type")).toBe("application/json")
+  })
+
+  it("sem BFF_SHARED_SECRET não manda X-BFF-Secret", async () => {
+    transport.mockResolvedValue(jsonResponse(200, {}))
+    await apiFetch("/eventos")
+    expect(lastCall().headers.has("X-BFF-Secret")).toBe(false)
+  })
+
+  it("com BFF_SHARED_SECRET manda X-BFF-Secret em toda chamada, sem o chamador sobrescrever", async () => {
+    const secret = "s".repeat(32)
+    mockEnv.BFF_SHARED_SECRET = secret
+    transport.mockImplementation(async () => jsonResponse(200, {}))
+    try {
+      await apiFetch("/inscricoes/consulta", { method: "POST", body: {}, headers: { "X-BFF-Secret": "forjado" } })
+      expect(lastCall().headers.get("X-BFF-Secret")).toBe(secret)
+      await apiFetch("/eventos", { forwardClient: false })
+      expect(lastCall().headers.get("X-BFF-Secret")).toBe(secret)
+    } finally {
+      mockEnv.BFF_SHARED_SECRET = undefined
+    }
   })
 
   it("ignora barra final na API_URL", async () => {

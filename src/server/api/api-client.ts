@@ -64,7 +64,10 @@ async function toApiError(res: Response): Promise<ApiError> {
   )
 }
 
-/** Chamada à API VertexMove. Nunca loga corpos de request/response (LGPD). */
+/**
+ * Chamada à API VertexMove. Nunca loga corpos de request/response (LGPD). Com `BFF_SHARED_SECRET`,
+ * manda `X-BFF-Secret` (o backend reconhece o BFF).
+ */
 export async function apiFetchRaw<T>(path: string, options: ApiFetchOptions = {}): Promise<ApiResult<T>> {
   const { method = "GET", body, query, forwardClient = true } = options
   const hasBody = body !== undefined
@@ -74,6 +77,8 @@ export async function apiFetchRaw<T>(path: string, options: ApiFetchOptions = {}
     ...(hasBody ? { "Content-Type": "application/json" } : {}),
     ...(forwardClient ? await getForwardHeaders() : {}),
     ...options.headers,
+    // Por último: nenhum chamador sobrescreve. Ponto único para todas as chamadas (inclusive admin).
+    ...(env.BFF_SHARED_SECRET ? { "X-BFF-Secret": env.BFF_SHARED_SECRET } : {}),
   }
 
   const transport = await getTransport()
