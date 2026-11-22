@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest"
 
 import { DOCUMENT_TYPE } from "@/enums/document-type.enum"
 import type { ApiPublicEventDetail } from "@/types/api/api-event-detail.interface"
+import type { EventAvailability } from "@/types/api/event-availability.interface"
+import type { PublicDistance, PublicEventDetail } from "@/types/api/public-event-detail.interface"
 
-import { toPublicEventDetail } from "./to-public-event-detail"
+import { applyAvailability, toPublicEventDetail } from "./to-public-event-detail"
 
 const NOW = new Date("2026-11-12T12:00:00-03:00")
 
@@ -90,5 +92,54 @@ describe("toPublicEventDetail", () => {
     )
     expect(result.kits?.[0]?.precoCentavos).toBe(0)
     expect(result.tamanhosCamisa?.[0]?.ativo).toBe(true)
+  })
+})
+
+describe("applyAvailability", () => {
+  const distance = (id: number, overrides: Partial<PublicDistance> = {}): PublicDistance => ({
+    id,
+    nome: `${id} km`,
+    distanciaMetros: id * 1000,
+    loteVigente: { nome: "Lote local", precoCentavos: 5000 },
+    esgotado: false,
+    ...overrides,
+  })
+  const detail = (distancias?: PublicDistance[]): PublicEventDetail => ({ ...toPublicEventDetail(event(), NOW), distancias })
+  const availability = (distancias: EventAvailability["distancias"]): EventAvailability => ({
+    eventoSlug: "corrida",
+    calculadoEm: "2026-11-12T12:00:00-03:00",
+    distancias,
+  })
+
+  it("sobrescreve loteVigente e esgotado por distanciaId", () => {
+    const result = applyAvailability(
+      detail([distance(5), distance(10)]),
+      availability([
+        { distanciaId: 10, esgotado: true, loteVigente: null },
+        { distanciaId: 5, esgotado: false, loteVigente: { id: 4, nome: "2º lote", precoCentavos: 8900 } },
+      ]),
+    )
+    expect(result.distancias?.[0]).toMatchObject({ loteVigente: { nome: "2º lote", precoCentavos: 8900 }, esgotado: false })
+    expect(result.distancias?.[1]).toMatchObject({ loteVigente: null, esgotado: true })
+  })
+
+  it("distância ausente na disponibilidade mantém o cálculo local", () => {
+    const result = applyAvailability(detail([distance(5)]), availability([]))
+    expect(result.distancias?.[0]).toEqual(distance(5))
+  })
+
+  it("loteVigente null vindo do servidor vence o lote local (inscrições em breve)", () => {
+    const result = applyAvailability(detail([distance(5)]), availability([{ distanciaId: 5, esgotado: false, loteVigente: null }]))
+    expect(result.distancias?.[0]?.loteVigente).toBeNull()
+  })
+
+  it("sem disponibilidade (falhou) devolve o detalhe como está", () => {
+    const original = detail([distance(5)])
+    expect(applyAvailability(original, null)).toBe(original)
+  })
+
+  it("sem distâncias no detalhe não inventa nenhuma", () => {
+    const result = applyAvailability(detail(undefined), availability([{ distanciaId: 5, esgotado: true, loteVigente: null }]))
+    expect(result.distancias).toBeUndefined()
   })
 })

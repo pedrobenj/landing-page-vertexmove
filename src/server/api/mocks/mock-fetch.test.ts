@@ -1,12 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import type { AdminLoginResponse } from "@/types/api/admin-auth.interface"
+import type { ApiPublicEventDetail } from "@/types/api/api-event-detail.interface"
 import type { AdminEvent } from "@/types/api/admin-event.interface"
 import type { AuditEntry } from "@/types/api/audit-entry.interface"
 import type { CursorPage } from "@/types/api/cursor-page.interface"
+import type { EventAvailability } from "@/types/api/event-availability.interface"
 import type { PublicEvent } from "@/types/api/event.interface"
 import type { PartnerRace } from "@/types/api/partner-race.interface"
-import type { PublicEventDetail } from "@/types/api/public-event-detail.interface"
 import type { ApiCheckout, ApiRegistrationStatus } from "@/types/api/registration-details.interface"
 import type { RegistrationReceipt } from "@/types/api/registration-receipt.interface"
 import type { CreatedRegistration, RegistrationLookupItem } from "@/types/api/registration.interface"
@@ -36,8 +37,8 @@ const VALID_CPF = "52998224725"
 const OTHER_CPF = "11144477735"
 const SLUG = "corrida-vertex-beira-mar-2026"
 
-async function getDetail(slug = SLUG): Promise<PublicEventDetail> {
-  return (await (await call("GET", `/eventos/${slug}`)).json()) as PublicEventDetail
+async function getDetail(slug = SLUG): Promise<ApiPublicEventDetail> {
+  return (await (await call("GET", `/eventos/${slug}`)).json()) as ApiPublicEventDetail
 }
 
 async function registrationBody(overrides: Record<string, unknown> = {}): Promise<Record<string, unknown>> {
@@ -128,13 +129,16 @@ describe("mockFetch", () => {
       expect(races.every((race) => race.cupom === "VERTEX10")).toBe(true)
     })
 
-    it("devolve o detalhe com distâncias, lote vigente, kits, tamanhos e documentos", async () => {
+    it("devolve o detalhe com distâncias, lotes, kits, tamanhos e documentos", async () => {
       const detail = await getDetail()
 
       expect(detail.nome).toBe("Corrida Vertex Beira-Mar 2026")
       expect(detail).not.toHaveProperty("id")
       expect(detail.distancias!.map((distance) => distance.nome)).toEqual(["5 km", "10 km", "Caminhada 3 km"])
-      expect(detail.distancias![0].loteVigente).toEqual({ nome: "1º lote", precoCentavos: 8990 })
+      // Como o backend (`evento.presenter.ts`): lotes ativos com janela; lote vigente e esgotado vêm da disponibilidade.
+      expect(detail.distancias![0].lotes!.map((tier) => [tier.nome, tier.precoCentavos])).toContainEqual(["1º lote", 8990])
+      expect(detail.distancias![0]).not.toHaveProperty("loteVigente")
+      expect(detail.distancias![0]).not.toHaveProperty("esgotado")
       expect(detail.kits!.map((kit) => [kit.nome, kit.precoCentavos])).toEqual([
         ["Kit Camisa + Medalha", 5000],
         ["Kit Camisa", 3000],
@@ -143,12 +147,28 @@ describe("mockFetch", () => {
       expect(detail.documentosVigentes!.map((document) => document.tipo)).toEqual(["regulamento", "termo_responsabilidade"])
     })
 
-    it("marca a distância lotada como esgotada", async () => {
+    it("disponibilidade: lote vigente por distância e a lotada como esgotada", async () => {
       const detail = await getDetail("night-run-vertex-aterro")
-      const tenK = detail.distancias!.find((distance) => distance.nome === "10 km")!
+      const tenKId = detail.distancias!.find((distance) => distance.nome === "10 km")!.id
+      const res = await call("GET", "/eventos/night-run-vertex-aterro/disponibilidade")
+      const availability = (await res.json()) as EventAvailability
 
-      expect(tenK.esgotado).toBe(true)
-      expect(detail.distancias!.filter((distance) => distance.esgotado)).toHaveLength(1)
+      expect(res.status).toBe(200)
+      expect(res.headers.get("Cache-Control")).toBe("no-store")
+      expect(availability.eventoSlug).toBe("night-run-vertex-aterro")
+      expect(availability.calculadoEm).toMatch(/-03:00$/)
+      expect(availability.distancias.map((item) => item.distanciaId)).toEqual(detail.distancias!.map((item) => item.id))
+      expect(availability.distancias.filter((item) => item.esgotado).map((item) => item.distanciaId)).toEqual([tenKId])
+      expect(availability.distancias[0]!.loteVigente).toMatchObject({ nome: "1º lote", precoCentavos: expect.any(Number) })
+      expect(availability.distancias[0]!.loteVigente).toHaveProperty("id")
+    })
+
+    it("disponibilidade responde 404 para evento não publicado", async () => {
+      for (const slug of ["corrida-de-natal-vertex-2026", "nao-existe"]) {
+        const res = await call("GET", `/eventos/${slug}/disponibilidade`)
+        expect(res.status).toBe(404)
+        expect(await errorCode(res)).toBe("RECURSO_NAO_ENCONTRADO")
+      }
     })
 
     it("responde 404 para evento em rascunho ou encerrado", async () => {
@@ -265,7 +285,7 @@ describe("mockFetch", () => {
 
     it("recusa distância esgotada", async () => {
       const detail = await getDetail("night-run-vertex-aterro")
-      const soldOut = detail.distancias!.find((distance) => distance.esgotado)!
+      const soldOut = detail.distancias!.find((distance) => distance.nome === "10 km")!
 
       const res = await call("POST", "/inscricoes", {
         body: await registrationBody({

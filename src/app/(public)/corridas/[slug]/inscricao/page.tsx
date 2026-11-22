@@ -7,7 +7,7 @@ import { ServerError } from "@/components/feedback"
 import { SectionBand, SectionHeading } from "@/components/sections"
 import { formatApiDateLong, getRegistrationAvailability } from "@/lib/utils"
 import { isApiError } from "@/server/api/api-error"
-import { getPublicEvent } from "@/server/api/endpoints/events"
+import { getPublicEventWithAvailability } from "@/server/api/endpoints/availability"
 import type { PublicEventDetail } from "@/types/api/public-event-detail.interface"
 
 import { RegistrationClosedNotice, RegistrationWizard } from "./components"
@@ -28,7 +28,8 @@ export default async function RegistrationPage({ params }: PageProps<"/corridas/
 
   let event: PublicEventDetail
   try {
-    event = await getPublicEvent(slug)
+    // Detalhe (cache) + disponibilidade (sem cache) em paralelo; sem disponibilidade, vale o lote local.
+    event = await getPublicEventWithAvailability(slug)
   } catch (error) {
     if (isApiError(error) && error.status === 404) notFound()
     console.error("[RegistrationPage]", error instanceof Error ? error.name : "erro desconhecido")

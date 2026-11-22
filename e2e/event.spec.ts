@@ -40,6 +40,12 @@ test.describe("Página da corrida", () => {
     await expect(tenKm.getByText("R$")).toHaveCount(0)
   })
 
+  test("no formulário, a distância esgotada (disponibilidade do servidor) fica desabilitada", async ({ page }) => {
+    await page.goto("/corridas/night-run-vertex-aterro/inscricao")
+    await expect(page.getByRole("radio", { name: /^10 km/ })).toBeDisabled()
+    await expect(page.getByRole("radio", { name: /^5 km/ })).toBeEnabled()
+  })
+
   test("slug inexistente e rascunho respondem 404", async ({ page }) => {
     for (const slug of ["nao-existe", "corrida-de-natal-vertex-2026"]) {
       const response = await page.goto(`/corridas/${slug}`)

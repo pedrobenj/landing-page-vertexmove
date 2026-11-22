@@ -5,7 +5,7 @@ import { EVENT_STATUS } from "@/enums/event-status.enum"
 
 import { getMockDb } from "../mock-db"
 import { apiError, json, type MockRoute } from "../mock-http"
-import { toPublicEvent, toPublicEventDetail } from "../mock-mappers"
+import { toEventAvailability, toPublicEvent, toPublicEventDetail } from "../mock-mappers"
 import { paginate } from "../mock-pagination"
 import type { MockEvent } from "../mock-types"
 
@@ -40,6 +40,16 @@ export const publicRoutes: MockRoute[] = [
       const event = eventsWithStatus(EVENT_STATUS.PUBLISHED).find((item) => item.slug === params.slug)
       if (!event) return apiError(404, API_ERROR_CODE.NOT_FOUND, "Evento não encontrado.")
       return json(200, toPublicEventDetail(event))
+    },
+  },
+  {
+    // Como o backend (módulo Inscrição, `@NoStore()`): calculada a cada request.
+    method: "GET",
+    path: "/eventos/:slug/disponibilidade",
+    handler: ({ params }) => {
+      const event = eventsWithStatus(EVENT_STATUS.PUBLISHED).find((item) => item.slug === params.slug)
+      if (!event) return apiError(404, API_ERROR_CODE.NOT_FOUND, "Evento não encontrado.")
+      return json(200, toEventAvailability(event), { headers: new Headers({ "Cache-Control": "no-store" }) })
     },
   },
   {

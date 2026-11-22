@@ -6,6 +6,7 @@ import { SectionBand, SectionHeading } from "@/components/sections"
 import { publicEnv } from "@/lib/public-env"
 import { buildEventJsonLd, getLowestPrice, isSoldOut, serializeJsonLd, truncateText } from "@/lib/utils"
 import { isApiError } from "@/server/api/api-error"
+import { getPublicEventWithAvailability } from "@/server/api/endpoints/availability"
 import { getPublicEvent } from "@/server/api/endpoints/events"
 import type { PublicEventDetail } from "@/types/api/public-event-detail.interface"
 
@@ -60,7 +61,8 @@ export default async function EventPage({ params }: PageProps<"/corridas/[slug]"
 
   let event: PublicEventDetail
   try {
-    event = await getPublicEvent(slug)
+    // Detalhe (cache) + disponibilidade (sem cache) em paralelo; sem disponibilidade, vale o lote local.
+    event = await getPublicEventWithAvailability(slug)
   } catch (error) {
     if (isApiError(error) && error.status === 404) notFound()
     console.error("[EventPage]", error)
