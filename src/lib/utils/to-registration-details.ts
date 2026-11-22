@@ -12,8 +12,8 @@ export function toRegistrationDetails(raw: ApiRegistrationStatus): RegistrationD
       horarioLargada: raw.horarioLargada ?? null,
     },
     distancia: raw.distanciaNome,
-    valorBaseCentavos: null,
-    valorDescontoCentavos: null,
+    valorBaseCentavos: raw.valorBaseCentavos ?? null,
+    valorDescontoCentavos: raw.valorDescontoCentavos ?? null,
     valorTotalCentavos: raw.valorTotalCentavos,
     pagamento: raw.pagamento ? { status: raw.pagamento.status } : null,
   }

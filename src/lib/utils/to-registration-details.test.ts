@@ -44,4 +44,21 @@ describe("toRegistrationDetails", () => {
     expect(details.evento).toEqual({ slug: "corrida", nome: "Corrida", dataEvento: "2026-12-10", horarioLargada: "05:30" })
     expect(details.pagamento).toBeNull()
   })
+
+  it("usa valor base e desconto quando o backend envia", () => {
+    const details = toRegistrationDetails({
+      ...base,
+      valorBaseCentavos: 10000,
+      valorDescontoCentavos: 2000,
+      pagamento: null,
+    })
+    expect(details.valorBaseCentavos).toBe(10000)
+    expect(details.valorDescontoCentavos).toBe(2000)
+    expect(details.valorTotalCentavos).toBe(8000)
+  })
+
+  it("mantém desconto zero (não confunde com ausência)", () => {
+    const details = toRegistrationDetails({ ...base, valorBaseCentavos: 8000, valorDescontoCentavos: 0, pagamento: null })
+    expect(details.valorDescontoCentavos).toBe(0)
+  })
 })

@@ -3,8 +3,8 @@ import type { REGISTRATION_STATUS } from "@/enums/registration-status.enum"
 
 /**
  * Status da inscrição como as telas usam (`/inscricao/retorno` e `/inscricao/[code]`), sem PII.
- * Montado a partir de `ApiRegistrationStatus` por `toRegistrationDetails`: campos que o backend ainda
- * não envia (slug, data, valores base/desconto) chegam como `null`.
+ * Montado a partir de `ApiRegistrationStatus` por `toRegistrationDetails`: campos da fase 3 ausentes
+ * na resposta (backend mais antigo) chegam como `null`.
  */
 export interface RegistrationDetails {
   codigo: string
@@ -40,10 +40,12 @@ export interface ApiRegistrationStatus {
   valorTotalCentavos: number
   eventoNome: string
   distanciaNome: string
-  /** Campos que a fase 3 pede ao backend; opcionais até lá. */
+  /** Dados da prova (fase 3). Opcionais para tolerar um backend sem eles. */
   eventoSlug?: string
-  dataEvento?: string
-  horarioLargada?: string
+  dataEvento?: string // YYYY-MM-DD
+  horarioLargada?: string // HH:mm
+  valorBaseCentavos?: number
+  valorDescontoCentavos?: number
   pagamento: ApiCheckout | null
 }
 

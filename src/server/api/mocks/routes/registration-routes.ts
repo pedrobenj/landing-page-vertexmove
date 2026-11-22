@@ -67,10 +67,7 @@ function toCheckout(registration: MockRegistration, status: PAYMENT_STATUS): Api
   }
 }
 
-/**
- * `StatusInscricaoResponse` do backend. Inclui `eventoSlug`, `dataEvento` e `horarioLargada`, que a fase 3
- * do plano pede ao backend (o front trata a ausência deles).
- */
+/** `StatusInscricaoResponse` do backend, com os dados da prova e os valores (fase 3). */
 function toStatus(registration: MockRegistration): ApiRegistrationStatus {
   const db = getMockDb()
   const event = db.events.find((item) => item.id === registration.eventoId)
@@ -78,6 +75,8 @@ function toStatus(registration: MockRegistration): ApiRegistrationStatus {
     codigo: registration.codigo,
     status: registration.status,
     expiraEm: holdExpiresAt(registration),
+    valorBaseCentavos: registration.valorBaseCentavos,
+    valorDescontoCentavos: registration.valorDescontoCentavos,
     valorTotalCentavos: registration.valorTotalCentavos,
     eventoNome: event?.nome ?? "",
     distanciaNome: db.distances.find((item) => item.id === registration.distanciaId)?.nome ?? "",
