@@ -3,6 +3,7 @@ import "server-only"
 import type { MockRoute } from "./mock-http"
 import { adminCatalogRoutes } from "./routes/admin-catalog-routes"
 import { adminEventRoutes } from "./routes/admin-event-routes"
+import { adminManagementRoutes } from "./routes/admin-management-routes"
 import { adminPaymentRoutes } from "./routes/admin-payment-routes"
 import { adminRegistrationRoutes } from "./routes/admin-registration-routes"
 import { authRoutes } from "./routes/auth-routes"
@@ -21,6 +22,7 @@ export const mockRoutes: MockRoute[] = [
   ...registrationRoutes,
   ...storeRoutes,
   ...authRoutes,
+  ...adminManagementRoutes,
   ...adminCatalogRoutes,
   ...adminRegistrationRoutes,
   ...adminPaymentRoutes,

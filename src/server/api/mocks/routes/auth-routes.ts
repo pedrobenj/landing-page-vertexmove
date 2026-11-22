@@ -41,7 +41,7 @@ function requireRefreshSession(ctx: MockContext): MockAdmin | Response {
   if (adminId !== null && !csrfMatchesRefresh(csrfCookie, ctx.cookies.vm_admin_rt)) {
     return apiError(403, API_ERROR_CODE.ACCESS_DENIED, "Token CSRF ausente ou inválido.")
   }
-  const admin = adminId === null ? undefined : getMockDb().admins.find((item) => item.id === adminId)
+  const admin = adminId === null ? undefined : getMockDb().admins.find((item) => item.id === adminId && item.ativo)
   return admin ?? apiError(401, API_ERROR_CODE.NOT_AUTHENTICATED, "Sessão expirada.")
 }
 
@@ -62,7 +62,7 @@ export const authRoutes: MockRoute[] = [
       if ((db.loginFailures[email] ?? 0) >= MAX_LOGIN_FAILURES) return invalid()
 
       const admin = db.admins.find((item) => item.email === email)
-      if (!admin || admin.senha !== input.senha) {
+      if (!admin || !admin.ativo || admin.senha !== input.senha) {
         db.loginFailures[email] = (db.loginFailures[email] ?? 0) + 1
         return invalid()
       }
@@ -71,6 +71,7 @@ export const authRoutes: MockRoute[] = [
         return apiError(403, API_ERROR_CODE.MFA_REQUIRED, "Esta conta exige verificação em duas etapas.")
       }
 
+      admin.ultimoAcessoEm = new Date().toISOString()
       const session = issueSession(admin.id)
       const response: AdminLoginResponse = {
         accessToken: session.accessToken,

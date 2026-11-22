@@ -403,6 +403,7 @@ export function createSeed(now: Date = new Date()): MockDb {
   const events = seedEvents()
   const { distances, priceTiers } = seedDistancesAndTiers(events, now)
   const { registrations, payments } = seedRegistrations(now)
+  const adminControl = { ativo: true, ultimoAcessoEm: null, criadoEm: now.toISOString() }
   return {
     events,
     distances,
@@ -418,6 +419,7 @@ export function createSeed(now: Date = new Date()): MockDb {
         senha: MOCK_ADMIN_PASSWORD,
         papel: ADMIN_ROLE.ORGANIZATION,
         mfaAtivo: false,
+        ...adminControl,
       },
       {
         id: 2,
@@ -426,6 +428,7 @@ export function createSeed(now: Date = new Date()): MockDb {
         senha: MOCK_ADMIN_PASSWORD,
         papel: ADMIN_ROLE.OPERATOR,
         mfaAtivo: false,
+        ...adminControl,
       },
       {
         id: 3,
@@ -434,6 +437,7 @@ export function createSeed(now: Date = new Date()): MockDb {
         senha: MOCK_ADMIN_PASSWORD,
         papel: ADMIN_ROLE.SUPER_ADMIN,
         mfaAtivo: true,
+        ...adminControl,
       },
     ],
     registrations,

@@ -34,6 +34,10 @@ export interface MockAdmin {
   senha: string
   papel: ADMIN_ROLE
   mfaAtivo: boolean
+  /** Desativado não entra nem usa tokens já emitidos (gestão de admins, fase 8). */
+  ativo: boolean
+  ultimoAcessoEm: string | null
+  criadoEm: string
 }
 
 export interface MockRegistration {

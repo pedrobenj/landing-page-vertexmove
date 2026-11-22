@@ -15,7 +15,7 @@ import type { MockAdmin } from "./mock-types"
  */
 export function requireAdmin(ctx: MockContext): MockAdmin | Response {
   const adminId = readBearer(ctx.headers)
-  const admin = adminId === null ? undefined : getMockDb().admins.find((item) => item.id === adminId)
+  const admin = adminId === null ? undefined : getMockDb().admins.find((item) => item.id === adminId && item.ativo)
   return admin ?? apiError(401, API_ERROR_CODE.NOT_AUTHENTICATED, "Autenticação necessária.")
 }
 

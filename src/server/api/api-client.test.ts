@@ -141,7 +141,7 @@ describe("apiFetch", () => {
 
     const error = await catchError(apiFetch("/admin/eventos", { method: "POST", body: {} }))
 
-    expect(error).toMatchObject({ status: 422, codigo: "DADO_INVALIDO", campo: "endereco" })
+    expect(error).toMatchObject({ status: 422, codigo: "DADO_INVALIDO", campo: "endereco", regra: "invalid_type" })
   })
 
   it("guarda `error.dados` (ex.: o carrinho do 409 CARRINHO_ALTERADO)", async () => {

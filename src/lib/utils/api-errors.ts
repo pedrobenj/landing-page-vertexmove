@@ -38,6 +38,10 @@ const MESSAGES: Partial<Record<string, string>> = {
   [API_ERROR_CODE.RESERVATION_EXPIRED]: "O prazo para pagar esta inscrição acabou e a vaga foi liberada. Faça uma nova inscrição.",
   [API_ERROR_CODE.GATEWAY_UNAVAILABLE]: "O Mercado Pago não respondeu. Tente novamente em instantes.",
   [API_ERROR_CODE.PAYMENT_NOT_FOUND]: "Pagamento não encontrado. Recarregue a página.",
+  [API_ERROR_CODE.ADMIN_EMAIL_IN_USE]: "Já existe um admin com este e-mail.",
+  [API_ERROR_CODE.LAST_ACTIVE_ADMIN]: "Não é possível desativar o último admin ativo.",
+  [API_ERROR_CODE.OWN_ADMIN_OPERATION]: "Esta ação não pode ser feita na sua própria conta. Para trocar sua senha, use Minha conta.",
+  [API_ERROR_CODE.WRONG_CURRENT_PASSWORD]: "A senha atual não confere.",
   [API_ERROR_CODE.INVALID_CHECKOUT_URL]: "Não foi possível abrir o pagamento. Tente novamente em instantes.",
 }
 

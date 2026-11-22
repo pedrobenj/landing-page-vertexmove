@@ -173,3 +173,19 @@ export const partnerRaceSchema = z.strictObject({
   ativo: z.boolean().optional(),
   ordem: z.number().int().min(0).max(32_767).optional(),
 })
+
+/** `criarAdminSchema` do backend: estrito, sem senha (o sistema gera uma temporária). */
+export const managedAdminSchema = z.strictObject({
+  nome: z.string().trim().min(1).max(160),
+  email: z
+    .string()
+    .trim()
+    .transform((value) => value.toLowerCase())
+    .pipe(z.email().max(254)),
+})
+
+/** `trocarSenhaSchema` do backend (senhas sem trim). Tamanho e senhas óbvias são conferidos na rota. */
+export const changePasswordSchema = z.strictObject({
+  senhaAtual: z.string().min(1).max(512),
+  novaSenha: z.string().min(1).max(128),
+})
