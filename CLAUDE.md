@@ -209,7 +209,8 @@ Papéis vistos no seed: organização (`admin@example.com`), operador (`operador
 | Método | Rota | Observações |
 |---|---|---|
 | GET | `/eventos?cursor&limit` | Só publicadas; **não** expõe `status` |
-| GET | `/eventos/:slug` | Detalhe público com `localizacao` (objeto) e sem `id`. Rascunho/encerrada/cancelada/arquivada → 404 |
+| GET | `/eventos/:slug` | Detalhe público com `localizacao` (objeto) e sem `id`; distâncias com `lotes[]` (sem lote vigente nem esgotado). Rascunho/encerrada/cancelada/arquivada → 404. Cacheado (~60 s) |
+| GET | `/eventos/:slug/disponibilidade` | `{ eventoSlug, calculadoEm, distancias: [{ distanciaId, esgotado, loteVigente: { id, nome, precoCentavos } \| null }] }`. **Sem cache** (`endpoints/availability.ts`), buscado em paralelo com o detalhe nas páginas da corrida e da inscrição; `applyAvailability` sobrescreve `loteVigente`/`esgotado`. Se falhar, vale o lote calculado no front a partir de `lotes[]` (sem esgotado) |
 
 ### Catálogo admin (Bearer)
 - **Evento** — `POST /admin/eventos`, `GET /admin/eventos?status&limit&cursor`, `GET|PATCH|DELETE /admin/eventos/:id` (DELETE = soft delete).
@@ -268,7 +269,7 @@ Papéis vistos no seed: organização (`admin@example.com`), operador (`operador
 
 O backend é a autoridade. O front **valida para UX** e **nunca** calcula preço, vaga ou lote para decidir algo — exibe o que a API retorna.
 
-- **Preço/lote/vagas:** exibir o que vier do detalhe público do evento; a cobrança é o `valorTotalCentavos` devolvido por `POST /inscricoes`.
+- **Preço/lote/vagas:** lote vigente e esgotado vêm de `GET /eventos/:slug/disponibilidade` (o backend conta as vagas); o cálculo local do lote a partir de `lotes[]` é só fallback para quando a disponibilidade falha. A cobrança é o `valorTotalCentavos` devolvido por `POST /inscricoes`.
 - **Kit:** cada kit tem preço próprio (`precoCentavos`) somado ao lote; sem kit, paga só o lote. O resumo mostra a prévia (lote + kit = total); o valor cobrado é o que a API devolver. No mock, o desconto 60+ incide só sobre o lote.
 - **Normalização antes de enviar:** CPF só dígitos (`normalizeCpf`), WhatsApp em E.164 `+55DDDNÚMERO` (`toE164Phone`), datas `YYYY-MM-DD`. Máscaras apenas na UI.
 - **Validação local (Zod):** dígitos do CPF (`isValidCpf`), WhatsApp brasileiro válido, nascimento no passado, pelo menos CPF ou WhatsApp, ambos os documentos aceitos.
@@ -509,6 +510,14 @@ export interface HttpResponse<T = unknown> {
 - `API_URL` e demais segredos só no servidor; nunca com prefixo `NEXT_PUBLIC_`.
 - Não logar corpos de request/response de inscrição, consulta ou login.
 - Headers de segurança no `next.config` (CSP, `Referrer-Policy: no-referrer` nas páginas de inscrição/consulta).
+- HSTS (`max-age=63072000; includeSubDomains; preload`) só com `NODE_ENV=production` (`src/lib/utils/security-headers.ts`); a Vercel já manda, fora dela é o Next que garante.
+
+### O que o deploy precisa garantir (IP do cliente e rate limit)
+O rate limit do backend vale por IP. Como as chamadas saem do servidor do Next, `client-ip.ts` repassa o IP do atleta em `X-Forwarded-For` (um único IP) e o backend o lê com `TRUST_PROXY_HOPS` (Express `trust proxy`).
+- **IP de origem no Next:** `client-ip.ts` usa `x-real-ip` e, sem ele, o **primeiro** item do `x-forwarded-for`. Na Vercel o `x-real-ip` é definido pela plataforma e não é forjável. Fora da Vercel, o proxy da frente (nginx, load balancer) **precisa sobrescrever** `X-Real-IP` com o IP real e o Next não pode ser acessível direto pela internet; senão o atleta forja o IP e o limite não vale.
+- **Backend:** só o Next (e o Mercado Pago no webhook e no retorno do checkout) deve alcançar a API. Com o backend recebendo o Next direto, `TRUST_PROXY_HOPS=1`; se houver um load balancer entre os dois que acrescente ao `X-Forwarded-For`, some 1 por salto. Backend exposto à internet com `TRUST_PROXY_HOPS>=1` aceita IP forjado.
+- **Segredo do BFF:** definir `BFF_SHARED_SECRET` igual nos dois lados para o backend recusar rotas públicas que não venham do Next (§8).
+- Rotas cacheadas (`"use cache"`, catálogo público) não têm request: saem sem IP do atleta (`forwardClient: false`), contando no IP do servidor do Next. O backend não deve limitar essas rotas de forma agressiva.
 
 ---
 
@@ -553,6 +562,7 @@ Antes de cada commit: `lint`, `typecheck` e `build` passando. Commits no padrão
 ## 16. Pendências e decisões em aberto
 
 ### Backend (combinar com o time da API)
+- [x] Lote vigente e esgotado: `GET /eventos/:slug/disponibilidade` (fase 3).
 - [ ] O detalhe público `GET /eventos/:slug` precisa expor: distâncias (com `id`), preço do lote vigente e vagas/esgotado, kits ativos (com `id` e fotos), tamanhos de camisa disponíveis e **IDs dos documentos vigentes** (regulamento e termo) — sem eles o front não consegue montar `documentosAceitos`, `kitId` e `tamanhoCamisaId`.
 - [ ] Preço do kit: `precoCentavos` no kit (admin e detalhe público), somado ao lote em `valorBaseCentavos`. Definir se o desconto 60+ incide sobre o kit.
 - [x] Comprovante na consulta: `referencia` opaca em cada item de `POST /inscricoes/consulta` e `POST /inscricoes/comprovante` (`{ referencia, dataNascimento }` → dados da inscrição), com rate limit por IP. Pagar pela consulta: `POST /inscricoes/comprovante/pagamento`.
@@ -565,7 +575,7 @@ Antes de cada commit: `lint`, `typecheck` e `build` passando. Commits no padrão
 - [ ] MFA/TOTP para super admin.
 - [ ] Janela de tolerância ao reuso do refresh token (ex.: aceitar o anterior por 10–30 s devolvendo o mesmo par), para o Next em várias instâncias não deslogar o admin em requisições concorrentes.
 - [ ] Código/status de bloqueio por tentativas no login (429/423) para a UI mostrar "aguarde".
-- [ ] Qual header de IP do cliente o rate limit confia (`X-Forwarded-For`?) e como o Next se autentica como proxy confiável.
+- [x] Qual header de IP do cliente o rate limit confia: `X-Forwarded-For` com `TRUST_PROXY_HOPS`; o Next se identifica com `X-BFF-Secret` (`BFF_SHARED_SECRET`). Requisitos de deploy em §12.
 - [ ] Domínio/`SameSite` dos cookies em produção e CORS (se algum dia o browser chamar a API direto).
 - [ ] Loja (produtos, variantes, pedidos, estoque).
 - [ ] Listagem pública de corridas encerradas (histórico) e, depois, resultados/galeria. Proposta: `GET /eventos/encerrados?cursor&limit` → `CursorPage<PublicEvent>` (já implementada no mock).
