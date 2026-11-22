@@ -4,8 +4,9 @@ import {
   HeroSection,
   OpenEventsSection,
   PartnersStripSection,
+  PartnerRacesSection,
   PastEventsSection,
-  StoreAndPartnersSection,
+  StoreSection,
 } from "./components"
 
 /** Home: do próximo topo à comunidade (CLAUDE.md §2). */
@@ -16,8 +17,9 @@ export default function HomePage() {
       <OpenEventsSection />
       <ClimbStepsSection />
       <CommunitySection />
+      <StoreSection />
       <PastEventsSection />
-      <StoreAndPartnersSection />
+      <PartnerRacesSection />
       <PartnersStripSection />
     </>
   )

@@ -1,10 +1,11 @@
 import { ArrowRight } from "lucide-react"
 import Link from "next/link"
 
-import { CommunityStatItem } from "@/components/community"
+import { CommunityStatItem, statsGridColumns } from "@/components/community"
 import { StaggerGroup } from "@/components/motion"
 import { SectionBand, SectionHeading } from "@/components/sections"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import { getCommunityStats } from "@/server/content/community-stats"
 
 import { ValueBadge } from "./value-badge"
@@ -33,7 +34,11 @@ export function CommunitySection() {
         }
       />
       {stats && stats.length > 0 && (
-        <StaggerGroup as="ul" aria-label="Números da comunidade" className="grid grid-cols-2 gap-x-6 gap-y-8 border-y border-white/10 py-10 lg:grid-cols-4">
+        <StaggerGroup
+          as="ul"
+          aria-label="Números da comunidade"
+          className={cn("grid grid-cols-2 gap-x-6 gap-y-8 border-y border-white/10 py-10", statsGridColumns(stats.length))}
+        >
           {stats.map((stat) => (
             <CommunityStatItem key={stat.rotulo} stat={stat} tone="dark" />
           ))}

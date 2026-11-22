@@ -14,9 +14,12 @@ describe("conteúdo estático", () => {
     expect(getCommunityStats()).toHaveLength(4)
   })
 
-  it("sem mock, devolve as listas reais (vazias até o cliente enviar)", () => {
+  it("sem mock, devolve as listas reais", () => {
     mockEnv.USE_MOCK_API = false
     expect(getPartners()).toEqual([])
-    expect(getCommunityStats()).toBeNull()
+    expect(getCommunityStats()).toEqual([
+      { valor: "1+", rotulo: "ano de grupo" },
+      { valor: "5+", rotulo: "eventos realizados" },
+    ])
   })
 })

@@ -8,8 +8,8 @@ const SECTION_HEADINGS = [
   "Próximos topos",
   "Do primeiro passo ao pódio",
   "Quem sobe junto",
-  "Topos conquistados",
   "Vista a subida",
+  "Topos conquistados",
   "Outras trilhas, com desconto",
   "Marcas na nossa subida",
 ]
@@ -91,23 +91,27 @@ test.describe("Home", () => {
     await expect(section.getByRole("link", { name: "Onde está minha inscrição?" })).toHaveAttribute("href", "/consulta")
   })
 
-  test("parceiros, loja e comunidade", async ({ page }) => {
+  test("parceiros e comunidade", async ({ page }) => {
     await expect(page.getByRole("region", { name: "Marcas na nossa subida" }).getByRole("listitem")).toHaveCount(6)
-    await expect(page.getByRole("region", { name: "Vista a subida" }).getByRole("link", { name: "Conhecer a loja" })).toHaveAttribute(
-      "href",
-      "/loja",
-    )
     const community = page.getByRole("region", { name: "Quem sobe junto" })
     await expect(community.getByRole("list", { name: "O que você encontra no Vertex" }).getByRole("listitem")).toHaveCount(4)
     await expect(community.getByRole("link", { name: "Conheça o Vertex" })).toHaveAttribute("href", "/sobre")
   })
 
-  test("lista 2 corridas parceiras com cupom e botão de copiar", async ({ page }) => {
+  test("loja com até 4 produtos e link para /loja", async ({ page }) => {
+    const store = page.getByRole("region", { name: "Vista a subida" })
+    await expect(store.getByRole("link", { name: "Conhecer a loja" })).toHaveAttribute("href", "/loja")
+    const products = store.getByRole("listitem")
+    await expect(products).toHaveCount(4)
+    await expect(products.first().getByRole("link").first()).toHaveAttribute("href", /^\/loja\/[a-z0-9-]+$/)
+  })
+
+  test("lista 3 corridas parceiras com cupom e botão de copiar", async ({ page }) => {
     const section = page.getByRole("region", { name: "Outras trilhas, com desconto" })
     const cards = section.getByRole("article")
-    await expect(cards).toHaveCount(2)
-    await expect(section.getByText("VERTEX10", { exact: true })).toHaveCount(2)
-    await expect(section.getByRole("button", { name: "Copiar cupom VERTEX10" })).toHaveCount(2)
+    await expect(cards).toHaveCount(3)
+    await expect(section.getByText("VERTEX10", { exact: true })).toHaveCount(3)
+    await expect(section.getByRole("button", { name: "Copiar cupom VERTEX10" })).toHaveCount(3)
 
     const signUp = cards.first().getByRole("link", { name: /Inscrever-se/ })
     await expect(signUp).toHaveAttribute("href", /^https:\/\//)

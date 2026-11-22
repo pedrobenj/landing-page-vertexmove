@@ -6,7 +6,7 @@ import { PartnerRaceGridItem } from "./partner-race-grid-item"
 
 interface PartnerRaceGridProps {
   races: PartnerRace[]
-  /** Colunas da grade; a home usa duas (a seção divide a largura com a loja). */
+  /** Sobrescreve as colunas da grade. */
   className?: string
 }
 
