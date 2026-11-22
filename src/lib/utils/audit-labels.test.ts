@@ -15,6 +15,22 @@ describe("audit labels", () => {
     expect(getAuditActionLabel("distancia.novo_verbo")).toBe("Distancia novo verbo")
   })
 
+  it("verbos sozinhos do backend real (`AcaoAuditoria`)", () => {
+    expect(getAuditActionLabel("criar")).toBe("Criou")
+    expect(getAuditActionLabel("atualizar")).toBe("Atualizou")
+    expect(getAuditActionLabel("excluir")).toBe("Excluiu")
+    expect(getAuditActionLabel("visualizar_pii")).toBe("Viu dados pessoais")
+    expect(getAuditActionLabel("webhook_rejeitado")).toBe("Webhook rejeitado")
+    expect(getAuditActionLabel("estornar")).toBe("Estornou")
+  })
+
+  it("entidades do backend real", () => {
+    expect(getAuditEntityLabel("corrida_parceira")).toBe("Corrida parceira")
+    expect(getAuditEntityLabel("inscricao")).toBe("Inscrição")
+    expect(getAuditEntityLabel("admin_sessao")).toBe("Sessão")
+    expect(getAuditEntityLabel("pedido_loja")).toBe("Pedido da loja")
+  })
+
   it("outros formatos ficam como vieram", () => {
     expect(getAuditActionLabel("LOGIN")).toBe("LOGIN")
     expect(getAuditActionLabel("a.b.c")).toBe("a.b.c")

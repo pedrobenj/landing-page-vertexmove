@@ -7,6 +7,12 @@ const ENTITY_LABELS: Partial<Record<string, string>> = {
   tamanho_camisa: "Tamanho de camisa",
   admin: "Admin",
   sessao: "Sessão",
+  admin_sessao: "Sessão",
+  corrida_parceira: "Corrida parceira",
+  inscricao: "Inscrição",
+  pagamento: "Pagamento",
+  produto: "Produto",
+  pedido_loja: "Pedido da loja",
 }
 
 const VERB_LABELS: Partial<Record<string, string>> = {
@@ -45,6 +51,17 @@ const ACTION_LABELS: Partial<Record<string, string>> = {
   "tamanho_camisa.criado": "Tamanho de camisa criado",
   "tamanho_camisa.atualizado": "Tamanho de camisa atualizado",
   "documento.criado": "Documento criado",
+  // Backend real: `acao` é só o verbo (`AcaoAuditoria`) e a entidade vem na outra coluna.
+  criar: "Criou",
+  atualizar: "Atualizou",
+  excluir: "Excluiu",
+  login: "Entrou",
+  logout: "Saiu",
+  exportar: "Exportou",
+  visualizar_pii: "Viu dados pessoais",
+  anonimizar: "Anonimizou",
+  webhook_rejeitado: "Webhook rejeitado",
+  estornar: "Estornou",
 }
 
 const humanize = (value: string) => value.replace(/_/g, " ")
