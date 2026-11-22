@@ -65,6 +65,21 @@ describe("registration form store", () => {
     expect(store()).toMatchObject({ terms: null, step: REGISTRATION_STEP.TERMS, athlete })
   })
 
+  it("guarda a retirada do kit do evento junto da confirmação (só em memória)", () => {
+    const pickup = { local: "Loja Vertex", endereco: null, inicio: null, fim: null, instrucoes: null }
+    store().start("corrida")
+    store().setConfirmation(confirmation, pickup)
+    expect(store().confirmationKitPickup).toEqual(pickup)
+    expect(JSON.parse(sessionStorage.getItem("vertex-registration-form") ?? "{}").state).not.toHaveProperty("confirmationKitPickup")
+
+    store().reset()
+    expect(store().confirmationKitPickup).toEqual(pickup)
+    store().start("outra-corrida")
+    expect(store().confirmationKitPickup).toBeNull()
+    store().setConfirmation(confirmation)
+    expect(store().confirmationKitPickup).toBeNull()
+  })
+
   it("reset limpa o rascunho e mantém a confirmação", () => {
     store().start("corrida")
     store().setAthlete(athlete)

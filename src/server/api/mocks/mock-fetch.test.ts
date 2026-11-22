@@ -147,6 +147,19 @@ describe("mockFetch", () => {
       expect(detail.documentosVigentes!.map((document) => document.tipo)).toEqual(["regulamento", "termo_responsabilidade"])
     })
 
+    it("devolve a retirada do kit como o backend (objeto ou null)", async () => {
+      const detail = await getDetail()
+      expect(detail.retiradaKit).toEqual({
+        local: "Loja Vertex — Aldeota",
+        endereco: "Rua Silva Paulet, 1000 — Aldeota, Fortaleza/CE",
+        inicio: "2026-12-04T12:00:00.000Z",
+        fim: "2026-12-05T21:00:00.000Z",
+        instrucoes: "Leve um documento com foto. Terceiros podem retirar com autorização assinada.",
+      })
+      // Sem dados de retirada, o backend manda a chave com null (`retiradaDoEvento`).
+      expect((await getDetail("night-run-vertex-aterro")).retiradaKit).toBeNull()
+    })
+
     it("disponibilidade: lote vigente por distância e a lotada como esgotada", async () => {
       const detail = await getDetail("night-run-vertex-aterro")
       const tenKId = detail.distancias!.find((distance) => distance.nome === "10 km")!.id

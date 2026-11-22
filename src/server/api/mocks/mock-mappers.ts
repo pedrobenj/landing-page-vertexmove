@@ -137,6 +137,7 @@ export function toPublicEventDetail(event: MockEvent): ApiPublicEventDetail {
   return {
     ...toPublicEvent(event),
     galeriaUrl: event.galeriaUrl,
+    retiradaKit: event.retiradaKit,
     distancias: publicDistancesOf(event).map(toPublicDistance),
     kits: db.kits
       .filter((kit) => kit.eventoId === event.id && kit.ativo)

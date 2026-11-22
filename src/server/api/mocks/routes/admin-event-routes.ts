@@ -66,7 +66,7 @@ export const adminEventRoutes: MockRoute[] = [
       if (slugTaken(input.slug)) return duplicateSlug()
 
       const db = getMockDb()
-      const event: MockEvent = { ...input, id: nextId(db.events), status: DRAFT, deletedAt: null }
+      const event: MockEvent = { ...input, id: nextId(db.events), status: DRAFT, deletedAt: null, retiradaKit: null }
       db.events.push(event)
       recordAudit(admin, { acao: "evento.criado", entidade: "evento", entidadeId: event.id })
       return created(toAdminEvent(event), `/admin/eventos/${event.id}`)

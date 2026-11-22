@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
 import { ServerError } from "@/components/feedback"
+import { KitPickupCard } from "@/components/kit-pickup"
 import { SectionBand, SectionHeading } from "@/components/sections"
 import { publicEnv } from "@/lib/public-env"
 import { buildEventJsonLd, getLowestPrice, isSoldOut, serializeJsonLd, truncateText } from "@/lib/utils"
@@ -104,6 +105,7 @@ export default async function EventPage({ params }: PageProps<"/corridas/[slug]"
         />
         <KitList kits={event.kits} />
         <ShirtSizeList sizes={event.tamanhosCamisa} />
+        <KitPickupCard pickup={event.retiradaKit} />
       </SectionBand>
 
       <SectionBand tone="muted" aria-labelledby="documentos-title">

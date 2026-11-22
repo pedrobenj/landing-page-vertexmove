@@ -3,6 +3,7 @@ import { createJSONStorage, persist } from "zustand/middleware"
 
 import { REGISTRATION_STEP } from "@/enums/registration-step.enum"
 import type { AthleteStepValues, DistanceStepData, TermsStepValues } from "@/lib/validations/registration.schema"
+import type { ApiKitPickup } from "@/types/api/api-event-detail.interface"
 import type { CreatedRegistration } from "@/types/api/registration.interface"
 
 interface RegistrationFormState {
@@ -13,6 +14,8 @@ interface RegistrationFormState {
   terms: TermsStepValues | null
   /** Resposta do `POST /inscricoes`, lida em `/inscricao/confirmada`. Só em memória (não persistida). */
   confirmation: CreatedRegistration | null
+  /** `retiradaKit` do evento da inscrição recém-criada, exibida na confirmação. Também só em memória. */
+  confirmationKitPickup: ApiKitPickup | null
 
   /** Começa (ou retoma) o formulário do evento; trocar de evento descarta o rascunho anterior. */
   start: (eventSlug: string) => void
@@ -22,7 +25,7 @@ interface RegistrationFormState {
   setTerms: (data: TermsStepValues) => void
   /** Desmarca os aceites e volta para a etapa de termos (documentos vigentes mudaram). */
   clearTerms: () => void
-  setConfirmation: (confirmation: CreatedRegistration) => void
+  setConfirmation: (confirmation: CreatedRegistration, kitPickup?: ApiKitPickup | null) => void
   /** Limpa o rascunho mantendo a `confirmation` (a página de confirmação ainda a exibe). */
   reset: () => void
 }
@@ -54,15 +57,16 @@ export const useRegistrationFormStore = create<RegistrationFormState>()(
     (set, get) => ({
       ...initialDraft,
       confirmation: null,
+      confirmationKitPickup: null,
       start: (eventSlug) => {
-        if (get().eventSlug !== eventSlug) set({ ...initialDraft, eventSlug, confirmation: null })
+        if (get().eventSlug !== eventSlug) set({ ...initialDraft, eventSlug, confirmation: null, confirmationKitPickup: null })
       },
       goToStep: (step) => set({ step }),
       setDistance: (distance) => set({ distance, step: REGISTRATION_STEP.ATHLETE }),
       setAthlete: (athlete) => set({ athlete, step: REGISTRATION_STEP.TERMS }),
       setTerms: (terms) => set({ terms, step: REGISTRATION_STEP.SUMMARY }),
       clearTerms: () => set({ terms: null, step: REGISTRATION_STEP.TERMS }),
-      setConfirmation: (confirmation) => set({ confirmation }),
+      setConfirmation: (confirmation, kitPickup = null) => set({ confirmation, confirmationKitPickup: kitPickup }),
       reset: () => set(initialDraft),
     }),
     {

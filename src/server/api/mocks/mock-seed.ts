@@ -74,13 +74,14 @@ const PLACES = {
 function buildEvent(
   id: number,
   status: EVENT_STATUS,
-  data: Pick<MockEvent, "slug" | "nome" | "descricao" | "dataEvento" | "horarioLargada">,
+  data: Pick<MockEvent, "slug" | "nome" | "descricao" | "dataEvento" | "horarioLargada"> & Partial<Pick<MockEvent, "retiradaKit">>,
   place: PlaceSeed,
 ): MockEvent {
   return {
     id,
     status,
     deletedAt: null,
+    retiradaKit: null,
     ...data,
     ...place,
     complemento: null,
@@ -104,6 +105,13 @@ function seedEvents(): MockEvent[] {
           "A corrida mais tradicional do Vertex, com largada ao nascer do sol e percurso plano pela orla de Fortaleza.",
         dataEvento: "2026-12-06",
         horarioLargada: "05:30",
+        retiradaKit: {
+          local: "Loja Vertex — Aldeota",
+          endereco: "Rua Silva Paulet, 1000 — Aldeota, Fortaleza/CE",
+          inicio: "2026-12-04T12:00:00.000Z",
+          fim: "2026-12-05T21:00:00.000Z",
+          instrucoes: "Leve um documento com foto. Terceiros podem retirar com autorização assinada.",
+        },
       },
       PLACES.aterrinho,
     ),

@@ -133,7 +133,7 @@ export function RegistrationWizard({ event, regulation, liabilityTerm }: Registr
               setIdentityConflict(true)
               goToStep(REGISTRATION_STEP.ATHLETE)
             }}
-            onSuccess={setConfirmation}
+            onSuccess={(confirmation) => setConfirmation(confirmation, event.retiradaKit ?? null)}
           />
         )}
       </div>

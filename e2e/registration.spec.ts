@@ -40,6 +40,7 @@ test.describe("Inscrição em etapas", () => {
     await expect(page.getByTestId("registration-code")).toHaveText(/^VX-\d{4}-\d{8}$/)
     await expect(page.getByText("Status: Pendente")).toBeVisible()
     await expect(page.getByText("R$ 139,90").first()).toBeVisible()
+    await expect(page.getByRole("region", { name: "Retirada do kit" }).getByText("Loja Vertex — Aldeota")).toBeVisible()
   })
 
   test("exige a distância e o CPF ou o WhatsApp", async ({ page }) => {

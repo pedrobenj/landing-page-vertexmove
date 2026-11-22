@@ -18,6 +18,9 @@ test.describe("Página da corrida", () => {
     await expect(fiveKm.getByText("1º lote")).toBeVisible()
 
     await expect(page.getByRole("region", { name: "Escolha seu kit" }).getByRole("article")).toHaveCount(2)
+    const pickup = page.getByRole("region", { name: "Retirada do kit" })
+    await expect(pickup.getByText("Loja Vertex — Aldeota")).toBeVisible()
+    await expect(pickup.getByText("De 04/12/2026 às 09:00 até 05/12/2026 às 18:00")).toBeVisible()
     await expect(page.getByRole("link", { name: /Regulamento — Corrida Vertex Beira-Mar 2026/ })).toBeVisible()
     await expect(page.getByRole("link", { name: "Ver regulamento completo" })).toHaveAttribute(
       "href",
@@ -38,6 +41,8 @@ test.describe("Página da corrida", () => {
     const tenKm = page.getByRole("article", { name: "10 km", exact: true })
     await expect(tenKm.getByText("Esgotado", { exact: true })).toBeVisible()
     await expect(tenKm.getByText("R$")).toHaveCount(0)
+    // Sem `retiradaKit` (null na API), o bloco não aparece.
+    await expect(page.getByRole("region", { name: "Retirada do kit" })).toHaveCount(0)
   })
 
   test("no formulário, a distância esgotada (disponibilidade do servidor) fica desabilitada", async ({ page }) => {

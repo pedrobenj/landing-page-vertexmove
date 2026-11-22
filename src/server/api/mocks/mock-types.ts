@@ -5,6 +5,7 @@ import type { EVENT_STATUS } from "@/enums/event-status.enum"
 import type { PAYMENT_STATUS } from "@/enums/payment-status.enum"
 import type { REGISTRATION_STATUS } from "@/enums/registration-status.enum"
 import type { AdminEventInput } from "@/types/api/admin-event.interface"
+import type { ApiKitPickup } from "@/types/api/api-event-detail.interface"
 import type { AuditEntry } from "@/types/api/audit-entry.interface"
 import type { Distance } from "@/types/api/distance.interface"
 import type { EventDocument } from "@/types/api/document.interface"
@@ -17,6 +18,8 @@ export interface MockEvent extends AdminEventInput {
   id: number
   status: EVENT_STATUS
   deletedAt: string | null
+  /** Colunas `retirada_kit_*` do evento (o admin do backend ainda não as edita). */
+  retiradaKit: ApiKitPickup | null
 }
 
 export interface MockDistance extends Distance {

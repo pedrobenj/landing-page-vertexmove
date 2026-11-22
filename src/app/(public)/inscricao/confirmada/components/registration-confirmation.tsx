@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useEffect } from "react"
 
 import { EmptyState } from "@/components/feedback"
+import { KitPickupCard } from "@/components/kit-pickup"
 import { PayNowButton } from "@/components/registration-payment"
 import { SectionHeading } from "@/components/sections"
 import { Button } from "@/components/ui/button"
@@ -20,6 +21,7 @@ import { CopyCodeButton } from "./copy-code-button"
  */
 export function RegistrationConfirmation() {
   const confirmation = useRegistrationFormStore((state) => state.confirmation)
+  const kitPickup = useRegistrationFormStore((state) => state.confirmationKitPickup)
   const reset = useRegistrationFormStore((state) => state.reset)
 
   // A inscrição foi enviada: o rascunho (com CPF/WhatsApp) sai do sessionStorage.
@@ -105,6 +107,8 @@ export function RegistrationConfirmation() {
           <PayNowButton code={codigo} label="Ir para o pagamento" />
         </section>
       </div>
+
+      <KitPickupCard pickup={kitPickup} titleId="confirmation-kit-pickup-title" headingLevel="h2" />
 
       <div className="flex flex-col gap-3 sm:flex-row">
         <Button asChild variant="cta" size="xl" className="w-full normal-case tracking-normal sm:w-auto">
