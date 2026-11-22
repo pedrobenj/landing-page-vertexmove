@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 import { parseImageHosts } from "./src/lib/utils/image-hosts";
+import { getSecurityHeaders } from "./src/lib/utils/security-headers";
 
 const isDev = process.env.NODE_ENV === "development"
 
@@ -10,32 +11,7 @@ const isDev = process.env.NODE_ENV === "development"
  */
 const NO_REFERRER_PATHS = ["/corridas/:slug/inscricao", "/inscricao/:path*", "/consulta"]
 
-/**
- * CSP sem nonce (guia `content-security-policy.md`, seção "Without Nonces"): nonce exigiria renderizar
- * todas as páginas sob demanda e é incompatível com o Partial Prerendering (Cache Components). Por isso
- * `'unsafe-inline'` em scripts (bootstrap/hidratação do Next) e estilos (Motion e next/image usam `style`).
- * `'unsafe-eval'` só no `next dev` (React reconstrói stacks com eval). Fontes do next/font são self-hosted.
- */
-const CONTENT_SECURITY_POLICY = [
-  "default-src 'self'",
-  "img-src 'self' https: data: blob:",
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
-  "style-src 'self' 'unsafe-inline'",
-  "font-src 'self'",
-  "connect-src 'self'",
-  "object-src 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  "frame-ancestors 'none'",
-].join("; ")
-
-const SECURITY_HEADERS = [
-  { key: "Content-Security-Policy", value: CONTENT_SECURITY_POLICY },
-  { key: "X-Content-Type-Options", value: "nosniff" },
-  { key: "X-Frame-Options", value: "DENY" },
-  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
-]
+const SECURITY_HEADERS = getSecurityHeaders(process.env.NODE_ENV)
 
 /**
  * Hosts das imagens remotas (`imagemCapaUrl`, `fotos[].url`, logos): `IMAGE_REMOTE_HOSTS` (vírgulas, validado
