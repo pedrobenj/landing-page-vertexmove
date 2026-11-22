@@ -18,7 +18,7 @@ const RECONCILE_ERROR_TITLE = "Não foi possível conciliar o pagamento"
 const REFUND_ERROR_TITLE = "Não foi possível estornar o pagamento"
 
 const listSchema = z.object({
-  situacao: z.union([z.enum(PAYMENT_ISSUE), z.literal("todas")]),
+  situacao: z.enum(PAYMENT_ISSUE),
   cursor: z.string().min(1).max(200).nullable(),
 })
 const refundSchema = z.object({
@@ -38,7 +38,7 @@ export async function listAdminPaymentsAction(input: z.input<typeof listSchema>)
   if (!parsed.success) return invalidInputResponse(LIST_ERROR_TITLE)
   const { situacao, cursor } = parsed.data
   try {
-    const data = await listAdminPayments({ situacao: situacao === "todas" ? undefined : situacao, cursor: cursor ?? undefined })
+    const data = await listAdminPayments({ situacao, cursor: cursor ?? undefined })
     return { status: 200, data }
   } catch (error) {
     return toErrorResponse(error, { title: LIST_ERROR_TITLE, context: "listAdminPaymentsAction" })

@@ -8,8 +8,8 @@ import { adminFetch } from "../admin-fetch"
 
 // Pagamentos que pedem ação do admin (Bearer). Sem cache: a fila muda com o webhook e a conciliação.
 
-/** `GET /admin/pagamentos?situacao&cursor&limit` — sem `situacao`, todas as pendências. */
-export async function listAdminPayments(query: { situacao?: PAYMENT_ISSUE; cursor?: string; limit?: number } = {}): Promise<CursorPage<ApiAdminPayment>> {
+/** `GET /admin/pagamentos?situacao&cursor&limit` — `situacao` obrigatória. Cobre inscrições e pedidos da loja. */
+export async function listAdminPayments(query: { situacao: PAYMENT_ISSUE; cursor?: string; limit?: number }): Promise<CursorPage<ApiAdminPayment>> {
   const { situacao, cursor, limit } = query
   return adminFetch("/admin/pagamentos", { query: { situacao, cursor, limit } })
 }
@@ -19,7 +19,10 @@ export async function reconcilePayment(id: number): Promise<void> {
   await adminFetch<void>(`/admin/pagamentos/${id}/conciliar`, { method: "POST" })
 }
 
-/** `POST /admin/pagamentos/:id/estornar` (204), corpo `{ motivo }` (1–500). Só aprovado → senão 409. */
+/**
+ * `POST /admin/pagamentos/:id/estornar` (204), corpo `{ motivo }` (1–500). Só aprovado ou em análise com estorno
+ * pedido (`acoes.estornar`) → senão 409; Mercado Pago fora → 502 `GATEWAY_INDISPONIVEL`.
+ */
 export async function refundPayment(id: number, motivo: string): Promise<void> {
   await adminFetch<void>(`/admin/pagamentos/${id}/estornar`, { method: "POST", body: { motivo } })
 }

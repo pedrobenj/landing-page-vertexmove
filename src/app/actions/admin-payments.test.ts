@@ -29,16 +29,17 @@ describe("admin-payments actions", () => {
     mocks.requireAdminSession.mockResolvedValue({ id: 1, papel: ADMIN_ROLE.ADMIN })
   })
 
-  it("lista com a situação e o cursor (\"todas\" não vai à API)", async () => {
+  it("lista com a situação (obrigatória na API) e o cursor", async () => {
     mocks.listAdminPayments.mockResolvedValue({ items: [], nextCursor: null })
-    expect(await listAdminPaymentsAction({ situacao: "todas", cursor: null })).toEqual({ status: 200, data: { items: [], nextCursor: null } })
-    expect(mocks.listAdminPayments).toHaveBeenLastCalledWith({ situacao: undefined, cursor: undefined })
+    expect(await listAdminPaymentsAction({ situacao: PAYMENT_ISSUE.UNDER_REVIEW, cursor: null })).toEqual({ status: 200, data: { items: [], nextCursor: null } })
+    expect(mocks.listAdminPayments).toHaveBeenLastCalledWith({ situacao: "em_analise", cursor: undefined })
     await listAdminPaymentsAction({ situacao: PAYMENT_ISSUE.REFUND_PENDING, cursor: "9" })
     expect(mocks.listAdminPayments).toHaveBeenLastCalledWith({ situacao: "estorno_pendente", cursor: "9" })
   })
 
   it("situação inválida → 422", async () => {
     expect(await listAdminPaymentsAction({ situacao: "aprovado" as never, cursor: null })).toMatchObject({ status: 422 })
+    expect(await listAdminPaymentsAction({ situacao: "todas" as never, cursor: null })).toMatchObject({ status: 422 })
     expect(mocks.listAdminPayments).not.toHaveBeenCalled()
   })
 

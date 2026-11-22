@@ -92,20 +92,28 @@ describe("admin-registrations actions", () => {
 
   describe("cancelAdminRegistrationAction", () => {
     it("cancela e revalida", async () => {
-      expect(await cancelAdminRegistrationAction({ id: 7, eventId: 1 })).toEqual({ status: 204 })
-      expect(mocks.cancelAdminRegistration).toHaveBeenCalledWith(7)
+      const cancelled = { id: 7, status: "cancelada", statusAnterior: "confirmada", estornoSinalizado: true, pagamentoId: 3 }
+      mocks.cancelAdminRegistration.mockResolvedValue(cancelled)
+      expect(await cancelAdminRegistrationAction({ id: 7, eventId: 1, motivo: "  pedido do atleta " })).toEqual({ status: 200, data: cancelled })
+      expect(mocks.cancelAdminRegistration).toHaveBeenCalledWith(7, "pedido do atleta")
       expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/eventos/1/inscricoes/7")
       expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/pagamentos")
     })
 
     it("status que não permite cancelar (409) vira mensagem", async () => {
       mocks.cancelAdminRegistration.mockRejectedValue(new ApiError(409, "CONFLITO_DE_ESTADO", "x"))
-      expect(await cancelAdminRegistrationAction({ id: 7, eventId: 1 })).toMatchObject({ status: 409, title: "Não foi possível cancelar a inscrição" })
+      expect(await cancelAdminRegistrationAction({ id: 7, eventId: 1, motivo: "x" })).toMatchObject({ status: 409, title: "Não foi possível cancelar a inscrição" })
+    })
+
+    it("sem motivo ou com motivo longo → 422 no campo motivo", async () => {
+      expect(await cancelAdminRegistrationAction({ id: 7, eventId: 1, motivo: "  " })).toMatchObject({ status: 422, field: "motivo" })
+      expect(await cancelAdminRegistrationAction({ id: 7, eventId: 1, motivo: "x".repeat(501) })).toMatchObject({ status: 422, field: "motivo" })
+      expect(mocks.cancelAdminRegistration).not.toHaveBeenCalled()
     })
 
     it("papel só leitura → 403", async () => {
       mocks.requireAdminSession.mockResolvedValue({ id: 2, papel: ADMIN_ROLE.OPERATOR })
-      expect(await cancelAdminRegistrationAction({ id: 7, eventId: 1 })).toMatchObject({ status: 403 })
+      expect(await cancelAdminRegistrationAction({ id: 7, eventId: 1, motivo: "x" })).toMatchObject({ status: 403 })
       expect(mocks.cancelAdminRegistration).not.toHaveBeenCalled()
     })
   })

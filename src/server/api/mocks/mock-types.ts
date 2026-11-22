@@ -59,10 +59,22 @@ export interface MockRegistration {
   pagamentoStatus?: PAYMENT_STATUS | null
   /** Quando o "webhook" simulado aprova o pagamento (ms); imita o atraso do Mercado Pago. */
   aprovacaoEm?: number | null
-  /** Retirada do kit marcada no admin (`kit_retirado_em`). */
+  /** Retirada do kit marcada no admin (`kit_retirado_em`, `kit_retirado_por`). */
   kitRetiradoEm?: string | null
-  /** Mudanças de status (detalhe do admin). Sem ela, o detalhe mostra só a criação. */
-  historico?: { status: REGISTRATION_STATUS; em: string }[]
+  kitRetiradoPor?: number | null
+  confirmadaEm?: string | null
+  encerradaEm?: string | null
+  motivoEncerramento?: string | null
+  /** `inscricao_status_historico` (detalhe do admin). Sem ela, o detalhe mostra só a criação. */
+  historico?: MockStatusChange[]
+}
+
+export interface MockStatusChange {
+  statusAnterior: REGISTRATION_STATUS | null
+  statusNovo: REGISTRATION_STATUS
+  origem: "sistema" | "admin" | "gateway" | "atleta"
+  motivo: string | null
+  em: string
 }
 
 /** Linha de `pagamento` do backend, com o que o admin vê na fila de pendências. */
@@ -72,8 +84,11 @@ export interface MockPayment {
   pedidoLojaCodigo: string | null
   status: PAYMENT_STATUS
   valorCentavos: number
-  /** Valor informado pelo Mercado Pago; diferente de `valorCentavos` = divergência. */
+  /** Valor informado pelo Mercado Pago. */
   valorGatewayCentavos: number | null
+  gatewayPaymentId: string | null
+  gatewayStatus: string | null
+  metodo: string | null
   criadoEm: string
   atualizadoEm: string
   pagoEm: string | null

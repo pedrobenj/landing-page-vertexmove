@@ -10,8 +10,8 @@ const store = () => useAdminPaymentsFiltersStore.getState()
 describe("admin payments filters store", () => {
   beforeEach(() => store().reset())
 
-  it("começa em todas as pendências, na primeira página", () => {
-    expect(store()).toMatchObject({ situacao: "todas", cursor: null, cursorStack: [] })
+  it("começa em estorno pendente (a API exige uma situação), na primeira página", () => {
+    expect(store()).toMatchObject({ situacao: "estorno_pendente", cursor: null, cursorStack: [] })
   })
 
   it("trocar a situação volta à primeira página", () => {
@@ -23,6 +23,6 @@ describe("admin payments filters store", () => {
   it("é limpo no logout", () => {
     store().setSituacao(PAYMENT_ISSUE.UNDER_REVIEW)
     resetAdminStores()
-    expect(store().situacao).toBe("todas")
+    expect(store().situacao).toBe("estorno_pendente")
   })
 })

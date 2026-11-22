@@ -14,7 +14,7 @@ import {
 } from "@/server/api/endpoints/admin-registrations"
 import { ensureCanManageEvents } from "@/server/api/ensure-can-manage-events"
 import { toErrorResponse } from "@/server/api/to-error-response"
-import type { ApiAdminRegistration } from "@/types/api/admin-registration.interface"
+import type { ApiAdminRegistration, ApiCancelledRegistration } from "@/types/api/admin-registration.interface"
 import type { CursorPage } from "@/types/api/cursor-page.interface"
 import type { HttpResponse } from "@/types/http-response.interface"
 
@@ -30,7 +30,11 @@ const listSchema = z.object({
   cursor: z.string().min(1).max(200).nullable(),
 })
 const pickupSchema = z.object({ id: apiIdSchema, eventId: apiIdSchema, pickedUp: z.boolean() })
-const cancelSchema = z.object({ id: apiIdSchema, eventId: apiIdSchema })
+const cancelSchema = z.object({
+  id: apiIdSchema,
+  eventId: apiIdSchema,
+  motivo: z.string().trim().min(1, "Informe o motivo do cancelamento.").max(500, "Use no máximo 500 caracteres."),
+})
 
 export type ListAdminRegistrationsInput = z.input<typeof listSchema>
 
@@ -77,17 +81,17 @@ export async function setKitPickupAction(input: z.input<typeof pickupSchema>): P
  * Cancela a inscrição (decisão D6: confirmação dupla na UI). Com pagamento aprovado, o backend sinaliza o
  * estorno, que entra na fila de pagamentos: revalida também `/admin/pagamentos`.
  */
-export async function cancelAdminRegistrationAction(input: z.input<typeof cancelSchema>): Promise<HttpResponse> {
+export async function cancelAdminRegistrationAction(input: z.input<typeof cancelSchema>): Promise<HttpResponse<ApiCancelledRegistration>> {
   const denied = await ensureCanManageEvents(CANCEL_ERROR_TITLE, "cancelAdminRegistrationAction")
   if (denied) return denied
   const parsed = cancelSchema.safeParse(input)
-  if (!parsed.success) return invalidInputResponse(CANCEL_ERROR_TITLE)
-  const { id, eventId } = parsed.data
+  if (!parsed.success) return invalidInputResponse(CANCEL_ERROR_TITLE, parsed.error.issues[0])
+  const { id, eventId, motivo } = parsed.data
   try {
-    await cancelAdminRegistration(id)
+    const data = await cancelAdminRegistration(id, motivo)
     revalidateRegistration(eventId, id)
     revalidatePath("/admin/pagamentos")
-    return { status: 204 }
+    return { status: 200, data }
   } catch (error) {
     return toErrorResponse(error, { title: CANCEL_ERROR_TITLE, context: "cancelAdminRegistrationAction" })
   }

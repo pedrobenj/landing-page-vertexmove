@@ -1,20 +1,21 @@
 import { create } from "zustand"
 
-import type { AdminPaymentIssueFilter } from "@/lib/utils/payment-issue-filter-options"
+import type { PAYMENT_ISSUE } from "@/enums/payment-issue.enum"
+import { DEFAULT_PAYMENT_ISSUE } from "@/lib/utils/payment-issue-filter-options"
 
 interface AdminPaymentsFiltersState {
-  situacao: AdminPaymentIssueFilter
+  situacao: PAYMENT_ISSUE
   /** Cursores das páginas visitadas depois da primeira (o topo é a página atual). */
   cursorStack: string[]
   /** Cursor da página atual (`null` = primeira página). */
   cursor: string | null
-  setSituacao: (situacao: AdminPaymentIssueFilter) => void
+  setSituacao: (situacao: PAYMENT_ISSUE) => void
   nextPage: (next: string) => void
   prevPage: () => void
   reset: () => void
 }
 
-const INITIAL_STATE = { situacao: "todas" as AdminPaymentIssueFilter, cursorStack: [] as string[], cursor: null }
+const INITIAL_STATE = { situacao: DEFAULT_PAYMENT_ISSUE as PAYMENT_ISSUE, cursorStack: [] as string[], cursor: null }
 
 /** Filtro e paginação por cursor da fila de pagamentos com pendência (só em memória). */
 export const useAdminPaymentsFiltersStore = create<AdminPaymentsFiltersState>()((set, get) => ({

@@ -1,29 +1,28 @@
-import type { PAYMENT_ISSUE } from "@/enums/payment-issue.enum"
 import type { PAYMENT_STATUS } from "@/enums/payment-status.enum"
 
-/** Inscrição dona do pagamento (para o link ao detalhe no admin). */
-export interface ApiAdminPaymentRegistration {
-  id: number
-  codigo: string
-  eventoId: number
-}
+/** Dono do pagamento: `codigo` é a `external_reference` (`VX-…` ou `VTX-P-…`). */
+export type ApiAdminPaymentOrigin =
+  | { tipo: "inscricao"; inscricaoId: number; codigo: string }
+  | { tipo: "pedido_loja"; pedidoLojaId: number; codigo: string }
 
-/** Pedido da loja dono do pagamento. */
-export interface ApiAdminPaymentStoreOrder {
-  codigo: string
-}
-
-/** Item de `GET /admin/pagamentos?situacao` (`CursorPage`): pagamentos que pedem ação do admin. */
+/**
+ * Item de `GET /admin/pagamentos?situacao=` (`CursorPage`, `PendenciaPagamentoResponse`). A situação é o
+ * filtro da consulta (obrigatório); `acoes` diz o que o painel pode oferecer na linha.
+ */
 export interface ApiAdminPayment {
   id: number
   status: PAYMENT_STATUS
-  situacao: PAYMENT_ISSUE
   valorCentavos: number
   valorGatewayCentavos: number | null
+  gatewayPaymentId: string | null
+  gatewayStatus: string | null
+  metodo: string | null
+  pagoEm: string | null
+  estornoSolicitadoEm: string | null
+  /** Código do motivo (`cancelamento_admin`, `pagamento_divergente`…) ou o texto do admin no estorno. */
+  estornoMotivo: string | null
   criadoEm: string
   atualizadoEm: string
-  estornoSolicitadoEm: string | null
-  estornoMotivo: string | null
-  inscricao: ApiAdminPaymentRegistration | null
-  pedidoLoja: ApiAdminPaymentStoreOrder | null
+  origem: ApiAdminPaymentOrigin
+  acoes: { conciliar: boolean; estornar: boolean }
 }

@@ -5,15 +5,14 @@ export interface PaymentOrigin {
   href: string
 }
 
-/** Link da fila de pagamentos para o dono do pagamento (inscrição ou pedido da loja). */
-export function getPaymentOrigin(payment: Pick<ApiAdminPayment, "inscricao" | "pedidoLoja">): PaymentOrigin | null {
-  if (payment.inscricao) {
-    const { id, codigo, eventoId } = payment.inscricao
-    return { label: `Inscrição ${codigo}`, href: `/admin/eventos/${eventoId}/inscricoes/${id}` }
+/**
+ * Link da fila de pagamentos para o dono do pagamento. A origem da inscrição não traz a corrida: o link vai a
+ * `/admin/inscricoes/:id`, que lê a inscrição e redireciona para `/admin/eventos/:eventoId/inscricoes/:id`.
+ */
+export function getPaymentOrigin(payment: Pick<ApiAdminPayment, "origem">): PaymentOrigin {
+  const { origem } = payment
+  if (origem.tipo === "pedido_loja") {
+    return { label: `Pedido ${origem.codigo}`, href: `/admin/loja/pedidos/${encodeURIComponent(origem.codigo)}` }
   }
-  if (payment.pedidoLoja) {
-    const { codigo } = payment.pedidoLoja
-    return { label: `Pedido ${codigo}`, href: `/admin/loja/pedidos/${encodeURIComponent(codigo)}` }
-  }
-  return null
+  return { label: `Inscrição ${origem.codigo}`, href: `/admin/inscricoes/${origem.inscricaoId}` }
 }
