@@ -37,6 +37,7 @@ const MESSAGES: Partial<Record<string, string>> = {
   [API_ERROR_CODE.PAYMENT_UNAVAILABLE]: "Esta inscrição não está aguardando pagamento.",
   [API_ERROR_CODE.RESERVATION_EXPIRED]: "O prazo para pagar esta inscrição acabou e a vaga foi liberada. Faça uma nova inscrição.",
   [API_ERROR_CODE.GATEWAY_UNAVAILABLE]: "O Mercado Pago não respondeu. Tente novamente em instantes.",
+  [API_ERROR_CODE.PAYMENT_NOT_FOUND]: "Pagamento não encontrado. Recarregue a página.",
   [API_ERROR_CODE.INVALID_CHECKOUT_URL]: "Não foi possível abrir o pagamento. Tente novamente em instantes.",
 }
 

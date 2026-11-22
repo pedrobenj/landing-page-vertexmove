@@ -59,6 +59,26 @@ export interface MockRegistration {
   pagamentoStatus?: PAYMENT_STATUS | null
   /** Quando o "webhook" simulado aprova o pagamento (ms); imita o atraso do Mercado Pago. */
   aprovacaoEm?: number | null
+  /** Retirada do kit marcada no admin (`kit_retirado_em`). */
+  kitRetiradoEm?: string | null
+  /** Mudanças de status (detalhe do admin). Sem ela, o detalhe mostra só a criação. */
+  historico?: { status: REGISTRATION_STATUS; em: string }[]
+}
+
+/** Linha de `pagamento` do backend, com o que o admin vê na fila de pendências. */
+export interface MockPayment {
+  id: number
+  inscricaoId: number | null
+  pedidoLojaCodigo: string | null
+  status: PAYMENT_STATUS
+  valorCentavos: number
+  /** Valor informado pelo Mercado Pago; diferente de `valorCentavos` = divergência. */
+  valorGatewayCentavos: number | null
+  criadoEm: string
+  atualizadoEm: string
+  pagoEm: string | null
+  estornoSolicitadoEm: string | null
+  estornoMotivo: string | null
 }
 
 export interface MockDb {
@@ -70,6 +90,7 @@ export interface MockDb {
   documents: EventDocument[]
   admins: MockAdmin[]
   registrations: MockRegistration[]
+  payments: MockPayment[]
   audit: AuditEntry[]
   partnerRaces: PartnerRace[]
   /** Falhas de login seguidas por e-mail (lockout simplificado). */

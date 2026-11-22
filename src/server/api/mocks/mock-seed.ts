@@ -12,6 +12,7 @@ import type { PartnerRace } from "@/types/api/partner-race.interface"
 import type { PriceTier } from "@/types/api/price-tier.interface"
 import type { ShirtSize } from "@/types/api/shirt-size.interface"
 
+import { seedRegistrations } from "./mock-registrations-seed"
 import { addDays, toFortalezaIso } from "./mock-time"
 import type { MockDb, MockDistance, MockEvent } from "./mock-types"
 
@@ -389,6 +390,7 @@ function seedPartnerRaces(): PartnerRace[] {
 export function createSeed(now: Date = new Date()): MockDb {
   const events = seedEvents()
   const { distances, priceTiers } = seedDistancesAndTiers(events, now)
+  const { registrations, payments } = seedRegistrations(now)
   return {
     events,
     distances,
@@ -422,7 +424,8 @@ export function createSeed(now: Date = new Date()): MockDb {
         mfaAtivo: true,
       },
     ],
-    registrations: [],
+    registrations,
+    payments,
     audit: seedAudit(now),
     partnerRaces: seedPartnerRaces(),
     loginFailures: {},
