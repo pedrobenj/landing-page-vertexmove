@@ -76,7 +76,10 @@ export const loginSchema = z.object({ email: z.string().min(1), senha: z.string(
 const nullableText = z.string().trim().min(1).nullable()
 
 export const adminEventSchema = z.object({
-  slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug inválido."),
+  slug: z
+    .string()
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug inválido.")
+    .refine((value) => value !== "encerrados", "é reservado pelo sistema"),
   nome: z.string().trim().min(3).max(150),
   descricao: z.string().trim().min(1),
   dataEvento: z.iso.date(),

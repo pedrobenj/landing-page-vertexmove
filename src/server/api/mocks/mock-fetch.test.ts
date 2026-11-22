@@ -644,6 +644,8 @@ describe("mockFetch", () => {
       expect(res.status).toBe(201)
       expect(res.headers.get("Location")).toBe(`/api/v1/admin/eventos/${event.id}`)
       expect(event).toMatchObject({ status: "rascunho", endereco: "Av. Dom Luís, s/n", localizacaoResumo: "Praça Portugal — Fortaleza/CE" })
+      const reserved = await call("POST", "/admin/eventos", { body: { ...newEvent, slug: "encerrados" }, headers: auth })
+      expect(reserved.status).toBe(422)
 
       const duplicate = await call("POST", "/admin/eventos", { body: newEvent, headers: auth })
       expect(duplicate.status).toBe(409)

@@ -9,6 +9,8 @@ const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const API_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 const API_TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/
 const UF_PATTERN = /^[A-Z]{2}$/
+/** Segmentos fixos de `GET /eventos/*` no backend (`SLUGS_RESERVADOS`). */
+const RESERVED_SLUGS: ReadonlySet<string> = new Set(["encerrados"])
 const CEP_LENGTH = 8
 
 const isApiDate = (value: string) =>
@@ -57,7 +59,8 @@ export const adminEventFormSchema = z.object({
     .trim()
     .min(1, "Informe o endereço (slug)")
     .max(120, "Slug com no máximo 120 caracteres")
-    .regex(SLUG_PATTERN, "Use só letras minúsculas, números e hífens (ex.: corrida-do-sol-2026)"),
+    .regex(SLUG_PATTERN, "Use só letras minúsculas, números e hífens (ex.: corrida-do-sol-2026)")
+    .refine((value) => !RESERVED_SLUGS.has(value), "Este endereço é reservado pelo site. Escolha outro."),
   nome: z.string().trim().min(3, "Informe o nome da corrida").max(150, "Nome com no máximo 150 caracteres"),
   descricao: requiredText("Descreva a corrida"),
   dataEvento: z.string().trim().refine(isApiDate, "Informe a data da corrida"),

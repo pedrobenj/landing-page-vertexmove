@@ -51,6 +51,8 @@ describe("adminEventFormSchema", () => {
   it("slug em kebab-case", () => {
     expect(errorPaths({ ...valid, slug: "Corrida do Sol" })).toEqual(["slug"])
     expect(errorPaths({ ...valid, slug: "corrida--sol" })).toEqual(["slug"])
+    // Reservado no backend: `GET /eventos/encerrados` engoliria a corrida.
+    expect(errorPaths({ ...valid, slug: "encerrados" })).toEqual(["slug"])
     expect(errorPaths({ ...valid, slug: "-corrida" })).toEqual(["slug"])
     expect(errorPaths({ ...valid, slug: "" })).toEqual(["slug"])
   })
