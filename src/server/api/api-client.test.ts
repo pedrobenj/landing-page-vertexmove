@@ -15,7 +15,7 @@ vi.mock("next/headers", () => ({
     new Headers({ "x-forwarded-for": "203.0.113.5, 10.0.0.1", "user-agent": "Mozilla/5.0 Teste" }),
 }))
 
-const { apiFetch, apiFetchRaw } = await import("./api-client")
+const { apiFetch, apiFetchRaw, apiFetchStream } = await import("./api-client")
 const { ApiError, isApiError } = await import("./api-error")
 
 function jsonResponse(status: number, body: unknown): Response {
@@ -224,5 +224,40 @@ describe("apiFetch", () => {
     const { headers } = lastCall()
     expect(headers.has("X-Forwarded-For")).toBe(false)
     expect(headers.get("Authorization")).toBe("Bearer x")
+  })
+})
+
+describe("apiFetchStream", () => {
+  beforeEach(() => {
+    transport.mockReset()
+  })
+
+  it("devolve a Response sem ler o corpo, com o Accept pedido", async () => {
+    const csv = new Response("a;b\r\n", { status: 200, headers: { "Content-Type": "text/csv; charset=utf-8" } })
+    transport.mockResolvedValue(csv)
+
+    const res = await apiFetchStream("/admin/eventos/1/inscricoes.csv", { accept: "text/csv", headers: { Authorization: "Bearer x" } })
+
+    expect(res).toBe(csv)
+    expect(res.bodyUsed).toBe(false)
+    const { url, init, headers } = lastCall()
+    expect(url).toBe("http://api.test/api/v1/admin/eventos/1/inscricoes.csv")
+    expect(init.cache).toBe("no-store")
+    expect(headers.get("Accept")).toBe("text/csv")
+    expect(headers.get("Authorization")).toBe("Bearer x")
+  })
+
+  it("erro da API vira ApiError com o código", async () => {
+    transport.mockResolvedValue(jsonResponse(404, { error: { codigo: "RECURSO_NAO_ENCONTRADO", mensagem: "x" } }))
+
+    const error = await catchError(apiFetchStream("/admin/eventos/9/inscricoes.csv", { accept: "text/csv" }))
+
+    expect(error).toMatchObject({ status: 404, codigo: "RECURSO_NAO_ENCONTRADO" })
+  })
+
+  it("falha de rede vira ApiError INDISPONIVEL", async () => {
+    transport.mockRejectedValue(new TypeError("fetch failed"))
+
+    expect(await catchError(apiFetchStream("/x", { accept: "text/csv" }))).toMatchObject({ status: 503, codigo: "INDISPONIVEL" })
   })
 })

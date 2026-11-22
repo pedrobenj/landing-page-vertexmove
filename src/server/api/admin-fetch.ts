@@ -4,7 +4,7 @@ import { redirect } from "next/navigation"
 
 import { ADMIN_LOGIN_PATH, ADMIN_SESSION_EXPIRED_PATH } from "@/lib/utils/constants"
 
-import { apiFetch, type ApiFetchOptions } from "./api-client"
+import { apiFetch, type ApiFetchOptions, apiFetchStream } from "./api-client"
 import { isApiError } from "./api-error"
 import { clearSession, getAccessToken } from "./admin-session"
 
@@ -21,11 +21,20 @@ import { clearSession, getAccessToken } from "./admin-session"
  * precisam de `unstable_rethrow(error)` no início do `catch`.
  */
 export async function adminFetch<T>(path: string, options: ApiFetchOptions = {}): Promise<T> {
+  return withAdminToken((headers) => apiFetch<T>(path, { ...options, headers: { ...options.headers, ...headers } }))
+}
+
+/** `apiFetchStream` com o Bearer do admin e o mesmo tratamento de sessão do `adminFetch` (ex.: exportar CSV). */
+export async function adminFetchStream(path: string, options: ApiFetchOptions & { accept: string }): Promise<Response> {
+  return withAdminToken((headers) => apiFetchStream(path, { ...options, headers: { ...options.headers, ...headers } }))
+}
+
+async function withAdminToken<T>(call: (headers: { Authorization: string }) => Promise<T>): Promise<T> {
   const token = await getAccessToken()
   if (!token) redirect(ADMIN_LOGIN_PATH)
 
   try {
-    return await apiFetch<T>(path, { ...options, headers: { ...options.headers, Authorization: `Bearer ${token}` } })
+    return await call({ Authorization: `Bearer ${token}` })
   } catch (error) {
     if (isApiError(error) && error.status === 401) {
       try {

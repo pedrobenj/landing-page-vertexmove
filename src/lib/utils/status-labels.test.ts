@@ -9,6 +9,9 @@ import {
   getAdminRoleLabel,
   getEventStatusBadgeClass,
   getEventStatusLabel,
+  getPaymentIssueLabel,
+  getPaymentStatusBadgeClass,
+  getPaymentStatusLabel,
   getRegistrationStatusBadgeClass,
   getRegistrationStatusLabel,
 } from "./status-labels"
@@ -69,5 +72,14 @@ describe("status-labels", () => {
     expect(getOrderStatusBadgeClass("pago")).toBe("bg-cta text-cta-foreground")
     expect(getOrderStatusLabel("novo")).toBe("novo")
     expect(getOrderStatusBadgeClass("novo")).toBe("bg-muted text-muted-foreground")
+  })
+
+  it("rotula status e situações de pagamento (literais do backend)", () => {
+    expect(getPaymentStatusLabel("em_analise")).toBe("Em análise")
+    expect(getPaymentStatusLabel("estornado")).toBe("Estornado")
+    expect(getPaymentStatusBadgeClass("aprovado")).toBe("bg-cta text-cta-foreground")
+    expect(getPaymentStatusLabel("chargeback")).toBe("chargeback")
+    expect(getPaymentIssueLabel("estorno_pendente")).toBe("Estorno pendente")
+    expect(getPaymentIssueLabel("divergente")).toBe("Valor divergente")
   })
 })

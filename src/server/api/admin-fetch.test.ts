@@ -19,7 +19,7 @@ vi.mock("next/navigation", () => ({
   unstable_rethrow: () => {},
 }))
 
-const { adminFetch } = await import("./admin-fetch")
+const { adminFetch, adminFetchStream } = await import("./admin-fetch")
 
 describe("adminFetch", () => {
   beforeEach(() => {
@@ -75,5 +75,16 @@ describe("adminFetch", () => {
     transport.mockResolvedValue(Response.json({ error: { codigo: "ACESSO_NEGADO", mensagem: "x" } }, { status: 403 }))
 
     await expect(adminFetch("/admin/eventos")).rejects.toMatchObject({ status: 403, codigo: "ACESSO_NEGADO" })
+  })
+
+  it("adminFetchStream manda o Bearer e trata o 401 como o adminFetch", async () => {
+    cookieJar.token = "abc"
+    transport.mockResolvedValue(new Response("x", { status: 200 }))
+    const res = await adminFetchStream("/admin/eventos/1/inscricoes.csv", { accept: "text/csv" })
+    expect(await res.text()).toBe("x")
+    expect(new Headers(transport.mock.calls[0][1].headers).get("Authorization")).toBe("Bearer abc")
+
+    transport.mockResolvedValue(Response.json({ error: { codigo: "NAO_AUTENTICADO", mensagem: "x" } }, { status: 401 }))
+    await expect(adminFetchStream("/admin/eventos/1/inscricoes.csv", { accept: "text/csv" })).rejects.toThrow("REDIRECT:/admin/sair")
   })
 })

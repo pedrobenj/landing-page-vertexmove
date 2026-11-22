@@ -1,6 +1,8 @@
 import { ADMIN_ROLE } from "@/enums/admin-role.enum"
 import { EVENT_STATUS } from "@/enums/event-status.enum"
 import { ORDER_STATUS, ORDER_STATUS_LABEL } from "@/enums/order-status.enum"
+import { PAYMENT_ISSUE } from "@/enums/payment-issue.enum"
+import { PAYMENT_STATUS } from "@/enums/payment-status.enum"
 import { REGISTRATION_STATUS } from "@/enums/registration-status.enum"
 
 const FALLBACK_BADGE = "bg-muted text-muted-foreground"
@@ -76,6 +78,48 @@ export function getOrderStatusLabel(status: ORDER_STATUS | string): string {
 
 export function getOrderStatusBadgeClass(status: ORDER_STATUS | string): string {
   return lookup(ORDER_STATUS_BADGES, status) ?? FALLBACK_BADGE
+}
+
+const PAYMENT_STATUS_LABELS: Record<PAYMENT_STATUS, string> = {
+  [PAYMENT_STATUS.CREATED]: "Criado",
+  [PAYMENT_STATUS.PENDING]: "Pendente",
+  [PAYMENT_STATUS.UNDER_REVIEW]: "Em análise",
+  [PAYMENT_STATUS.APPROVED]: "Aprovado",
+  [PAYMENT_STATUS.REJECTED]: "Recusado",
+  [PAYMENT_STATUS.REFUNDED]: "Estornado",
+  [PAYMENT_STATUS.CANCELLED]: "Cancelado",
+  [PAYMENT_STATUS.EXPIRED]: "Expirado",
+}
+
+const PAYMENT_STATUS_BADGES: Record<PAYMENT_STATUS, string> = {
+  [PAYMENT_STATUS.CREATED]: "bg-muted text-muted-foreground",
+  [PAYMENT_STATUS.PENDING]: "bg-secondary text-secondary-foreground",
+  [PAYMENT_STATUS.UNDER_REVIEW]: "bg-amber-100 text-amber-900",
+  [PAYMENT_STATUS.APPROVED]: "bg-cta text-cta-foreground",
+  [PAYMENT_STATUS.REJECTED]: "bg-destructive/10 text-destructive",
+  [PAYMENT_STATUS.REFUNDED]: "bg-muted text-muted-foreground",
+  [PAYMENT_STATUS.CANCELLED]: "bg-destructive/10 text-destructive",
+  [PAYMENT_STATUS.EXPIRED]: "bg-muted text-muted-foreground",
+}
+
+/** Status do pagamento (aceita `string`: status novos do backend caem no fallback). */
+export function getPaymentStatusLabel(status: PAYMENT_STATUS | string): string {
+  return lookup(PAYMENT_STATUS_LABELS, status) ?? status
+}
+
+export function getPaymentStatusBadgeClass(status: PAYMENT_STATUS | string): string {
+  return lookup(PAYMENT_STATUS_BADGES, status) ?? FALLBACK_BADGE
+}
+
+const PAYMENT_ISSUE_LABELS: Record<PAYMENT_ISSUE, string> = {
+  [PAYMENT_ISSUE.UNDER_REVIEW]: "Em análise",
+  [PAYMENT_ISSUE.REFUND_PENDING]: "Estorno pendente",
+  [PAYMENT_ISSUE.MISMATCH]: "Valor divergente",
+}
+
+/** Situação que colocou o pagamento na fila do admin. */
+export function getPaymentIssueLabel(issue: PAYMENT_ISSUE | string): string {
+  return lookup(PAYMENT_ISSUE_LABELS, issue) ?? issue
 }
 
 const ADMIN_ROLE_LABELS: Record<ADMIN_ROLE, string> = {

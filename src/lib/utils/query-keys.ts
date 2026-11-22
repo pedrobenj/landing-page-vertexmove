@@ -18,6 +18,11 @@ export const queryKeys = {
     shirtSizes: () => [...queryKeys.admin.all, "shirt-sizes"] as const,
     audit: (cursor: string | null) => [...queryKeys.admin.all, "audit", cursor] as const,
     storeOrders: (filters: { status: string; cursor: string | null }) => [...queryKeys.admin.all, "store-orders", filters] as const,
+    /** A busca pode ter o nome do atleta: a chave fica só em memória (TanStack Query), nunca na URL. */
+    registrations: (filters: { eventId: number; status: string; distanciaId: number | null; busca: string; cursor: string | null }) =>
+      [...queryKeys.admin.all, "registrations", filters] as const,
+    registrationsOf: (eventId: number) => [...queryKeys.admin.all, "registrations", { eventId }] as const,
+    payments: (filters: { situacao: string; cursor: string | null }) => [...queryKeys.admin.all, "payments", filters] as const,
   },
   registrations: {
     all: ["registrations"] as const,

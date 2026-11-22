@@ -64,29 +64,40 @@ async function toApiError(res: Response): Promise<ApiError> {
   )
 }
 
-/**
- * Chamada à API VertexMove. Nunca loga corpos de request/response (LGPD). Com `BFF_SHARED_SECRET`,
- * manda `X-BFF-Secret` (o backend reconhece o BFF).
- */
-export async function apiFetchRaw<T>(path: string, options: ApiFetchOptions = {}): Promise<ApiResult<T>> {
-  const { method = "GET", body, query, forwardClient = true } = options
-  const hasBody = body !== undefined
-
-  const headers: Record<string, string> = {
-    Accept: "application/json",
-    ...(hasBody ? { "Content-Type": "application/json" } : {}),
+async function buildHeaders(options: ApiFetchOptions, accept: string): Promise<Record<string, string>> {
+  const { body, forwardClient = true } = options
+  return {
+    Accept: accept,
+    ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
     ...(forwardClient ? await getForwardHeaders() : {}),
     ...options.headers,
     // Por último: nenhum chamador sobrescreve. Ponto único para todas as chamadas (inclusive admin).
     ...(env.BFF_SHARED_SECRET ? { "X-BFF-Secret": env.BFF_SHARED_SECRET } : {}),
   }
+}
+
+/** Falhas de rede/timeout → `ApiError` (503/504); `ApiError` e erros desconhecidos sobem como vieram. */
+function toTransportError(error: unknown): unknown {
+  if (isApiError(error)) return error
+  if (isTimeout(error)) return new ApiError(504, API_ERROR_CODE.TIMEOUT, "A API demorou demais para responder.")
+  if (error instanceof TypeError) return new ApiError(503, API_ERROR_CODE.UNAVAILABLE, "Não foi possível conectar à API.")
+  return error
+}
+
+/**
+ * Chamada à API VertexMove. Nunca loga corpos de request/response (LGPD). Com `BFF_SHARED_SECRET`,
+ * manda `X-BFF-Secret` (o backend reconhece o BFF).
+ */
+export async function apiFetchRaw<T>(path: string, options: ApiFetchOptions = {}): Promise<ApiResult<T>> {
+  const { method = "GET", body, query } = options
+  const headers = await buildHeaders(options, "application/json")
 
   const transport = await getTransport()
   try {
     const res = await transport(buildUrl(path, query), {
       method,
       headers,
-      body: hasBody ? JSON.stringify(body) : undefined,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
       // O cache das listas públicas é feito por "use cache" nos endpoints, nunca pelo fetch.
       cache: "no-store",
       signal: AbortSignal.timeout(env.API_TIMEOUT_MS),
@@ -98,14 +109,28 @@ export async function apiFetchRaw<T>(path: string, options: ApiFetchOptions = {}
     const text = res.status === 204 ? "" : await res.text()
     return { data: parseBody<T>(text), headers: res.headers, status: res.status }
   } catch (error) {
-    if (isApiError(error)) throw error
-    if (isTimeout(error)) {
-      throw new ApiError(504, API_ERROR_CODE.TIMEOUT, "A API demorou demais para responder.")
-    }
-    if (error instanceof TypeError) {
-      throw new ApiError(503, API_ERROR_CODE.UNAVAILABLE, "Não foi possível conectar à API.")
-    }
-    throw error
+    throw toTransportError(error)
+  }
+}
+
+/**
+ * GET que devolve a `Response` da API sem ler o corpo (ex.: CSV repassado em streaming ao navegador).
+ * O timeout vale só até chegarem os headers: o download de uma lista grande pode demorar mais.
+ * Resposta de erro → `ApiError`, como no `apiFetchRaw`.
+ */
+export async function apiFetchStream(path: string, options: ApiFetchOptions & { accept: string }): Promise<Response> {
+  const headers = await buildHeaders(options, options.accept)
+  const transport = await getTransport()
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(new DOMException("Timeout", "TimeoutError")), env.API_TIMEOUT_MS)
+  try {
+    const res = await transport(buildUrl(path, options.query), { method: "GET", headers, cache: "no-store", signal: controller.signal })
+    if (!res.ok) throw await toApiError(res)
+    return res
+  } catch (error) {
+    throw toTransportError(error)
+  } finally {
+    clearTimeout(timer)
   }
 }
 
