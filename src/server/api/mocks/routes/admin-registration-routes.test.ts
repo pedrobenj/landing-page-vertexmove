@@ -210,7 +210,7 @@ describe("rotas admin de inscrições e pagamentos no mock (contrato da fase 5)"
 
     it("cada situação com os filtros do backend, origem e ações", async () => {
       expect((await payments("em_analise")).items).toEqual([
-        expect.objectContaining({ id: 20, status: "em_analise", origem: { tipo: "inscricao", inscricaoId: 20, codigo: "VX-2026-00000020" }, acoes: { conciliar: true, estornar: false } }),
+        expect.objectContaining({ id: 20, status: "em_analise", origem: { tipo: "inscricao", inscricaoId: 20, eventoId: 1, codigo: "VX-2026-00000020" }, acoes: { conciliar: true, estornar: false } }),
       ])
       expect((await payments("divergente")).items).toEqual([
         expect.objectContaining({ id: 18, estornoMotivo: "pagamento_divergente", acoes: { conciliar: true, estornar: true } }),

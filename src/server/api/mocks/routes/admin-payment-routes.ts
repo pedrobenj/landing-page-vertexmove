@@ -59,7 +59,7 @@ function toAdminPayment(payment: MockPayment): ApiAdminPayment {
     atualizadoEm: new Date(payment.atualizadoEm).toISOString(),
     origem: payment.pedidoLojaCodigo
       ? { tipo: "pedido_loja", pedidoLojaId: payment.id, codigo: payment.pedidoLojaCodigo }
-      : { tipo: "inscricao", inscricaoId: payment.inscricaoId ?? 0, codigo: registration?.codigo ?? "" },
+      : { tipo: "inscricao", inscricaoId: payment.inscricaoId ?? 0, eventoId: registration?.eventoId ?? 0, codigo: registration?.codigo ?? "" },
     acoes: { conciliar: RECONCILABLE.has(payment.status), estornar: isRefundable(payment) },
   }
 }

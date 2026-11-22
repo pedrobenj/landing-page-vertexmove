@@ -2,7 +2,7 @@ import type { PAYMENT_STATUS } from "@/enums/payment-status.enum"
 
 /** Dono do pagamento: `codigo` é a `external_reference` (`VX-…` ou `VTX-P-…`). */
 export type ApiAdminPaymentOrigin =
-  | { tipo: "inscricao"; inscricaoId: number; codigo: string }
+  | { tipo: "inscricao"; inscricaoId: number; eventoId: number; codigo: string }
   | { tipo: "pedido_loja"; pedidoLojaId: number; codigo: string }
 
 /**

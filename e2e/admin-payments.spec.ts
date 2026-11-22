@@ -68,7 +68,7 @@ test.describe("Admin: pagamentos com pendência", () => {
     const { origin, row } = rowOf(page, target.code)
     await expect(row).toBeVisible({ timeout: NAVIGATION_TIMEOUT })
 
-    // A origem só traz o id da inscrição: `/admin/inscricoes/:id` redireciona ao detalhe na corrida.
+    // A origem traz a corrida: o link vai direto ao detalhe da inscrição dentro dela.
     await origin.click()
     await expect(page).toHaveURL(/\/admin\/eventos\/1\/inscricoes\/\d+$/, { timeout: NAVIGATION_TIMEOUT })
     await expect(page.getByRole("heading", { level: 1, name: target.code })).toBeVisible()
