@@ -1,6 +1,5 @@
 export * from "./store-order-action-button"
 export * from "./store-order-actions"
 export * from "./store-order-details"
-export * from "./store-order-info-row"
 export * from "./store-order-item-row"
 export * from "./store-order-pickup-item"

@@ -1,10 +1,12 @@
-import { Hourglass } from "lucide-react"
 import type { Metadata } from "next"
 import { connection } from "next/server"
+import { Suspense } from "react"
 
-import { AdminEventSubpageHeader, AdminPageBody, AdminPageError } from "@/components/admin"
-import { EmptyState } from "@/components/feedback"
+import { AdminEventSubpageHeader, AdminPageBody, AdminPageError, ReadOnlyNotice } from "@/components/admin"
+import { canManageEvents } from "@/lib/utils/admin-permissions"
 import { getAdminEventPageTitle, loadAdminEventPage } from "@/server/api/load-admin-event-page"
+
+import { AdminRegistrationsList, ExportRegistrationsLink, RegistrationsListSkeleton } from "./components"
 
 /** Bloqueante até ler a corrida: 404 real para id inválido ou inexistente. */
 export const instant = false
@@ -15,7 +17,7 @@ export async function generateMetadata({ params }: PageProps<"/admin/eventos/[id
   return { title: await getAdminEventPageTitle((await params).id, TITLE) }
 }
 
-/** Lista, exportação CSV e retirada de kit dependem de endpoints do backend (§15). */
+/** Inscritos da corrida: filtros, retirada de kit e exportação em CSV para a entrega de kits. */
 export default async function AdminRegistrationsPage({ params }: PageProps<"/admin/eventos/[id]/inscricoes">) {
   await connection()
   const data = await loadAdminEventPage((await params).id)
@@ -23,15 +25,22 @@ export default async function AdminRegistrationsPage({ params }: PageProps<"/adm
     return <AdminPageError eyebrow="Corrida" title={TITLE} message="Não foi possível carregar a corrida" />
   }
 
+  const { admin, event } = data
+  const canManage = canManageEvents(admin.papel)
+
   return (
     <>
-      <AdminEventSubpageHeader event={data.event} title={TITLE} />
+      <AdminEventSubpageHeader
+        event={event}
+        title={TITLE}
+        description="Acompanhe os inscritos, registre a retirada de kit e exporte a lista."
+        action={<ExportRegistrationsLink eventId={event.id} />}
+      />
       <AdminPageBody>
-        <EmptyState
-          icon={Hourglass}
-          title="Em breve: aguardando endpoint do backend."
-          description="Aqui vão ficar a lista de inscritos, a exportação em CSV e a retirada de kit."
-        />
+        {!canManage && <ReadOnlyNotice />}
+        <Suspense fallback={<RegistrationsListSkeleton />}>
+          <AdminRegistrationsList eventId={event.id} canManage={canManage} />
+        </Suspense>
       </AdminPageBody>
     </>
   )

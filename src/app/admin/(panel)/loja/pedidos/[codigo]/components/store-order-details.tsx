@@ -1,9 +1,9 @@
+import { AdminInfoRow } from "@/components/admin"
 import { formatCurrency } from "@/lib/utils/format-currency"
 import { formatDateTimeSafe } from "@/lib/utils/format-date"
 import { formatPhoneDisplay } from "@/lib/utils/format-phone-display"
 import type { ApiAdminStoreOrderDetails } from "@/types/api/store-order.interface"
 
-import { StoreOrderInfoRow } from "./store-order-info-row"
 import { StoreOrderItemRow } from "./store-order-item-row"
 import { StoreOrderPickupItem } from "./store-order-pickup-item"
 
@@ -18,20 +18,20 @@ export function StoreOrderDetails({ order }: StoreOrderDetailsProps) {
       <section aria-labelledby="buyer-title" className="flex flex-col gap-3 rounded-2xl border bg-card p-5 shadow-sm">
         <h2 id="buyer-title" className="font-heading font-black text-brand-navy-deep">Comprador</h2>
         <dl className="flex flex-col gap-2 text-sm">
-          <StoreOrderInfoRow label="Nome" value={order.nomeCompleto} />
-          <StoreOrderInfoRow label="WhatsApp" value={formatPhoneDisplay(order.whatsapp)} />
-          <StoreOrderInfoRow label="E-mail" value={order.email} />
-          <StoreOrderInfoRow label="CPF" value={order.cpfMascarado} />
+          <AdminInfoRow label="Nome" value={order.nomeCompleto} />
+          <AdminInfoRow label="WhatsApp" value={formatPhoneDisplay(order.whatsapp)} />
+          <AdminInfoRow label="E-mail" value={order.email} />
+          <AdminInfoRow label="CPF" value={order.cpfMascarado} />
         </dl>
       </section>
 
       <section aria-labelledby="dates-title" className="flex flex-col gap-3 rounded-2xl border bg-card p-5 shadow-sm">
         <h2 id="dates-title" className="font-heading font-black text-brand-navy-deep">Andamento</h2>
         <dl className="flex flex-col gap-2 text-sm">
-          <StoreOrderInfoRow label="Criado em" value={formatDateTimeSafe(order.criadoEm)} />
-          {order.expiraEm && <StoreOrderInfoRow label="Reserva até" value={formatDateTimeSafe(order.expiraEm)} />}
-          <StoreOrderInfoRow label="Pago em" value={order.pagoEm ? formatDateTimeSafe(order.pagoEm) : "—"} />
-          <StoreOrderInfoRow label="Retirado em" value={order.retiradoEm ? formatDateTimeSafe(order.retiradoEm) : "—"} />
+          <AdminInfoRow label="Criado em" value={formatDateTimeSafe(order.criadoEm)} />
+          {order.expiraEm && <AdminInfoRow label="Reserva até" value={formatDateTimeSafe(order.expiraEm)} />}
+          <AdminInfoRow label="Pago em" value={order.pagoEm ? formatDateTimeSafe(order.pagoEm) : "—"} />
+          <AdminInfoRow label="Retirado em" value={order.retiradoEm ? formatDateTimeSafe(order.retiradoEm) : "—"} />
         </dl>
       </section>
 
