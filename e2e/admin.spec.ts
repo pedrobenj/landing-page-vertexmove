@@ -1,25 +1,21 @@
-import { expect, type Page, test } from "@playwright/test"
+import { expect, test } from "@playwright/test"
 
-const ADMIN_EMAIL = "admin@example.com"
-const PASSWORD = "Vertex@Dev12345"
-
-async function login(page: Page, email: string, password: string) {
-  await page.goto("/admin/login")
-  await page.getByLabel("E-mail").fill(email)
-  await page.getByLabel("Senha").fill(password)
-  await page.getByRole("button", { name: "Entrar" }).click()
-}
+import { ADMIN_PASSWORD, adminCredentials, IS_REAL_API, submitAdminLogin as login } from "./helpers/admin-login"
+import { MOCK_ONLY } from "./helpers/mock-only"
 
 test.describe("Área do admin", () => {
   // Login + action + compilação do /admin no dev server passam dos 30s padrão quando a suíte roda em paralelo.
   test.describe.configure({ timeout: 60_000 })
 
   test("login com a conta da organização mostra o nome no painel", async ({ page }) => {
-    await login(page, ADMIN_EMAIL, PASSWORD)
+    const { email, password } = adminCredentials()
+    await login(page, email, password)
 
     await expect(page).toHaveURL("/admin", { timeout: 20_000 })
-    await expect(page.getByRole("heading", { level: 1, name: "Bom te ver, Organização Vertex" })).toBeVisible()
-    await expect(page.getByTestId("admin-user-badge")).toContainText("Organização Vertex")
+    // No backend real o nome da conta não é conhecido aqui: confere só a saudação e o selo.
+    const name = IS_REAL_API ? /.+/ : "Organização Vertex"
+    await expect(page.getByRole("heading", { level: 1, name: IS_REAL_API ? /^Bom te ver, .+/ : "Bom te ver, Organização Vertex" })).toBeVisible()
+    await expect(page.getByTestId("admin-user-badge")).toContainText(name)
     await expect(page.getByRole("navigation", { name: "Menu do admin" }).getByRole("link", { name: "Eventos" })).toBeVisible()
 
     const cookies = await page.context().cookies()
@@ -30,15 +26,15 @@ test.describe("Área do admin", () => {
   })
 
   test("senha errada mostra o aviso de credenciais inválidas", async ({ page }) => {
-    // Outra conta: as falhas contam para o bloqueio (5 tentativas) e não podem travar o admin dos outros testes.
-    await login(page, "operador@example.com", "senha-errada")
+    // Conta inexistente: as falhas contam para o bloqueio (5 tentativas) e não podem travar contas reais.
+    await login(page, "e2e-sem-conta@example.com", "senha-errada")
 
     await expect(page.getByText("E-mail ou senha inválidos.")).toBeVisible({ timeout: 15_000 })
     await expect(page).toHaveURL("/admin/login")
   })
 
-  test("conta com MFA mostra a mensagem de verificação em duas etapas", async ({ page }) => {
-    await login(page, "superadmin@example.com", PASSWORD)
+  test("conta com MFA mostra a mensagem de verificação em duas etapas", MOCK_ONLY, async ({ page }) => {
+    await login(page, "superadmin@example.com", ADMIN_PASSWORD)
 
     await expect(page.getByText("Esta conta exige verificação em duas etapas, ainda indisponível.")).toBeVisible({
       timeout: 15_000,
@@ -62,7 +58,8 @@ test.describe("Área do admin", () => {
   })
 
   test("sessão expirada é renovada pelo refresh token sem voltar ao login", async ({ page }) => {
-    await login(page, ADMIN_EMAIL, PASSWORD)
+    const { email, password } = adminCredentials()
+    await login(page, email, password)
     await expect(page).toHaveURL("/admin", { timeout: 20_000 })
     const oldRefresh = (await page.context().cookies()).find((cookie) => cookie.name === "vm_admin_rt")?.value
 
@@ -70,7 +67,7 @@ test.describe("Área do admin", () => {
     await page.goto("/admin/eventos")
 
     await expect(page).toHaveURL("/admin/eventos")
-    await expect(page.getByTestId("admin-user-badge")).toContainText("Organização Vertex")
+    await expect(page.getByTestId("admin-user-badge")).toContainText(IS_REAL_API ? /.+/ : "Organização Vertex")
     const cookies = await page.context().cookies()
     expect(cookies.find((cookie) => cookie.name === "vm_admin_at")?.value).toBeTruthy()
     expect(cookies.find((cookie) => cookie.name === "vm_admin_rt")?.value).not.toBe(oldRefresh)
@@ -87,7 +84,8 @@ test.describe("Área do admin", () => {
   })
 
   test("logout volta ao login e encerra a sessão", async ({ page }) => {
-    await login(page, ADMIN_EMAIL, PASSWORD)
+    const { email, password } = adminCredentials()
+    await login(page, email, password)
     await expect(page).toHaveURL("/admin", { timeout: 20_000 })
 
     await page.getByRole("button", { name: "Sair" }).click()

@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test"
 
 import { loginAsAdmin, OPERATOR_EMAIL } from "./helpers/admin-login"
+import { MOCK_ONLY } from "./helpers/mock-only"
 
 /** Eventos do seed do mock (src/server/api/mocks/mock-seed.ts): 3 publicados, 1 rascunho, 4 encerrados. */
 const SEED_PUBLISHED = "Corrida Vertex Beira-Mar 2026"
@@ -10,7 +11,7 @@ const SEED_CLOSED = "Night Run Vertex 2025"
 test.describe("Admin — lista de corridas", () => {
   test.describe.configure({ timeout: 60_000 })
 
-  test("lista as corridas do mock e filtra por rascunho", async ({ page }) => {
+  test("lista as corridas do mock e filtra por rascunho", MOCK_ONLY, async ({ page }) => {
     await loginAsAdmin(page)
     await page.goto("/admin/eventos")
 
@@ -35,7 +36,7 @@ test.describe("Admin — lista de corridas", () => {
     await expect(bodyRows.filter({ hasText: "Rascunho" })).toHaveCount(total)
   })
 
-  test("operador vê a lista sem o botão Nova corrida", async ({ page }) => {
+  test("operador vê a lista sem o botão Nova corrida", MOCK_ONLY, async ({ page }) => {
     await loginAsAdmin(page, OPERATOR_EMAIL)
     await page.goto("/admin/eventos")
 
@@ -114,7 +115,7 @@ test.describe("Admin — cadastro e publicação de corridas", () => {
     expect((await page.goto("/admin/eventos/abc"))?.status()).toBe(404)
   })
 
-  test("operador vê a corrida só para leitura, sem ações", async ({ page }) => {
+  test("operador vê a corrida só para leitura, sem ações", MOCK_ONLY, async ({ page }) => {
     await loginAsAdmin(page, OPERATOR_EMAIL)
     await page.goto("/admin/eventos/4")
 

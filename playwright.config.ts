@@ -9,6 +9,8 @@ const BASE_URL = `http://localhost:${PORT}`
  */
 export default defineConfig({
   testDir: "./e2e",
+  // `e2e/real/` só roda contra o backend real (`playwright.real.config.ts`).
+  testIgnore: ["real/**"],
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,

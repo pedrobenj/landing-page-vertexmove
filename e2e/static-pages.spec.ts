@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test"
 
+import { MOCK_ONLY } from "./helpers/mock-only"
+
 // Roda com USE_MOCK_API=true: corridas parceiras, encerradas, parceiros e números vêm do mock/demonstração.
 
 const STATIC_PAGES = [
@@ -52,7 +54,7 @@ test.describe("Páginas institucionais", () => {
     )
   })
 
-  test("O Vertex mostra o nome, a história, a missão, os números e o CTA", async ({ page }) => {
+  test("O Vertex mostra o nome, a história, a missão, os números e o CTA", MOCK_ONLY, async ({ page }) => {
     await page.goto("/sobre")
     await expect(page.getByText("Por que Vertex", { exact: true })).toBeVisible()
     await expect(page.getByText("Nossa subida", { exact: true })).toBeVisible()
@@ -63,7 +65,7 @@ test.describe("Páginas institucionais", () => {
     await expect(page.getByRole("link", { name: "Ver os próximos topos" })).toHaveAttribute("href", "/#corridas")
   })
 
-  test("parceiros mostra os 6 parceiros de demonstração e o CTA", async ({ page }) => {
+  test("parceiros mostra os 6 parceiros de demonstração e o CTA", MOCK_ONLY, async ({ page }) => {
     await page.goto("/parceiros")
     const partners = page.getByRole("list", { name: "Parceiros do Vertex" }).getByRole("listitem")
     await expect(partners).toHaveCount(6)
@@ -82,7 +84,7 @@ test.describe("Páginas institucionais", () => {
     await expect(page.getByRole("heading", { level: 2, name: "Bora treinar junto?" })).toBeVisible()
   })
 
-  test("corridas parceiras lista os 3 cards com cupom e link externo", async ({ page }) => {
+  test("corridas parceiras lista os 3 cards com cupom e link externo", MOCK_ONLY, async ({ page }) => {
     await page.goto("/corridas-parceiras")
     const cards = page.getByRole("main").getByRole("article")
     await expect(cards).toHaveCount(3)
@@ -92,7 +94,7 @@ test.describe("Páginas institucionais", () => {
     await expect(signUp).toHaveAttribute("rel", "noopener noreferrer")
   })
 
-  test("copiar cupom mostra o toast", async ({ page, context, browserName }) => {
+  test("copiar cupom mostra o toast", MOCK_ONLY, async ({ page, context, browserName }) => {
     test.skip(browserName !== "chromium", "permissão de clipboard só no Chromium")
     await context.grantPermissions(["clipboard-read", "clipboard-write"])
     await page.goto("/corridas-parceiras")
@@ -100,7 +102,7 @@ test.describe("Páginas institucionais", () => {
     await expect(page.getByText("Cupom copiado!")).toBeVisible()
   })
 
-  test("corridas encerradas lista as 4 edições do mock", async ({ page }) => {
+  test("corridas encerradas lista as 4 edições do mock", MOCK_ONLY, async ({ page }) => {
     await page.goto("/corridas/encerradas")
     const editions = page.getByRole("list", { name: "Edições passadas" }).getByRole("article")
     await expect(editions).toHaveCount(4)
