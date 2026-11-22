@@ -156,7 +156,7 @@ describe("mockFetch", () => {
       expect(res.status).toBe(200)
       expect(res.headers.get("Cache-Control")).toBe("no-store")
       expect(availability.eventoSlug).toBe("night-run-vertex-aterro")
-      expect(availability.calculadoEm).toMatch(/-03:00$/)
+      expect(Number.isNaN(Date.parse(availability.calculadoEm))).toBe(false)
       expect(availability.distancias.map((item) => item.distanciaId)).toEqual(detail.distancias!.map((item) => item.id))
       expect(availability.distancias.filter((item) => item.esgotado).map((item) => item.distanciaId)).toEqual([tenKId])
       expect(availability.distancias[0]!.loteVigente).toMatchObject({ nome: "1º lote", precoCentavos: expect.any(Number) })

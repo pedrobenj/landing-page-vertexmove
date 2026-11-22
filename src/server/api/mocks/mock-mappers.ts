@@ -11,7 +11,6 @@ import type { PriceTier } from "@/types/api/price-tier.interface"
 import type { PublicDocument } from "@/types/api/public-event-detail.interface"
 
 import { getMockDb } from "./mock-db"
-import { toFortalezaIso } from "./mock-time"
 import type { MockDistance, MockEvent } from "./mock-types"
 
 const ACTIVE_REGISTRATION = new Set<string>([REGISTRATION_STATUS.PENDING, REGISTRATION_STATUS.CONFIRMED])
@@ -151,7 +150,7 @@ export function toPublicEventDetail(event: MockEvent): ApiPublicEventDetail {
 export function toEventAvailability(event: MockEvent, now: Date = new Date()): EventAvailability {
   return {
     eventoSlug: event.slug,
-    calculadoEm: toFortalezaIso(now),
+    calculadoEm: now.toISOString(), // como o presenter do backend
     distancias: publicDistancesOf(event).map((distance) => {
       const tier = findCurrentTier(distance.id, now)
       return {

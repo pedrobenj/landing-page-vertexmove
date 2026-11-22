@@ -11,6 +11,6 @@ export interface DistanceAvailability {
 /** Resposta de `GET /eventos/:slug/disponibilidade`. */
 export interface EventAvailability {
   eventoSlug: string
-  calculadoEm: string // ISO
+  calculadoEm: string // ISO-8601 (UTC, `toISOString` do backend)
   distancias: DistanceAvailability[]
 }
