@@ -17,8 +17,8 @@ export type CachedResult<T> =
 
 /** Catálogo público (`/eventos`, `/eventos/:slug`): revalidação curta (§8 do CLAUDE.md). */
 export const PUBLIC_CATALOG_CACHE_LIFE = { stale: 60, revalidate: 60, expire: 300 }
-/** Listas de rotas propostas (encerradas, corridas parceiras): mudam pouco. */
-export const PROPOSED_LIST_CACHE_LIFE = { stale: 300, revalidate: 300, expire: 900 }
+/** Listas que mudam pouco (encerradas, corridas parceiras). */
+export const SLOW_LIST_CACHE_LIFE = { stale: 300, revalidate: 300, expire: 900 }
 
 /** Converte `ApiError` em falha serializável; outros erros são relançados. */
 export function toCachedFailure(error: unknown): Extract<CachedResult<never>, { ok: false }> {
@@ -49,7 +49,7 @@ export function unwrapCached<T>(result: CachedResult<T>): T {
 export function proposedRouteFailure<T>(error: unknown, empty: T): CachedResult<T> {
   const failure = toCachedFailure(error)
   if (failure.status === 404) {
-    cacheLife(PROPOSED_LIST_CACHE_LIFE)
+    cacheLife(SLOW_LIST_CACHE_LIFE)
     return { ok: true, data: empty }
   }
   cacheLife("seconds")

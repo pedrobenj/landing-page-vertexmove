@@ -132,7 +132,7 @@ Mapear no tema do shadcn/ui (CSS variables em `globals.css`):
 | Rota | Conteúdo | API |
 |---|---|---|
 | `/` | Hero "próximo topo", próximos topos, como funciona em degraus, comunidade, loja, topos conquistados, provas parceiras, parceiros (ver §2) | `GET /eventos` |
-| `/corridas/encerradas` | "Corridas que já vivemos": edições passadas | **pendente** (API pública só lista publicadas) |
+| `/corridas/encerradas` | "Corridas que já vivemos": edições passadas (encerradas e publicadas com data passada, mais recente primeiro) | `GET /eventos/encerrados` |
 | `/corridas/[slug]` | Página do evento: capa, data/largada, local (mapa por `latitude`/`longitude`), distâncias e preço do lote vigente, kits (fotos), percurso, regulamento, FAQ, CTA fixo "Inscrever-se" no mobile | `GET /eventos/:slug` |
 | `/corridas/[slug]/inscricao` | Formulário em etapas (ver §7) | `POST /inscricoes` |
 | `/inscricao/confirmada` | Confirmação pós-criação com código e valores (dados vindos da resposta do `POST /inscricoes`, guardados em memória no store) | — |
@@ -211,7 +211,8 @@ Papéis vistos no seed: organização (`admin@example.com`), operador (`operador
 ### Catálogo público
 | Método | Rota | Observações |
 |---|---|---|
-| GET | `/eventos?cursor&limit` | Só publicadas; **não** expõe `status` |
+| GET | `/eventos?cursor&limit` | Só publicadas com data de hoje em diante; **não** expõe `status` |
+| GET | `/eventos/encerrados?cursor&limit` | Histórico: encerradas (não arquivadas) e publicadas com data passada, data DESC; mesmo item de `/eventos`. O slug `encerrados` é reservado |
 | GET | `/eventos/:slug` | Detalhe público com `localizacao` (objeto) e sem `id`; distâncias com `lotes[]` (sem lote vigente nem esgotado). Rascunho/encerrada/cancelada/arquivada → 404. Cacheado (~60 s) |
 | GET | `/eventos/:slug/disponibilidade` | `{ eventoSlug, calculadoEm, distancias: [{ distanciaId, esgotado, loteVigente: { id, nome, precoCentavos } \| null }] }`. **Sem cache** (`endpoints/availability.ts`), buscado em paralelo com o detalhe nas páginas da corrida e da inscrição; `applyAvailability` sobrescreve `loteVigente`/`esgotado`. Se falhar, vale o lote calculado no front a partir de `lotes[]` (sem esgotado) |
 
@@ -581,7 +582,7 @@ Antes de cada commit: `lint`, `typecheck` e `build` passando. Commits no padrão
 - [x] Qual header de IP do cliente o rate limit confia: `X-Forwarded-For` com `TRUST_PROXY_HOPS`; o Next se identifica com `X-BFF-Secret` (`BFF_SHARED_SECRET`). Requisitos de deploy em §12.
 - [ ] Domínio/`SameSite` dos cookies em produção e CORS (se algum dia o browser chamar a API direto).
 - [ ] Loja (produtos, variantes, pedidos, estoque).
-- [ ] Listagem pública de corridas encerradas (histórico) e, depois, resultados/galeria. Proposta: `GET /eventos/encerrados?cursor&limit` → `CursorPage<PublicEvent>` (já implementada no mock).
+- [x] Listagem pública de corridas encerradas: `GET /eventos/encerrados?cursor&limit` → `CursorPage<PublicEvent>` (fase 8). Falta: "Carregar mais" além de 50 edições, resultados/galeria.
 - [ ] Corridas parceiras (nome, data, distâncias, cupom, link externo, imagem) com CRUD no admin. Proposta: `GET /corridas-parceiras` → `PartnerRace[]` (já implementada no mock).
 - [ ] Parceiros/apoiadores e números da comunidade: estáticos no front até haver endpoint (mock fornece dados de demonstração).
 

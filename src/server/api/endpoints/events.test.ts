@@ -72,10 +72,21 @@ describe("endpoints de eventos (contra o mock)", () => {
     expect(cache.cacheTag).toHaveBeenCalledWith("partner-races")
   })
 
-  it("trata 404 das rotas propostas como lista vazia", async () => {
+  it("encerradas: chama a rota real com limit e relança 404 como erro (a rota existe no backend)", async () => {
+    const urls: string[] = []
+    override.transport = async (url) => {
+      urls.push(String(url))
+      return Response.json({ error: { codigo: "RECURSO_NAO_ENCONTRADO", mensagem: "erro" } }, { status: 404 })
+    }
+
+    expect(await catchError(listPastEvents())).toMatchObject({ status: 404, codigo: "RECURSO_NAO_ENCONTRADO" })
+    expect(urls[0]).toMatch(/\/api\/v1\/eventos\/encerrados\?limit=50$/)
+    expect(cache.cacheLife).toHaveBeenCalledWith("seconds")
+  })
+
+  it("trata 404 da rota proposta de corridas parceiras como lista vazia", async () => {
     override.transport = respondWith(404, "RECURSO_NAO_ENCONTRADO")
 
-    expect(await listPastEvents()).toEqual({ items: [], nextCursor: null })
     expect(await listPartnerRaces()).toEqual([])
   })
 

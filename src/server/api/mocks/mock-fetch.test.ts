@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+import { EVENT_STATUS } from "@/enums/event-status.enum"
 import type { AdminLoginResponse } from "@/types/api/admin-auth.interface"
 import type { ApiPublicEventDetail } from "@/types/api/api-event-detail.interface"
 import type { AdminEvent } from "@/types/api/admin-event.interface"
@@ -12,7 +13,7 @@ import type { ApiCheckout, ApiRegistrationStatus } from "@/types/api/registratio
 import type { RegistrationReceipt } from "@/types/api/registration-receipt.interface"
 import type { CreatedRegistration, RegistrationLookupItem } from "@/types/api/registration.interface"
 
-import { resetMockDb } from "./mock-db"
+import { getMockDb, resetMockDb } from "./mock-db"
 import { mockFetch } from "./mock-fetch"
 
 interface CallOptions {
@@ -118,6 +119,43 @@ describe("mockFetch", () => {
         "Night Run Vertex 2025",
       ])
       expect(page.items.every((event) => event.imagemCapaUrl === null)).toBe(true)
+    })
+
+    describe("como o backend: publicada com data passada vira histórico", () => {
+      beforeEach(() => {
+        vi.useFakeTimers({ toFake: ["Date"] })
+        vi.setSystemTime(new Date("2026-11-22T12:00:00-03:00"))
+        const db = getMockDb()
+        // Desafio do Cocó (publicada) aconteceu ontem; Beira-Mar 2025 (encerrada) foi arquivada.
+        db.events.find((event) => event.id === 3)!.dataEvento = "2026-11-21"
+        db.events.find((event) => event.id === 5)!.deletedAt = "2026-11-01T10:00:00-03:00"
+        // Cancelada nunca entra no histórico.
+        db.events.find((event) => event.id === 6)!.status = EVENT_STATUS.CANCELLED
+      })
+      afterEach(() => vi.useRealTimers())
+
+      it("GET /eventos/encerrados: encerrada (não arquivada) ou publicada com data passada, data DESC", async () => {
+        const page = (await (await call("GET", "/eventos/encerrados")).json()) as CursorPage<PublicEvent>
+        expect(page.items.map((event) => event.slug)).toEqual([
+          "desafio-vertex-parque-do-coco",
+          "corrida-das-maes-vertex-2026",
+          "vertex-coco-trail-2026",
+        ])
+      })
+
+      it("GET /eventos/encerrados pagina por cursor", async () => {
+        const first = (await (await call("GET", "/eventos/encerrados?limit=2")).json()) as CursorPage<PublicEvent>
+        expect(first.items).toHaveLength(2)
+        const second = (await (await call("GET", `/eventos/encerrados?limit=2&cursor=${first.nextCursor}`)).json()) as CursorPage<PublicEvent>
+        expect(second.items.map((event) => event.slug)).toEqual(["vertex-coco-trail-2026"])
+        expect(second.nextCursor).toBeNull()
+      })
+
+      it("GET /eventos deixa de listar a publicada com data passada", async () => {
+        const page = (await (await call("GET", "/eventos")).json()) as CursorPage<PublicEvent>
+        expect(page.items.map((event) => event.slug)).not.toContain("desafio-vertex-parque-do-coco")
+        expect(page.items).toHaveLength(2)
+      })
     })
 
     it("lista as corridas parceiras com cupom", async () => {

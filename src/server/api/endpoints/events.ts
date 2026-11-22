@@ -11,15 +11,13 @@ import type { PublicEventDetail } from "@/types/api/public-event-detail.interfac
 import { apiFetch } from "../api-client"
 import {
   type CachedResult,
-  PROPOSED_LIST_CACHE_LIFE,
-  proposedRouteFailure,
   PUBLIC_CATALOG_CACHE_LIFE,
+  SLOW_LIST_CACHE_LIFE,
   toCachedFailure,
   unwrapCached,
 } from "./cached-result"
 
 const PUBLIC_LIMIT = 50
-const EMPTY_PAGE: CursorPage<PublicEvent> = { items: [], nextCursor: null }
 
 // Dentro de "use cache" não há headers() da request: por isso `forwardClient: false`.
 // Sucesso e 404 seguem o cacheLife normal; falhas transitórias (timeout, 5xx) ficam só alguns segundos.
@@ -58,8 +56,8 @@ async function fetchPublicEvent(slug: string): Promise<CachedResult<PublicEventD
 }
 
 /**
- * `GET /eventos/encerrados` — rota PROPOSTA, ainda pendente no backend (§16 do CLAUDE.md).
- * Enquanto o backend real não tiver a rota, o 404 vira lista vazia.
+ * `GET /eventos/encerrados`: encerradas e publicadas com data passada, da mais recente para a mais antiga
+ * (mesmo presenter de `GET /eventos`). Muda pouco: cache mais longo que o catálogo.
  */
 async function fetchPastEvents(): Promise<CachedResult<CursorPage<PublicEvent>>> {
   "use cache"
@@ -69,10 +67,11 @@ async function fetchPastEvents(): Promise<CachedResult<CursorPage<PublicEvent>>>
       query: { limit: PUBLIC_LIMIT },
       forwardClient: false,
     })
-    cacheLife(PROPOSED_LIST_CACHE_LIFE)
+    cacheLife(SLOW_LIST_CACHE_LIFE)
     return { ok: true, data }
   } catch (error) {
-    return proposedRouteFailure(error, EMPTY_PAGE)
+    cacheLife("seconds")
+    return toCachedFailure(error)
   }
 }
 
@@ -86,7 +85,7 @@ export async function getPublicEvent(slug: string): Promise<PublicEventDetail> {
   return unwrapCached(await fetchPublicEvent(slug))
 }
 
-/** Corridas encerradas (histórico). Lista vazia se a rota ainda não existir no backend. */
+/** Corridas encerradas (histórico, primeira página). Lança `ApiError`. */
 export async function listPastEvents(): Promise<CursorPage<PublicEvent>> {
   return unwrapCached(await fetchPastEvents())
 }

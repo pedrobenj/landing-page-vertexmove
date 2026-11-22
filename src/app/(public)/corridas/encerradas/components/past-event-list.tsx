@@ -10,7 +10,7 @@ import type { PublicEvent } from "@/types/api/event.interface"
 import { PastEventGrid } from "./past-event-grid"
 
 /**
- * Histórico de edições (`GET /eventos/encerrados`, rota proposta — §16).
+ * Histórico de edições (`GET /eventos/encerrados`).
  * Mostra a primeira página (até 50 edições).
  * TODO(backend): quando o histórico passar disso, paginar por cursor com "Carregar mais".
  */
