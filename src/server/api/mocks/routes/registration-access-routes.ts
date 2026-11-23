@@ -3,25 +3,42 @@ import "server-only"
 import { randomBytes, randomUUID } from "node:crypto"
 
 import { API_ERROR_CODE } from "@/enums/api-error-code.enum"
-import type { RegistrationAccessGrant } from "@/types/api/registration-access.interface"
+import { REGISTRATION_STATUS } from "@/enums/registration-status.enum"
+import type { RegistrationAccessGrant, RegistrationAccessLinkResponse } from "@/types/api/registration-access.interface"
 
 import { getMockDb } from "../mock-db"
 import { apiError, json, type MockRoute } from "../mock-http"
-import { isActiveRegistrationStatus } from "../mock-mappers"
 import { accessRedeemSchema, lookupSchema, validate } from "../mock-schemas"
 import { toFortalezaIso } from "../mock-time"
+import type { MockRegistration } from "../mock-types"
 
 /** Validade do link mágico (plan/06, opção A). */
 const ACCESS_LINK_TTL_MS = 30 * 60 * 1000
 /** Reserva da vaga enquanto a inscrição está pendente (mesmo prazo de `registration-routes.ts`). */
 const REGISTRATION_HOLD_MS = 30 * 60 * 1000
 
+/** Corpo fixo do 202 (igual ao do backend), exista ou não inscrição. */
+const LINK_REQUESTED: RegistrationAccessLinkResponse = {
+  mensagem:
+    "Se houver inscrição ativa com e-mail cadastrado para estes dados, enviaremos um link de acesso válido por 30 minutos.",
+}
+
+function holdExpiresAt(registration: MockRegistration): number {
+  return Date.parse(registration.inscritoEm) + REGISTRATION_HOLD_MS
+}
+
+/** Como o backend: confirmada, ou pendente dentro da reserva. */
+function isAccessible(registration: MockRegistration, now: number): boolean {
+  if (registration.status === REGISTRATION_STATUS.CONFIRMED) return true
+  return registration.status === REGISTRATION_STATUS.PENDING && holdExpiresAt(registration) > now
+}
+
 /** Mesmo 404 para token inexistente, vencido ou já usado: não revela qual falhou. */
 const invalidLink = () => apiError(404, API_ERROR_CODE.NOT_FOUND, "Link de acesso inválido ou expirado.")
 
 export const registrationAccessRoutes: MockRoute[] = [
   {
-    // Pede o link: resposta sempre 202 sem corpo, exista ou não inscrição (não revela cadastro).
+    // Pede o link: resposta sempre 202 com o mesmo corpo, exista ou não inscrição (não revela cadastro).
     method: "POST",
     path: "/inscricoes/acesso/link",
     handler: ({ body }) => {
@@ -35,7 +52,7 @@ export const registrationAccessRoutes: MockRoute[] = [
       const matches = db.registrations.filter(
         (item) =>
           item.email &&
-          isActiveRegistrationStatus(item.status) &&
+          isAccessible(item, now) &&
           ("cpf" in input ? item.cpf === input.cpf : item.whatsapp === input.whatsapp),
       )
       for (const registration of matches) {
@@ -48,7 +65,7 @@ export const registrationAccessRoutes: MockRoute[] = [
           enviadoEm: toFortalezaIso(new Date(now)),
         })
       }
-      return new Response(null, { status: 202 })
+      return json(202, LINK_REQUESTED)
     },
   },
   {
@@ -60,17 +77,22 @@ export const registrationAccessRoutes: MockRoute[] = [
       if (input instanceof Response) return input
 
       const db = getMockDb()
+      const now = Date.now()
       const link = db.accessLinks.find((item) => item.token === input.token)
-      if (!link || link.usadoEm !== null || link.expiraEm <= Date.now()) return invalidLink()
+      if (!link || link.usadoEm !== null || link.expiraEm <= now) return invalidLink()
       const registration = db.registrations.find((item) => item.codigo === link.codigo)
-      if (!registration) return invalidLink()
+      if (!registration || !isAccessible(registration, now)) return invalidLink()
 
-      link.usadoEm = Date.now()
+      // Usar um link invalida os outros ainda não usados da mesma inscrição.
+      for (const other of db.accessLinks) {
+        if (other.codigo === link.codigo && other.usadoEm === null) other.usadoEm = now
+      }
       registration.accessToken = randomUUID()
       const grant: RegistrationAccessGrant = {
         codigo: registration.codigo,
         accessToken: registration.accessToken,
-        expiraEm: new Date(Date.parse(registration.inscritoEm) + REGISTRATION_HOLD_MS).toISOString(),
+        status: registration.status,
+        expiraEm: new Date(holdExpiresAt(registration)).toISOString(),
       }
       return json(200, grant)
     },

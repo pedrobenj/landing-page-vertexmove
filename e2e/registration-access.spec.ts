@@ -25,8 +25,9 @@ async function receivedLink(page: Page, email: string): Promise<string> {
   return href ?? ""
 }
 
-test.describe("Link de acesso à inscrição por e-mail", MOCK_ONLY, () => {
-  test("pede o link em outro aparelho, abre o link e cai na inscrição; o link não vale de novo", async ({ page, browser }) => {
+test.describe("Link de acesso à inscrição por e-mail", () => {
+  // @mock: no backend real o token só existe no e-mail (EMAIL_PROVIDER=fake não o registra), sem como capturar.
+  test("pede o link em outro aparelho, abre o link e cai na inscrição; o link não vale de novo", MOCK_ONLY, async ({ page, browser }) => {
     test.slow()
     const cpf = generateValidCpf()
     const email = `atleta.${uniqueSuffix()}@example.com`
@@ -52,6 +53,11 @@ test.describe("Link de acesso à inscrição por e-mail", MOCK_ONLY, () => {
     } finally {
       await otherDevice.close()
     }
+
+    // O link reemite o token: o aparelho original perde o acesso e é orientado a pedir um link.
+    await page.goto(`/inscricao/${code}`)
+    await expect(page.getByText("Abra no aparelho da inscrição")).toBeVisible({ timeout: NAVIGATION_TIMEOUT })
+    await expect(page.getByText(/link de acesso mais recente/)).toBeVisible()
   })
 
   test("sem inscrição a mensagem é a mesma (não revela cadastro)", async ({ page }) => {
@@ -62,5 +68,11 @@ test.describe("Link de acesso à inscrição por e-mail", MOCK_ONLY, () => {
   test("link sem token mostra a mensagem de inválido", async ({ page }) => {
     await page.goto("/inscricao/acesso")
     await expect(page.getByRole("heading", { name: "Link inválido ou expirado" })).toBeVisible()
+  })
+
+  test("token inexistente: a API responde 404 e a página mostra inválido, sem o token na URL", async ({ page }) => {
+    await page.goto(`/inscricao/acesso?t=${"x".repeat(43)}`)
+    await expect(page.getByRole("heading", { name: "Link inválido ou expirado" })).toBeVisible({ timeout: NAVIGATION_TIMEOUT })
+    await expect(page).toHaveURL("/inscricao/acesso")
   })
 })

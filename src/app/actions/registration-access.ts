@@ -17,8 +17,8 @@ import type { HttpResponse } from "@/types/http-response.interface"
 const REQUEST_ERROR_TITLE = "Não foi possível pedir o link"
 const REDEEM_ERROR_TITLE = "Não foi possível abrir a inscrição"
 
-/** Token do link: base64url (o backend gera 32 bytes aleatórios). Qualquer outra coisa nem vai à API. */
-const TOKEN_PATTERN = /^[\w-]{1,200}$/
+/** Token do link: base64url, 1–128 caracteres como o backend aceita (ele gera 43). Outra coisa nem vai à API. */
+const TOKEN_PATTERN = /^[\w-]{1,128}$/
 
 const INVALID_LINK: HttpResponse<never> = {
   status: 410,

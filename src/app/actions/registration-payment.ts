@@ -22,7 +22,7 @@ const DETAILS_ERROR_TITLE = "Não foi possível consultar a inscrição"
 const CHECKOUT_ERROR_TITLE = "Não foi possível abrir o pagamento"
 
 const NO_ACCESS_MESSAGE =
-  "Abra esta inscrição no mesmo aparelho em que ela foi feita, ou peça um link de acesso por e-mail em Consultar inscrição."
+  "Abra esta inscrição no mesmo aparelho em que ela foi feita ou pelo link de acesso mais recente (um link novo desativa o acesso anterior). Para receber um link por e-mail, use Consultar inscrição."
 
 function invalidCode(title: string): HttpResponse<never> {
   return { status: 404, code: API_ERROR_CODE.NOT_FOUND, error: getApiErrorMessage(API_ERROR_CODE.NOT_FOUND), title }
@@ -32,6 +32,15 @@ function invalidCode(title: string): HttpResponse<never> {
 async function requireAccessToken(codigo: string, title: string): Promise<string | HttpResponse<never>> {
   const token = await getRegistrationAccessToken(codigo)
   return token ?? { status: 401, code: API_ERROR_CODE.NOT_AUTHENTICATED, error: NO_ACCESS_MESSAGE, title }
+}
+
+/**
+ * Erro da API → `HttpResponse`. 401 com cookie presente = token reemitido por um link de acesso mais novo
+ * (fase 6): mesma orientação de quem não tem o cookie, em vez da mensagem genérica de não autenticado.
+ */
+function toPaymentErrorResponse(error: unknown, title: string, context: string): HttpResponse<never> {
+  const response = toErrorResponse(error, { title, context })
+  return response.status === 401 ? { ...response, error: NO_ACCESS_MESSAGE } : response
 }
 
 function invalidCheckoutUrl(): HttpResponse<never> {
@@ -51,7 +60,7 @@ export async function getRegistrationDetailsAction(codigo: string): Promise<Http
   try {
     return { status: 200, data: await getRegistrationDetails(codigo, token) }
   } catch (error) {
-    return toErrorResponse(error, { title: DETAILS_ERROR_TITLE, context: "getRegistrationDetailsAction" })
+    return toPaymentErrorResponse(error, DETAILS_ERROR_TITLE, "getRegistrationDetailsAction")
   }
 }
 
@@ -75,7 +84,7 @@ export async function startRegistrationCheckoutAction(codigo: string): Promise<H
     }
     return { status: 201, data: { checkoutUrl } }
   } catch (error) {
-    return toErrorResponse(error, { title: CHECKOUT_ERROR_TITLE, context: "startRegistrationCheckoutAction" })
+    return toPaymentErrorResponse(error, CHECKOUT_ERROR_TITLE, "startRegistrationCheckoutAction")
   }
 }
 

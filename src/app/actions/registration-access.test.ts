@@ -116,6 +116,7 @@ describe("redeemAccessLinkAction", () => {
     }
     expect(await redeemAccessLinkAction("")).toMatchObject({ status: 410, code: "LINK_ACESSO_INVALIDO" })
     expect(await redeemAccessLinkAction("a b<c>")).toMatchObject({ status: 410, code: "LINK_ACESSO_INVALIDO" })
+    expect(await redeemAccessLinkAction("a".repeat(129))).toMatchObject({ status: 410, code: "LINK_ACESSO_INVALIDO" })
   })
 
   it("rate limit e API fora não viram 'link inválido'", async () => {

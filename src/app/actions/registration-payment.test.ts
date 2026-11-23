@@ -38,6 +38,18 @@ describe("registration-payment actions", () => {
     expect(createRegistrationCheckout).not.toHaveBeenCalled()
   })
 
+  it("cookie com token reemitido por um link de acesso (401 da API) → mesma orientação, não 'e-mail ou senha'", async () => {
+    const { ApiError } = await import("@/server/api/api-error")
+    getRegistrationDetails.mockRejectedValue(new ApiError(401, API_ERROR_CODE.NOT_AUTHENTICATED, "Não autenticado."))
+    createRegistrationCheckout.mockRejectedValue(new ApiError(401, API_ERROR_CODE.NOT_AUTHENTICATED, "Não autenticado."))
+    const details = await getRegistrationDetailsAction(CODE)
+    const checkout = await startRegistrationCheckoutAction(CODE)
+    for (const response of [details, checkout]) {
+      expect(response).toMatchObject({ status: 401, code: API_ERROR_CODE.NOT_AUTHENTICATED })
+      expect(response.error).toContain("link de acesso mais recente")
+    }
+  })
+
   it("repassa o token do cookie para o status", async () => {
     getRegistrationDetails.mockResolvedValue({ codigo: CODE })
     const response = await getRegistrationDetailsAction(CODE)

@@ -1,7 +1,14 @@
+import type { REGISTRATION_STATUS } from "@/enums/registration-status.enum"
+
 import type { RegistrationLookupInput } from "./registration.interface"
 
 /** Pedido do link de acesso: a mesma entrada da consulta (exatamente um de `cpf`/`whatsapp`). */
 export type RegistrationAccessLinkInput = RegistrationLookupInput
+
+/** `202` de `POST /inscricoes/acesso/link`: corpo fixo, igual exista ou não inscrição. */
+export interface RegistrationAccessLinkResponse {
+  mensagem: string
+}
 
 /** `POST /inscricoes/acesso` — troca o token de uso único do link. */
 export interface RegistrationAccessRedeemInput {
@@ -12,6 +19,9 @@ export interface RegistrationAccessRedeemInput {
 export interface RegistrationAccessGrant {
   codigo: string
   accessToken: string
+  /** `pendente` ou `confirmada` (o link de inscrição inativa dá 404). */
+  status: REGISTRATION_STATUS
+  /** Prazo da reserva (numa confirmada, data passada): não define o `maxAge` do cookie. */
   expiraEm: string
 }
 

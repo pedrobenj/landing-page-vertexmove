@@ -1,7 +1,11 @@
 import { beforeEach, describe, expect, it } from "vitest"
 
 import { REGISTRATION_STATUS } from "@/enums/registration-status.enum"
-import type { MockAccessEmail, RegistrationAccessGrant } from "@/types/api/registration-access.interface"
+import type {
+  MockAccessEmail,
+  RegistrationAccessGrant,
+  RegistrationAccessLinkResponse,
+} from "@/types/api/registration-access.interface"
 
 import { getMockDb, resetMockDb } from "../mock-db"
 import { mockFetch } from "../mock-fetch"
@@ -41,13 +45,14 @@ function tokenOf(email: MockAccessEmail): string {
 describe("mock: link de acesso à inscrição (fase 6)", () => {
   beforeEach(() => resetMockDb())
 
-  it("pedido do link: 202 sem corpo, exista ou não inscrição", async () => {
+  it("pedido do link: 202 com o mesmo corpo fixo, exista ou não inscrição", async () => {
     const known = await call("POST", "/inscricoes/acesso/link", { body: { cpf: athleteWithEmail().cpf } })
     const unknown = await call("POST", "/inscricoes/acesso/link", { body: { whatsapp: "+5585900000001" } })
     expect(known.status).toBe(202)
     expect(unknown.status).toBe(202)
-    expect(await known.text()).toBe("")
-    expect(await unknown.text()).toBe("")
+    const body = (await known.json()) as RegistrationAccessLinkResponse
+    expect(body).toEqual({ mensagem: expect.stringMatching(/30 minutos/) })
+    expect(await unknown.json()).toEqual(body)
   })
 
   it("entrada inválida (os dois identificadores) → 422", async () => {
@@ -79,7 +84,12 @@ describe("mock: link de acesso à inscrição (fase 6)", () => {
     const res = await call("POST", "/inscricoes/acesso", { body: { token } })
     expect(res.status).toBe(200)
     const grant = (await res.json()) as RegistrationAccessGrant
-    expect(grant).toEqual({ codigo: registration.codigo, accessToken: expect.any(String), expiraEm: expect.any(String) })
+    expect(grant).toEqual({
+      codigo: registration.codigo,
+      accessToken: expect.any(String),
+      status: REGISTRATION_STATUS.PENDING,
+      expiraEm: expect.any(String),
+    })
     expect(grant.accessToken).not.toBe(oldToken)
 
     const withNew = await call("GET", `/inscricoes/${registration.codigo}`, { headers: { Authorization: `Bearer ${grant.accessToken}` } })
@@ -91,7 +101,30 @@ describe("mock: link de acesso à inscrição (fase 6)", () => {
     expect(reused.status).toBe(404)
   })
 
-  it("token inexistente ou vencido → 404 (mesma resposta)", async () => {
+  it("usar um link invalida os outros links ainda não usados da mesma inscrição", async () => {
+    const registration = athleteWithEmail()
+    await call("POST", "/inscricoes/acesso/link", { body: { cpf: registration.cpf } })
+    await call("POST", "/inscricoes/acesso/link", { body: { cpf: registration.cpf } })
+    const [newest, older] = await inbox()
+    expect((await call("POST", "/inscricoes/acesso", { body: { token: tokenOf(newest) } })).status).toBe(200)
+    expect((await call("POST", "/inscricoes/acesso", { body: { token: tokenOf(older) } })).status).toBe(404)
+  })
+
+  it("inscrição que deixou de estar ativa (cancelada ou reserva vencida): sem e-mail e link inválido", async () => {
+    const registration = athleteWithEmail()
+    await call("POST", "/inscricoes/acesso/link", { body: { cpf: registration.cpf } })
+    const token = tokenOf((await inbox())[0])
+    registration.status = REGISTRATION_STATUS.CANCELLED
+    expect((await call("POST", "/inscricoes/acesso", { body: { token } })).status).toBe(404)
+
+    const before = (await inbox()).length
+    registration.status = REGISTRATION_STATUS.PENDING
+    registration.inscritoEm = new Date(Date.now() - 31 * 60 * 1000).toISOString()
+    await call("POST", "/inscricoes/acesso/link", { body: { cpf: registration.cpf } })
+    expect(await inbox()).toHaveLength(before)
+  })
+
+  it("token inexistente ou vencido → 404 RECURSO_NAO_ENCONTRADO (mesma resposta)", async () => {
     const registration = athleteWithEmail()
     await call("POST", "/inscricoes/acesso/link", { body: { cpf: registration.cpf } })
     const token = tokenOf((await inbox())[0])
@@ -102,11 +135,12 @@ describe("mock: link de acesso à inscrição (fase 6)", () => {
     const expired = await call("POST", "/inscricoes/acesso", { body: { token } })
     const unknown = await call("POST", "/inscricoes/acesso", { body: { token: "x".repeat(43) } })
     expect([expired.status, unknown.status]).toEqual([404, 404])
-    expect(await errorCode(expired)).toBe(await errorCode(unknown))
+    expect([await errorCode(expired), await errorCode(unknown)]).toEqual(["RECURSO_NAO_ENCONTRADO", "RECURSO_NAO_ENCONTRADO"])
   })
 
-  it("corpo sem token → 422", async () => {
-    const res = await call("POST", "/inscricoes/acesso", { body: {} })
-    expect(res.status).toBe(422)
+  it("corpo sem token, token com mais de 128 caracteres ou campos extras → 422", async () => {
+    for (const body of [{}, { token: "a".repeat(129) }, { token: "abc", codigo: "VX-2026-00000001" }]) {
+      expect((await call("POST", "/inscricoes/acesso", { body })).status).toBe(422)
+    }
   })
 })

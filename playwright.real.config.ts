@@ -32,6 +32,7 @@ export default defineConfig({
     "admin-partner-races.spec.ts",
     "admin-admins.spec.ts",
     "lgpd.spec.ts",
+    "registration-access.spec.ts",
     "real/**/*.spec.ts",
   ],
   grepInvert: /@mock/,

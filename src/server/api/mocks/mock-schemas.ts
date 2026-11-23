@@ -64,7 +64,7 @@ export const lookupSchema = z.union([
 
 /** `POST /inscricoes/acesso`: token de uso único do link mágico. */
 export const accessRedeemSchema = z.strictObject({
-  token: z.string().min(1).max(200),
+  token: z.string().min(1).max(128),
 })
 
 /** `POST /inscricoes/comprovante`: referência da consulta + nascimento do atleta. */
