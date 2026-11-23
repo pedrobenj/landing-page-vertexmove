@@ -12,6 +12,7 @@ import type { AdminPartnerRace } from "@/types/api/partner-race.interface"
 import type { PriceTier } from "@/types/api/price-tier.interface"
 import type { ShirtSize } from "@/types/api/shirt-size.interface"
 
+import { seedLgpdRequests } from "./mock-lgpd-seed"
 import { seedRegistrations } from "./mock-registrations-seed"
 import { addDays, toFortalezaIso } from "./mock-time"
 import type { MockDb, MockDistance, MockEvent } from "./mock-types"
@@ -444,6 +445,7 @@ export function createSeed(now: Date = new Date()): MockDb {
     payments,
     audit: seedAudit(now),
     partnerRaces: seedPartnerRaces(now),
+    lgpdRequests: seedLgpdRequests(registrations, now),
     loginFailures: {},
   }
 }

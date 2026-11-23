@@ -4,6 +4,8 @@ import { z } from "zod"
 
 import { API_ERROR_CODE } from "@/enums/api-error-code.enum"
 import { DOCUMENT_TYPE } from "@/enums/document-type.enum"
+import { LGPD_REQUEST_STATUS } from "@/enums/lgpd-request-status.enum"
+import { LGPD_REQUEST_TYPE } from "@/enums/lgpd-request-type.enum"
 import { PAYMENT_STATUS } from "@/enums/payment-status.enum"
 import { isValidCpf } from "@/lib/utils/is-valid-cpf"
 
@@ -189,3 +191,29 @@ export const changePasswordSchema = z.strictObject({
   senhaAtual: z.string().min(1).max(512),
   novaSenha: z.string().min(1).max(128),
 })
+
+/** `POST /lgpd/solicitacoes` (objeto estrito; um contato obrigatório). */
+export const lgpdRequestSchema = z
+  .strictObject({
+    tipo: z.enum(LGPD_REQUEST_TYPE),
+    nomeCompleto: z.string().trim().min(2).max(120),
+    cpf,
+    email: z.email().max(254).nullable(),
+    whatsapp: e164.nullable(),
+    mensagem: z.string().trim().max(2000).nullable(),
+  })
+  .refine((value) => value.email !== null || value.whatsapp !== null, {
+    message: "Informe e-mail ou WhatsApp.",
+    path: ["email"],
+  })
+
+/** `POST /admin/lgpd/solicitacoes/:id/status`: concluída/recusada exigem a resposta ao titular. */
+export const lgpdStatusSchema = z
+  .strictObject({
+    status: z.enum(LGPD_REQUEST_STATUS),
+    resposta: z.string().trim().max(4000).nullable(),
+  })
+  .refine(
+    (value) => ![LGPD_REQUEST_STATUS.FULFILLED, LGPD_REQUEST_STATUS.REJECTED].includes(value.status) || Boolean(value.resposta),
+    { message: "Informe a resposta ao titular.", path: ["resposta"] },
+  )

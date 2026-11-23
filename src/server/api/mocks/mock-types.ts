@@ -10,6 +10,7 @@ import type { AuditEntry } from "@/types/api/audit-entry.interface"
 import type { Distance } from "@/types/api/distance.interface"
 import type { EventDocument } from "@/types/api/document.interface"
 import type { Kit } from "@/types/api/kit.interface"
+import type { AdminLgpdRequest } from "@/types/api/lgpd-request.interface"
 import type { AdminPartnerRace } from "@/types/api/partner-race.interface"
 import type { PriceTier } from "@/types/api/price-tier.interface"
 import type { ShirtSize } from "@/types/api/shirt-size.interface"
@@ -115,6 +116,8 @@ export interface MockDb {
   payments: MockPayment[]
   audit: AuditEntry[]
   partnerRaces: AdminPartnerRace[]
+  /** `solicitacao_titular` (LGPD). */
+  lgpdRequests: AdminLgpdRequest[]
   /** Falhas de login seguidas por e-mail (lockout simplificado). */
   loginFailures: Record<string, number>
 }
