@@ -26,6 +26,7 @@ export const ADMIN_PANEL_NAV_ITEMS: readonly NavItem[] = [
   { label: "Corridas parceiras", href: "/admin/corridas-parceiras" },
   { label: "Pagamentos", href: "/admin/pagamentos" },
   { label: "Auditoria", href: "/admin/auditoria" },
+  { label: "LGPD", href: "/admin/lgpd" },
   { label: "Loja", href: "/admin/loja/produtos" },
   { label: "Pedidos", href: "/admin/loja/pedidos" },
   { label: "Admins", href: "/admin/admins" },

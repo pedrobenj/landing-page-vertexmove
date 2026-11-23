@@ -1,4 +1,8 @@
+import { ArrowRight } from "lucide-react"
+import Link from "next/link"
+
 import { ChevronListItem, TextParagraph } from "@/components/sections"
+import { Button } from "@/components/ui/button"
 import type { PrivacySection } from "@/types/privacy-section.interface"
 
 interface PrivacySectionBlockProps {
@@ -20,6 +24,17 @@ export function PrivacySectionBlock({ section }: PrivacySectionBlockProps) {
             <ChevronListItem key={item}>{item}</ChevronListItem>
           ))}
         </ul>
+      )}
+      {section.closing?.map((paragraph) => (
+        <TextParagraph key={paragraph}>{paragraph}</TextParagraph>
+      ))}
+      {section.action && (
+        <Button asChild variant="cta" className="w-full sm:w-auto sm:self-start">
+          <Link href={section.action.href}>
+            {section.action.label}
+            <ArrowRight aria-hidden="true" />
+          </Link>
+        </Button>
       )}
     </section>
   )

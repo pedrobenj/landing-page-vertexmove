@@ -23,6 +23,7 @@ export const queryKeys = {
       [...queryKeys.admin.all, "registrations", filters] as const,
     registrationsOf: (eventId: number) => [...queryKeys.admin.all, "registrations", { eventId }] as const,
     payments: (filters: { situacao: string; cursor: string | null }) => [...queryKeys.admin.all, "payments", filters] as const,
+    lgpdRequests: (filters: { status: string; tipo: string; cursor: string | null }) => [...queryKeys.admin.all, "lgpd", filters] as const,
   },
   registrations: {
     all: ["registrations"] as const,

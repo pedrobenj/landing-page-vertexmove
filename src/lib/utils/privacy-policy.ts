@@ -3,7 +3,7 @@ import type { PrivacySection } from "@/types/privacy-section.interface"
 import { CONTACT_INFO } from "./contact-info"
 
 /** Data da última revisão, exibida no topo da página (YYYY-MM-DD). */
-export const PRIVACY_POLICY_UPDATED_AT = "2026-11-09"
+export const PRIVACY_POLICY_UPDATED_AT = "2026-11-23"
 
 /**
  * Política de privacidade (LGPD). Lista apenas os dados que o site realmente coleta hoje
@@ -96,9 +96,8 @@ export const PRIVACY_POLICY_SECTIONS: readonly PrivacySection[] = [
   {
     id: "direitos",
     title: "Seus direitos",
-    paragraphs: [
-      `Pela Lei Geral de Proteção de Dados (Lei nº 13.709/2018), você pode, a qualquer momento, pedir pelo e-mail ${CONTACT_INFO.email}:`,
-    ],
+    // TODO(cliente): indicar o encarregado pelo tratamento (art. 41 da LGPD) e confirmar o canal de e-mail.
+    paragraphs: ["Pela Lei Geral de Proteção de Dados (Lei nº 13.709/2018), você pode, a qualquer momento, pedir:"],
     items: [
       "Confirmação de que tratamos seus dados e acesso a eles.",
       "Correção de dados incompletos, inexatos ou desatualizados.",
@@ -106,6 +105,11 @@ export const PRIVACY_POLICY_SECTIONS: readonly PrivacySection[] = [
       "Portabilidade dos dados e informação sobre com quem os compartilhamos.",
       "Revogação do consentimento, quando o tratamento depender dele.",
     ],
+    closing: [
+      "Faça o pedido pelo formulário de solicitação: você informa o tipo de pedido, seu nome, seu CPF e um contato, e recebe na hora um número de protocolo com o prazo de resposta. A resposta chega pelo contato que você informar.",
+      `Se preferir, escreva para ${CONTACT_INFO.email}. Podemos pedir uma confirmação de identidade antes de entregar ou apagar dados.`,
+    ],
+    action: { label: "Fazer uma solicitação", href: "/privacidade/solicitacao" },
   },
   {
     id: "alteracoes",
