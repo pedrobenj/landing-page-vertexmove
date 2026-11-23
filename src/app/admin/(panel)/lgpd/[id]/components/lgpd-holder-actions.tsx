@@ -39,9 +39,9 @@ export function LgpdHolderActions({ request }: LgpdHolderActionsProps) {
         {canAnonymizeLgpdRequest(request) ? (
           <>
             <p className="text-sm text-muted-foreground">
-              Anonimizar apaga nome, e-mail, WhatsApp, nascimento e o CPF cifrado do titular no cadastro, nas inscrições e nos pedidos.
-              Valores, pagamentos, históricos e aceites continuam guardados, sem identificar a pessoa. Inscrição ou pedido aguardando
-              pagamento impedem a anonimização.
+              Anonimizar apaga nome, e-mail, WhatsApp, nascimento e o CPF do titular no cadastro, nas inscrições e nos pedidos.
+              Valores, pagamentos, históricos e aceites continuam guardados, sem identificar a pessoa. Depois disso, o mesmo CPF pode
+              se inscrever de novo como um cadastro novo. Inscrição ou pedido aguardando pagamento impedem a anonimização.
             </p>
             <AnonymizeHolderButton requestId={request.id} protocolo={request.protocolo} nome={request.nome} />
           </>
