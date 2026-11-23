@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises"
 import { expect, type Page, test } from "@playwright/test"
 
 import { loginAsAdmin } from "./helpers/admin-login"
+import { MOCK_ONLY } from "./helpers/mock-only"
 import { NAVIGATION_TIMEOUT, registerAthlete } from "./helpers/registration-flow"
 import { generateValidCpf, generateWhatsapp } from "./helpers/test-data"
 import { uniqueSuffix } from "./helpers/unique-suffix"
@@ -70,7 +71,8 @@ test.describe("LGPD — solicitação do titular", () => {
     await expect(page.getByText(/não encontramos|não há cadastro|sem cadastro/i)).toHaveCount(0)
   })
 
-  test("admin: lista, atende com resposta, exporta e anonimiza com confirmação dupla", async ({ page }) => {
+  // Paga pelo checkout simulado (`/dev/checkout-pro`), que só existe no mock.
+  test("admin: lista, atende com resposta, exporta e anonimiza com confirmação dupla", MOCK_ONLY, async ({ page }) => {
     test.slow()
     const cpf = generateValidCpf()
     const name = `Titular Lgpd ${uniqueSuffix()}`
