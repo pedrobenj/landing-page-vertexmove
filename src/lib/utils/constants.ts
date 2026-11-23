@@ -14,3 +14,5 @@ export const ADMIN_LOGIN_PATH = "/admin/login"
 export const ADMIN_SESSION_EXPIRED_PATH = "/admin/sair"
 /** Query string do login quando a sessão expirou ou foi revogada. */
 export const ADMIN_SESSION_EXPIRED_PARAM = "expirada"
+/** Query do login depois de trocar a própria senha (o backend derruba todas as sessões). */
+export const ADMIN_PASSWORD_CHANGED_PARAM = "senha-alterada"
