@@ -132,7 +132,7 @@ Mapear no tema do shadcn/ui (CSS variables em `globals.css`):
 | Rota | Conteúdo | API |
 |---|---|---|
 | `/` | Hero "próximo topo", próximos topos, como funciona em degraus, comunidade, loja, topos conquistados, provas parceiras, parceiros (ver §2) | `GET /eventos` |
-| `/corridas/encerradas` | "Corridas que já vivemos": edições passadas (encerradas e publicadas com data passada, mais recente primeiro) | `GET /eventos/encerrados` |
+| `/corridas/encerradas` | "Corridas que já vivemos": edições passadas (encerradas e publicadas com data passada, mais recente primeiro); 24 por página com "Carregar mais" (cursor) | `GET /eventos/encerrados` |
 | `/corridas/[slug]` | Página do evento: capa, data/largada, local (mapa por `latitude`/`longitude`), distâncias e preço do lote vigente, kits (fotos), percurso, regulamento, FAQ, CTA fixo "Inscrever-se" no mobile | `GET /eventos/:slug` |
 | `/corridas/[slug]/inscricao` | Formulário em etapas (ver §7) | `POST /inscricoes` |
 | `/inscricao/confirmada` | Confirmação pós-criação com código e valores (dados vindos da resposta do `POST /inscricoes`, guardados em memória no store) | — |
@@ -145,7 +145,8 @@ Mapear no tema do shadcn/ui (CSS variables em `globals.css`):
 | `/parceiros` | Apoiadores (logos e links) | estático |
 | `/contato` | WhatsApp, Instagram, e-mail, treinos | estático |
 | `/regulamento/[slug]` | Regulamento do evento (link para `documento.url`) | depende de §15 |
-| `/privacidade` | Política de privacidade (LGPD) | — |
+| `/privacidade` | Política de privacidade (LGPD); "Seus direitos" leva ao formulário | — |
+| `/privacidade/solicitacao` | Solicitação do titular (tipo, nome, CPF, e-mail/WhatsApp, mensagem, declaração); o sucesso mostra só protocolo e prazo (sem revelar se o CPF existe) | `POST /lgpd/solicitacoes` |
 
 ### Admin — `src/app/admin/`
 | Rota | Conteúdo | API |
@@ -165,7 +166,8 @@ Mapear no tema do shadcn/ui (CSS variables em `globals.css`):
 | `/admin/pagamentos` | Fila por situação (estorno pendente, em análise, valor divergente) com Conciliar e Estornar (motivo + confirmação dupla) conforme `acoes` | `GET /admin/pagamentos?situacao`, `POST /admin/pagamentos/:id/conciliar\|estornar` |
 | `/admin/corridas-parceiras`, `/nova`, `/[id]` | Corridas parceiras: lista (ativar/desativar na linha), cadastro, edição (ordem, ativo) e exclusão com confirmação. Actions invalidam a tag `partner-races` | `GET\|POST /admin/corridas-parceiras`, `GET\|PATCH\|DELETE /admin/corridas-parceiras/:id` (fase 8) |
 | `/admin/admins` | Gestão de admins: lista (ativo/desativado, último acesso), novo admin e redefinir senha mostram a senha temporária **uma vez** (copiar), desativar com confirmação, reativar. Na própria linha só "Trocar minha senha" | `GET\|POST /admin/admins`, `POST /admin/admins/:id/desativar\|reativar\|redefinir-senha` (fase 8) |
-| `/admin/conta` | Minha conta: trocar a própria senha. O 204 derruba todas as sessões: a action limpa os cookies e leva a `/admin/login?senha-alterada=1` | `POST /admin/me/senha` |
+| `/admin/conta` | Minha conta: trocar a própria senha. O 204 derruba todas as sessões: a action limpa os cookies e leva a `/admin/login?senha-alterada=1`. Senha temporária (`trocarSenha` no `/admin/me`, ou 403 `TROCA_DE_SENHA_OBRIGATORIA` em qualquer rota, tratado no `adminFetch`): o painel manda para cá (`?troca-obrigatoria=1`) e esconde o menu até trocar; só esta tela e o badge usam `getAdminSessionAllowingPasswordChange` | `GET /admin/me`, `POST /admin/me/senha` |
+| `/admin/lgpd`, `/admin/lgpd/[id]` | Solicitações do titular: lista (status/tipo, cursor, prazo vencido), detalhe com o requerente (CPF mascarado; o backend audita), atendimento (só transições válidas; concluída/recusada exigem resposta), exportar JSON (formulário POST ao route handler `[id]/exportar`) e anonimizar (só eliminação não recusada; confirmação dupla) | `GET /admin/lgpd/solicitacoes[/:id]`, `PATCH /:id`, `POST /:id/exportar`, `POST /:id/anonimizar` |
 | `/admin/loja/produtos`, `/admin/loja/pedidos` | Produtos (estoque por diferença) e pedidos (filtro por status, pronto/retirado/cancelar) | `/admin/loja/produtos[/:id]`, `/admin/loja/pedidos[/:codigo]`, `POST .../pronto|retirado|cancelar` (fase 10) |
 
 Proteger `/admin/*` (exceto `/admin/login`) no `proxy.ts`, que também renova o access token (ver §8). Admin com `noindex`.
@@ -585,7 +587,7 @@ Antes de cada commit: `lint`, `typecheck` e `build` passando. Commits no padrão
 - [x] Qual header de IP do cliente o rate limit confia: `X-Forwarded-For` com `TRUST_PROXY_HOPS`; o Next se identifica com `X-BFF-Secret` (`BFF_SHARED_SECRET`). Requisitos de deploy em §12.
 - [ ] Domínio/`SameSite` dos cookies em produção e CORS (se algum dia o browser chamar a API direto).
 - [ ] Loja (produtos, variantes, pedidos, estoque).
-- [x] Listagem pública de corridas encerradas: `GET /eventos/encerrados?cursor&limit` → `CursorPage<PublicEvent>` (fase 8). Falta: "Carregar mais" além de 50 edições, resultados/galeria.
+- [x] Listagem pública de corridas encerradas: `GET /eventos/encerrados?cursor&limit` → `CursorPage<PublicEvent>` (fase 8). "Carregar mais" por cursor feito (fase 8). Falta: resultados/galeria.
 - [x] Corridas parceiras com CRUD no admin: `GET /corridas-parceiras` → `PartnerRace[]` e `/admin/corridas-parceiras` (fase 8; links só https, objeto estrito).
 - [ ] Parceiros/apoiadores e números da comunidade: estáticos no front até haver endpoint (mock fornece dados de demonstração).
 
