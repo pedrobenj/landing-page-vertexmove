@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint, tipos e testes unitários
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+
+  e2e:
+    name: Playwright (mock da API)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CI: 'true'
+      # Sem backend: o `next dev` do Playwright responde com o mock (`src/server/api/mocks/`).
+      # O playwright.config.ts já força USE_MOCK_API=true no webServer; os demais valores só
+      # substituem o .env local, que não existe na CI.
+      USE_MOCK_API: 'true'
+      API_URL: http://localhost:3000
+      NEXT_PUBLIC_SITE_URL: http://localhost:3001
+      NEXT_PUBLIC_WHATSAPP_NUMBER: '5585999999999'
+      NEXT_PUBLIC_INSTAGRAM_URL: https://www.instagram.com/example
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - run: npm ci
+      - name: Versão do Playwright
+        id: playwright
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+      # Os dois projetos (desktop e mobile) usam Chromium: só ele é instalado.
+      - name: Cache dos navegadores
+        id: browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}-chromium
+      - name: Instalar Chromium
+        if: steps.browsers.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+      - name: Dependências de sistema do Chromium
+        if: steps.browsers.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

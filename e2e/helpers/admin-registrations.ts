@@ -25,6 +25,9 @@ export async function searchRegistration(page: Page, code: string) {
   await expect(page.getByRole("heading", { level: 1, name: "Inscrições" })).toBeVisible({ timeout: NAVIGATION_TIMEOUT })
   await page.getByLabel("Buscar").fill(code)
   await expect(page.getByRole("link", { name: `Ver inscrição ${code}` })).toBeVisible({ timeout: NAVIGATION_TIMEOUT })
+  // O código pode já estar na primeira página antes do debounce: espera a busca filtrar, senão as
+  // ações por nome do atleta (o mesmo em todas as inscrições dos testes) acham várias linhas.
+  await expect(page.getByRole("link", { name: /^Ver inscrição / })).toHaveCount(1, { timeout: NAVIGATION_TIMEOUT })
 }
 
 /** Abre o detalhe da inscrição pela lista. */
