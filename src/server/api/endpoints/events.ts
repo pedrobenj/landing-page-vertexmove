@@ -18,6 +18,8 @@ import {
 } from "./cached-result"
 
 const PUBLIC_LIMIT = 50
+/** Página do histórico (`/corridas/encerradas` e carrossel da home); o resto vem em "Carregar mais". */
+export const PAST_EVENTS_PAGE_SIZE = 24
 
 // Dentro de "use cache" não há headers() da request: por isso `forwardClient: false`.
 // Sucesso e 404 seguem o cacheLife normal; falhas transitórias (timeout, 5xx) ficam só alguns segundos.
@@ -59,12 +61,12 @@ async function fetchPublicEvent(slug: string): Promise<CachedResult<PublicEventD
  * `GET /eventos/encerrados`: encerradas e publicadas com data passada, da mais recente para a mais antiga
  * (mesmo presenter de `GET /eventos`). Muda pouco: cache mais longo que o catálogo.
  */
-async function fetchPastEvents(): Promise<CachedResult<CursorPage<PublicEvent>>> {
+async function fetchPastEvents(cursor: string | undefined): Promise<CachedResult<CursorPage<PublicEvent>>> {
   "use cache"
   cacheTag("events")
   try {
     const data = await apiFetch<CursorPage<PublicEvent>>("/eventos/encerrados", {
-      query: { limit: PUBLIC_LIMIT },
+      query: { cursor, limit: PAST_EVENTS_PAGE_SIZE },
       forwardClient: false,
     })
     cacheLife(SLOW_LIST_CACHE_LIFE)
@@ -85,7 +87,7 @@ export async function getPublicEvent(slug: string): Promise<PublicEventDetail> {
   return unwrapCached(await fetchPublicEvent(slug))
 }
 
-/** Corridas encerradas (histórico, primeira página). Lança `ApiError`. */
-export async function listPastEvents(): Promise<CursorPage<PublicEvent>> {
-  return unwrapCached(await fetchPastEvents())
+/** Corridas encerradas (histórico); `cursor` = `nextCursor` da página anterior. Lança `ApiError`. */
+export async function listPastEvents(cursor?: string): Promise<CursorPage<PublicEvent>> {
+  return unwrapCached(await fetchPastEvents(cursor))
 }

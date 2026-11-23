@@ -107,6 +107,8 @@ test.describe("Páginas institucionais", () => {
     const editions = page.getByRole("list", { name: "Edições passadas" }).getByRole("article")
     await expect(editions).toHaveCount(4)
     await expect(editions.filter({ hasText: "Night Run Vertex 2025" })).toHaveCount(1)
+    // Cabem na primeira página (24): sem "Carregar mais".
+    await expect(page.getByRole("button", { name: "Carregar mais edições" })).toHaveCount(0)
   })
 
   test("regulamento mostra os documentos vigentes com o botão Abrir PDF", async ({ page }) => {

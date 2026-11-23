@@ -80,8 +80,19 @@ describe("endpoints de eventos (contra o mock)", () => {
     }
 
     expect(await catchError(listPastEvents())).toMatchObject({ status: 404, codigo: "RECURSO_NAO_ENCONTRADO" })
-    expect(urls[0]).toMatch(/\/api\/v1\/eventos\/encerrados\?limit=50$/)
+    expect(urls[0]).toMatch(/\/api\/v1\/eventos\/encerrados\?limit=24$/)
     expect(cache.cacheLife).toHaveBeenCalledWith("seconds")
+  })
+
+  it("encerradas: repassa o cursor para carregar a página seguinte", async () => {
+    const urls: string[] = []
+    override.transport = async (url) => {
+      urls.push(String(url))
+      return Response.json({ items: [], nextCursor: null })
+    }
+
+    expect(await listPastEvents("eyJkIjoiMjAyNi0xMS0yMSJ9")).toEqual({ items: [], nextCursor: null })
+    expect(urls[0]).toMatch(/\/api\/v1\/eventos\/encerrados\?cursor=eyJkIjoiMjAyNi0xMS0yMSJ9&limit=24$/)
   })
 
   it("corridas parceiras: 404 é erro (a rota existe no backend), cacheado só por segundos", async () => {
