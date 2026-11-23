@@ -10,6 +10,7 @@ export interface AthleteData {
   birthDate: string
   cpf?: string
   whatsapp?: string
+  email?: string
 }
 
 /** O radio do Radix fica `sr-only`; o clique vai no card (`<Label htmlFor>`) visível, como faz o atleta. */
@@ -31,6 +32,7 @@ export async function fillAthleteStep(page: Page, athlete: AthleteData) {
   await page.getByLabel("Data de nascimento").fill(athlete.birthDate)
   if (athlete.cpf) await page.getByLabel("CPF").fill(athlete.cpf)
   if (athlete.whatsapp) await page.getByLabel("WhatsApp").fill(athlete.whatsapp)
+  if (athlete.email) await page.getByLabel("E-mail").fill(athlete.email)
   await page.getByRole("button", { name: "Continuar" }).click()
 }
 

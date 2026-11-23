@@ -22,7 +22,7 @@ const DETAILS_ERROR_TITLE = "Não foi possível consultar a inscrição"
 const CHECKOUT_ERROR_TITLE = "Não foi possível abrir o pagamento"
 
 const NO_ACCESS_MESSAGE =
-  "Abra esta inscrição no mesmo aparelho em que ela foi feita, ou consulte o status em Consultar inscrição."
+  "Abra esta inscrição no mesmo aparelho em que ela foi feita, ou peça um link de acesso por e-mail em Consultar inscrição."
 
 function invalidCode(title: string): HttpResponse<never> {
   return { status: 404, code: API_ERROR_CODE.NOT_FOUND, error: getApiErrorMessage(API_ERROR_CODE.NOT_FOUND), title }

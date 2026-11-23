@@ -1,6 +1,6 @@
 "use server"
 
-import { redirect } from "next/navigation"
+import { redirect, RedirectType } from "next/navigation"
 
 import { API_ERROR_CODE } from "@/enums/api-error-code.enum"
 import { isRegistrationCode } from "@/lib/utils"
@@ -63,5 +63,6 @@ export async function redeemAccessLinkAction(token: string): Promise<HttpRespons
     if (isApiError(error) && error.status >= 400 && error.status < 500 && error.status !== 429) return INVALID_LINK
     return toErrorResponse(error, { title: REDEEM_ERROR_TITLE, context: "redeemAccessLinkAction" })
   }
-  redirect(`/inscricao/${codigo}`)
+  // `replace`: o endereço com o token sai do histórico.
+  redirect(`/inscricao/${codigo}`, RedirectType.replace)
 }

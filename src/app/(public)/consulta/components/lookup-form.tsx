@@ -15,6 +15,7 @@ import { API_ERROR_CODE } from "@/enums/api-error-code.enum"
 import { formatCpfInput, formatPhoneInput, queryKeys } from "@/lib/utils"
 import { lookupSchema, type LookupData, type LookupInput, type LookupType } from "@/lib/validations/lookup.schema"
 
+import { AccessLinkRequest } from "./access-link-request"
 import { LookupResults } from "./lookup-results"
 import { LookupTypeOption } from "./lookup-type-option"
 
@@ -133,6 +134,11 @@ export function LookupForm() {
       <div aria-live="polite">
         <LookupResults isPending={mutation.isPending} error={error} items={items} />
       </div>
+
+      {/* Também sem resultado: a oferta do link não pode revelar se há cadastro. Nova consulta = novo pedido. */}
+      {items !== null && mutation.variables && (
+        <AccessLinkRequest key={mutation.submittedAt} lookup={mutation.variables} />
+      )}
     </div>
   )
 }

@@ -20,6 +20,7 @@ vi.mock("next/navigation", () => ({
     throw new Error(`REDIRECT:${url}`)
   },
   unstable_rethrow: () => {},
+  RedirectType: { push: "push", replace: "replace" },
 }))
 vi.mock("@/server/api/transport", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/server/api/transport")>()
