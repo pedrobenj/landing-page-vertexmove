@@ -447,5 +447,7 @@ export function createSeed(now: Date = new Date()): MockDb {
     partnerRaces: seedPartnerRaces(now),
     lgpdRequests: seedLgpdRequests(registrations, now),
     loginFailures: {},
+    accessLinks: [],
+    outbox: [],
   }
 }

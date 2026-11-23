@@ -62,6 +62,11 @@ export const lookupSchema = z.union([
   z.strictObject({ whatsapp: e164 }),
 ])
 
+/** `POST /inscricoes/acesso`: token de uso único do link mágico. */
+export const accessRedeemSchema = z.strictObject({
+  token: z.string().min(1).max(200),
+})
+
 /** `POST /inscricoes/comprovante`: referência da consulta + nascimento do atleta. */
 export const receiptSchema = z.strictObject({
   referencia: z.string().min(1).max(100),

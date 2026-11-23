@@ -10,6 +10,7 @@ import { authRoutes } from "./routes/auth-routes"
 import { lgpdRoutes } from "./routes/lgpd-routes"
 import { partnerRaceRoutes } from "./routes/partner-race-routes"
 import { publicRoutes } from "./routes/public-routes"
+import { registrationAccessRoutes } from "./routes/registration-access-routes"
 import { registrationRoutes } from "./routes/registration-routes"
 import { storeRoutes } from "./routes/store-routes"
 
@@ -20,6 +21,8 @@ import { storeRoutes } from "./routes/store-routes"
 export const mockRoutes: MockRoute[] = [
   ...publicRoutes,
   ...partnerRaceRoutes,
+  // Antes das inscrições: `/inscricoes/acesso/link` também casaria com `/inscricoes/:codigo/pagamentos`.
+  ...registrationAccessRoutes,
   ...registrationRoutes,
   ...lgpdRoutes,
   ...storeRoutes,

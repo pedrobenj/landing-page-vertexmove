@@ -5,8 +5,7 @@ import { env } from "@/lib/env"
 import { getApiErrorMessage } from "@/lib/utils/api-errors"
 import { isAllowedCheckoutUrl } from "@/lib/utils/checkout-url"
 import { toApiDate } from "@/lib/utils/format-api-date"
-import { normalizeCpf } from "@/lib/utils/normalize-cpf"
-import { toE164Phone } from "@/lib/utils/to-e164-phone"
+import { toLookupBody } from "@/lib/utils/to-lookup-body"
 import { lookupSchema, type LookupInput } from "@/lib/validations/lookup.schema"
 import { receiptRequestSchema, type ReceiptRequestInput } from "@/lib/validations/receipt.schema"
 import { createRegistrationInputSchema } from "@/lib/validations/registration.schema"
@@ -28,7 +27,6 @@ import type {
 import type {
   CreatedRegistration,
   CreateRegistrationInput,
-  RegistrationLookupInput,
   RegistrationLookupItem,
 } from "@/types/api/registration.interface"
 import type { RegistrationCheckout } from "@/types/api/registration-details.interface"
@@ -91,11 +89,8 @@ export async function lookupRegistrationsAction(
     }
   }
 
-  const { tipo, valor } = parsed.data
-  const body: RegistrationLookupInput = tipo === "cpf" ? { cpf: normalizeCpf(valor) } : { whatsapp: toE164Phone(valor) }
-
   try {
-    const data = await lookupRegistrations(body)
+    const data = await lookupRegistrations(toLookupBody(parsed.data))
     return { status: 200, data }
   } catch (error) {
     return toErrorResponse(error, LOOKUP_ERROR_TITLE, "lookupRegistrationsAction")

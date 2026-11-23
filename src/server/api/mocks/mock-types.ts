@@ -13,6 +13,7 @@ import type { Kit } from "@/types/api/kit.interface"
 import type { AdminLgpdRequest } from "@/types/api/lgpd-request.interface"
 import type { AdminPartnerRace } from "@/types/api/partner-race.interface"
 import type { PriceTier } from "@/types/api/price-tier.interface"
+import type { MockAccessEmail } from "@/types/api/registration-access.interface"
 import type { ShirtSize } from "@/types/api/shirt-size.interface"
 
 type KitPickupField = "retiradaKitLocal" | "retiradaKitEndereco" | "retiradaKitInicio" | "retiradaKitFim" | "retiradaKitInstrucoes"
@@ -124,6 +125,19 @@ export interface MockDb {
   lgpdRequests: MockLgpdRequest[]
   /** Falhas de login seguidas por e-mail (lockout simplificado). */
   loginFailures: Record<string, number>
+  /** `acesso_inscricao_link` (fase 6): tokens de uso único do link mágico. */
+  accessLinks: MockAccessLink[]
+  /** Caixa de saída simulada (e-mails com o link), mais recente primeiro; lida por `GET /dev/emails`. */
+  outbox: MockAccessEmail[]
+}
+
+/** Link mágico de acesso à inscrição. No backend só o hash do token é gravado. */
+export interface MockAccessLink {
+  token: string
+  codigo: string
+  /** Prazo em ms (30 min depois do pedido). */
+  expiraEm: number
+  usadoEm: number | null
 }
 
 /** Linha de `solicitacao_titular`: o detalhe do admin + o CPF (no backend, hash e cifra; nunca exposto). */
