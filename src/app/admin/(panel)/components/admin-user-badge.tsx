@@ -1,9 +1,9 @@
 import { getAdminRoleLabel, getInitials } from "@/lib/utils"
-import { requireAdminSession } from "@/server/api/require-admin-session"
+import { getAdminSessionAllowingPasswordChange } from "@/server/api/require-admin-session"
 
 /** Nome e papel do admin logado (`GET /admin/me`). Sem sessão válida, redireciona ao login. */
 export async function AdminUserBadge() {
-  const admin = await requireAdminSession()
+  const admin = await getAdminSessionAllowingPasswordChange()
 
   return (
     <div className="flex items-center gap-2.5" data-testid="admin-user-badge">

@@ -48,8 +48,9 @@ test.describe("Admin — gestão de admins", () => {
     const row = page.getByRole("row").filter({ hasText: email })
     await expect(row.getByText("Nunca entrou")).toBeVisible(NAVIGATION)
 
+    // Senha temporária: o painel manda para Minha conta trocar a senha.
     const newcomer = await loginInNewContext(browser, email, temporary)
-    await expect(newcomer).toHaveURL("/admin", NAVIGATION)
+    await expect(newcomer).toHaveURL("/admin/conta?troca-obrigatoria=1", NAVIGATION)
 
     await row.getByRole("button", { name: `Desativar ${name}` }).click()
     await page.getByRole("button", { name: "Desativar", exact: true }).click()
@@ -83,10 +84,15 @@ test.describe("Admin — gestão de admins", () => {
     const temporary = await createAdmin(page, `Conta E2E ${suffix}`, email)
 
     const own = await loginInNewContext(browser, email, temporary)
-    await expect(own).toHaveURL("/admin", NAVIGATION)
-    await own.goto("/admin/conta")
+    await expect(own).toHaveURL("/admin/conta?troca-obrigatoria=1", NAVIGATION)
     await expect(own.getByRole("heading", { level: 1, name: "Minha conta" })).toBeVisible(NAVIGATION)
     await expect(own.getByText(email)).toBeVisible()
+    await expect(own.getByText(/Sua conta está com uma senha temporária/)).toBeVisible()
+    // Menu bloqueado e qualquer outra página do painel volta para a troca.
+    await expect(own.getByRole("navigation", { name: "Menu do admin" })).toHaveCount(0)
+    await expect(own.getByText("Troque a senha temporária para liberar o painel.")).toBeVisible()
+    await own.goto("/admin/eventos")
+    await expect(own).toHaveURL("/admin/conta?troca-obrigatoria=1", NAVIGATION)
 
     await own.getByLabel("Senha atual").fill("senha-errada-qualquer")
     await own.getByLabel("Nova senha", { exact: true }).fill(newPassword)
@@ -102,6 +108,7 @@ test.describe("Admin — gestão de admins", () => {
 
     await submitAdminLogin(own, email, newPassword)
     await expect(own).toHaveURL("/admin", NAVIGATION)
+    await expect(own.getByRole("navigation", { name: "Menu do admin" })).toBeVisible()
 
     // Limpeza: desativa a conta de teste.
     await page.goto(ADMINS_URL)

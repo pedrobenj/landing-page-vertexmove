@@ -56,6 +56,27 @@ describe("gestão de admins no mock (contrato do backend, fase 8)", () => {
     expect(strict.status).toBe(422)
   })
 
+  it("senha temporária: /admin/me avisa (trocarSenha) e o resto responde 403 até trocar", async () => {
+    const created = (await (await call("POST", "/admin/admins", { body: { nome: "Nova Pessoa", email: "nova@vertex.com.br" }, headers: auth })).json()) as CreatedManagedAdmin
+    const token = ((await (await login("nova@vertex.com.br", created.senhaTemporaria)).json()) as AdminLoginResponse).accessToken
+    const own = { Authorization: `Bearer ${token}` }
+
+    expect(await (await call("GET", "/admin/me", { headers: own })).json()).toMatchObject({ trocarSenha: true })
+    const blocked = await call("GET", "/admin/eventos", { headers: own })
+    expect(blocked.status).toBe(403)
+    expect((await error(blocked)).codigo).toBe("TROCA_DE_SENHA_OBRIGATORIA")
+    expect(await (await call("GET", "/admin/me", { headers: auth })).json()).toMatchObject({ trocarSenha: false })
+
+    const changed = await call("POST", "/admin/me/senha", { body: { senhaAtual: created.senhaTemporaria, novaSenha: "Nova@Senha12345" }, headers: own })
+    expect(changed.status).toBe(204)
+    const fresh = ((await (await login("nova@vertex.com.br", "Nova@Senha12345")).json()) as AdminLoginResponse).accessToken
+    expect((await call("GET", "/admin/eventos", { headers: { Authorization: `Bearer ${fresh}` } })).status).toBe(200)
+
+    // Redefinir marca de novo.
+    await call("POST", `/admin/admins/${created.admin.id}/redefinir-senha`, { headers: auth })
+    expect(getMockDb().admins.find((admin) => admin.id === created.admin.id)?.senhaTemporaria).toBe(true)
+  })
+
   it("desativar barra o login e o token; reativar devolve o acesso; a si mesmo é 409", async () => {
     const operatorToken = ((await (await login("operador@example.com")).json()) as AdminLoginResponse).accessToken
     const res = await call("POST", "/admin/admins/2/desativar", { headers: auth })

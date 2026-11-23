@@ -91,6 +91,7 @@ export const adminManagementRoutes: MockRoute[] = [
         id: nextId(db.admins),
         ...input,
         senha: senhaTemporaria,
+        senhaTemporaria: true,
         papel: ADMIN_ROLE.ADMIN,
         mfaAtivo: false,
         ativo: true,
@@ -138,6 +139,7 @@ export const adminManagementRoutes: MockRoute[] = [
       if (target.id === actor.id) return ownAccount()
       const senhaTemporaria = temporaryPassword()
       target.senha = senhaTemporaria
+      target.senhaTemporaria = true
       recordAudit(actor, { acao: "atualizar", entidade: "admin", entidadeId: target.id })
       return json(200, { senhaTemporaria })
     }),
@@ -160,8 +162,9 @@ export const adminManagementRoutes: MockRoute[] = [
         return apiError(422, API_ERROR_CODE.WRONG_CURRENT_PASSWORD, "A senha atual não confere.")
       }
       actor.senha = input.novaSenha
+      actor.senhaTemporaria = false
       recordAudit(actor, { acao: "atualizar", entidade: "admin", entidadeId: actor.id })
       return noContent()
-    }),
+    }, { allowTemporaryPassword: true }),
   },
 ]

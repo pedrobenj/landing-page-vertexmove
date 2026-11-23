@@ -7,6 +7,8 @@ export interface AdminProfile {
   email: string
   papel: ADMIN_ROLE
   mfaAtivo: boolean
+  /** Senha temporária (criada/redefinida pela gestão): o resto do admin responde 403 até trocar. */
+  trocarSenha: boolean
 }
 
 /** `POST /admin/auth/login` (200). O refresh token vem no `Set-Cookie`. */
@@ -15,7 +17,7 @@ export interface AdminLoginResponse {
   tokenType: "Bearer"
   expiresIn: number
   csrfToken: string
-  admin: Omit<AdminProfile, "email">
+  admin: Omit<AdminProfile, "email" | "trocarSenha">
 }
 
 /** `POST /admin/auth/refresh` (200). */

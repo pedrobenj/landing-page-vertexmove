@@ -24,7 +24,7 @@ import {
   resetManagedAdminPassword,
 } from "@/server/api/endpoints/admin-management"
 import { ensureCanManageEvents } from "@/server/api/ensure-can-manage-events"
-import { requireAdminSession } from "@/server/api/require-admin-session"
+import { getAdminSessionAllowingPasswordChange } from "@/server/api/require-admin-session"
 import { toErrorResponse } from "@/server/api/to-error-response"
 import type { CreatedManagedAdmin, ManagedAdmin, TemporaryPassword } from "@/types/api/managed-admin.interface"
 import type { HttpResponse } from "@/types/http-response.interface"
@@ -97,7 +97,8 @@ export async function resetAdminPasswordAction(id: number): Promise<HttpResponse
  * leva ao login com o aviso (o `redirect` fica fora do try/catch).
  */
 export async function changeOwnPasswordAction(input: ChangeOwnPasswordFormInput): Promise<HttpResponse> {
-  await requireAdminSession()
+  // A senha temporária só libera esta troca (e o `/admin/me`): sessão permissiva.
+  await getAdminSessionAllowingPasswordChange()
 
   const parsed = changeOwnPasswordFormSchema.safeParse(input)
   if (!parsed.success) return invalidInputResponse(PASSWORD_ERROR_TITLE, parsed.error.issues[0])

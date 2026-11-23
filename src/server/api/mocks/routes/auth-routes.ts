@@ -119,9 +119,10 @@ export const authRoutes: MockRoute[] = [
         email: admin.email,
         papel: admin.papel,
         mfaAtivo: admin.mfaAtivo,
+        trocarSenha: admin.senhaTemporaria === true,
       }
       return json(200, profile)
-    }),
+    }, { allowTemporaryPassword: true }),
   },
   {
     method: "GET",

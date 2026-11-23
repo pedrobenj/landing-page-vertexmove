@@ -41,6 +41,8 @@ export interface MockAdmin {
   ativo: boolean
   ultimoAcessoEm: string | null
   criadoEm: string
+  /** `senha_temporaria` (migration 0022): criado ou redefinido pela gestão; só /admin/me e /me/senha. */
+  senhaTemporaria?: boolean
 }
 
 export interface MockRegistration {

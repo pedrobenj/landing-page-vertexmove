@@ -3,7 +3,7 @@ import { Suspense } from "react"
 
 import { VertexLogoPlate } from "@/components/brand"
 
-import { AdminNav, AdminUserBadge, AdminUserBadgeSkeleton, LogoutButton } from "./components"
+import { AdminNav, AdminNavGate, AdminUserBadge, AdminUserBadgeSkeleton, LogoutButton } from "./components"
 
 /**
  * Painel do admin. O `proxy.ts` só renova a sessão; a autorização fica na camada de dados: cada página,
@@ -26,7 +26,10 @@ export default function AdminPanelLayout({ children }: LayoutProps<"/admin">) {
           </Link>
 
           <div className="order-last w-full md:order-none md:w-auto md:flex-1">
-            <AdminNav />
+            {/* Sem sessão resolvida ainda, o menu normal; com senha temporária, some (AdminNavGate). */}
+            <Suspense fallback={<AdminNav />}>
+              <AdminNavGate />
+            </Suspense>
           </div>
 
           <div className="ml-auto flex items-center gap-2 md:ml-0">

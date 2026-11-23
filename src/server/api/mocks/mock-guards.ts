@@ -31,11 +31,18 @@ export function notFound(entity: string): Response {
 
 type AdminHandler = (ctx: MockContext, admin: MockAdmin) => Response
 
-/** Exige Bearer antes de chamar o handler. */
-export function withAdmin(handler: AdminHandler): (ctx: MockContext) => Response {
+/**
+ * Exige Bearer antes de chamar o handler. Conta com senha temporária recebe 403
+ * `TROCA_DE_SENHA_OBRIGATORIA`, exceto nas rotas marcadas (`@PermiteSenhaTemporaria` no backend).
+ */
+export function withAdmin(handler: AdminHandler, { allowTemporaryPassword = false } = {}): (ctx: MockContext) => Response {
   return (ctx) => {
     const admin = requireAdmin(ctx)
-    return admin instanceof Response ? admin : handler(ctx, admin)
+    if (admin instanceof Response) return admin
+    if (admin.senhaTemporaria && !allowTemporaryPassword) {
+      return apiError(403, API_ERROR_CODE.PASSWORD_CHANGE_REQUIRED, "Troque a senha temporária para continuar.")
+    }
+    return handler(ctx, admin)
   }
 }
 

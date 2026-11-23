@@ -1,4 +1,5 @@
 export * from "./admin-nav"
+export * from "./admin-nav-gate"
 export * from "./admin-nav-active-list"
 export * from "./admin-nav-link"
 export * from "./admin-nav-list"

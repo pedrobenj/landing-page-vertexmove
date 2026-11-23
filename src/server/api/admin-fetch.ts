@@ -2,7 +2,8 @@ import "server-only"
 
 import { redirect } from "next/navigation"
 
-import { ADMIN_LOGIN_PATH, ADMIN_SESSION_EXPIRED_PATH } from "@/lib/utils/constants"
+import { API_ERROR_CODE } from "@/enums/api-error-code.enum"
+import { ADMIN_LOGIN_PATH, ADMIN_PASSWORD_CHANGE_REQUIRED_PATH, ADMIN_SESSION_EXPIRED_PATH } from "@/lib/utils/constants"
 
 import { apiFetch, type ApiFetchOptions, apiFetchStream } from "./api-client"
 import { isApiError } from "./api-error"
@@ -15,6 +16,7 @@ import { clearSession, getAccessToken } from "./admin-session"
  * - `401` da API (token revogado) → tenta apagar os cookies (só dá em server actions e route handlers) e
  *   vai a `/admin/sair`, que apaga de novo antes do login. Ir direto ao login deixaria o cookie velho no
  *   browser (Server Components não gravam cookies).
+ * - `403 TROCA_DE_SENHA_OBRIGATORIA` (senha temporária) → Minha conta, com o aviso; a sessão continua.
  * - Demais erros sobem como `ApiError`.
  *
  * `redirect()` funciona lançando um erro: server actions que chamam `adminFetch` dentro de `try/catch`
@@ -43,6 +45,9 @@ async function withAdminToken<T>(call: (headers: { Authorization: string }) => P
         // Server Component: não grava cookies; o `/admin/sair` apaga.
       }
       redirect(ADMIN_SESSION_EXPIRED_PATH)
+    }
+    if (isApiError(error) && error.status === 403 && error.codigo === API_ERROR_CODE.PASSWORD_CHANGE_REQUIRED) {
+      redirect(ADMIN_PASSWORD_CHANGE_REQUIRED_PATH)
     }
     throw error
   }

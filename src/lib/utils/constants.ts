@@ -16,3 +16,7 @@ export const ADMIN_SESSION_EXPIRED_PATH = "/admin/sair"
 export const ADMIN_SESSION_EXPIRED_PARAM = "expirada"
 /** Query do login depois de trocar a própria senha (o backend derruba todas as sessões). */
 export const ADMIN_PASSWORD_CHANGED_PARAM = "senha-alterada"
+/** Minha conta: troca da própria senha (também o destino da troca obrigatória da senha temporária). */
+export const ADMIN_ACCOUNT_PATH = "/admin/conta"
+/** Destino quando a API responde 403 `TROCA_DE_SENHA_OBRIGATORIA` (senha temporária). */
+export const ADMIN_PASSWORD_CHANGE_REQUIRED_PATH = `${ADMIN_ACCOUNT_PATH}?troca-obrigatoria=1`

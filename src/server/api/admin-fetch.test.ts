@@ -41,6 +41,21 @@ describe("adminFetch", () => {
     expect(new Headers(transport.mock.calls[0][1].headers).get("Authorization")).toBe("Bearer abc")
   })
 
+  it("em 403 TROCA_DE_SENHA_OBRIGATORIA leva a Minha conta, sem apagar a sessão", async () => {
+    cookieJar.token = "temporaria"
+    transport.mockResolvedValue(Response.json({ error: { codigo: "TROCA_DE_SENHA_OBRIGATORIA", mensagem: "x" } }, { status: 403 }))
+
+    await expect(adminFetch("/admin/eventos")).rejects.toThrow("REDIRECT:/admin/conta?troca-obrigatoria=1")
+    expect(cookieJar.set).not.toHaveBeenCalled()
+  })
+
+  it("outros 403 sobem como ApiError", async () => {
+    cookieJar.token = "abc"
+    transport.mockResolvedValue(Response.json({ error: { codigo: "ACESSO_NEGADO", mensagem: "x" } }, { status: 403 }))
+
+    await expect(adminFetch("/admin/eventos")).rejects.toMatchObject({ status: 403, codigo: "ACESSO_NEGADO" })
+  })
+
   it("em 401 da API redireciona à rota que apaga a sessão", async () => {
     cookieJar.token = "expirado"
     transport.mockResolvedValue(Response.json({ error: { codigo: "NAO_AUTENTICADO", mensagem: "x" } }, { status: 401 }))

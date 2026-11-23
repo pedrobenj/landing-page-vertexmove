@@ -4,6 +4,7 @@ import { ADMIN_ROLE } from "@/enums/admin-role.enum"
 
 const mocks = vi.hoisted(() => ({
   requireAdminSession: vi.fn(),
+  getAdminSessionAllowingPasswordChange: vi.fn(),
   createManagedAdmin: vi.fn(),
   deactivateManagedAdmin: vi.fn(),
   reactivateManagedAdmin: vi.fn(),
@@ -16,7 +17,10 @@ const mocks = vi.hoisted(() => ({
 }))
 
 vi.mock("next/navigation", () => ({ unstable_rethrow: () => {}, redirect: mocks.redirect }))
-vi.mock("@/server/api/require-admin-session", () => ({ requireAdminSession: mocks.requireAdminSession }))
+vi.mock("@/server/api/require-admin-session", () => ({
+  requireAdminSession: mocks.requireAdminSession,
+  getAdminSessionAllowingPasswordChange: mocks.getAdminSessionAllowingPasswordChange,
+}))
 vi.mock("@/server/api/admin-session", () => ({ clearSession: mocks.clearSession }))
 vi.mock("@/server/api/endpoints/admin-management", () => ({
   createManagedAdmin: mocks.createManagedAdmin,
@@ -36,6 +40,7 @@ describe("actions de gestão de admins", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mocks.requireAdminSession.mockResolvedValue({ id: 1, papel: ADMIN_ROLE.ADMIN })
+    mocks.getAdminSessionAllowingPasswordChange.mockResolvedValue({ id: 1, papel: ADMIN_ROLE.ADMIN, trocarSenha: false })
   })
 
   it("cria e devolve a senha temporária uma vez", async () => {
@@ -80,6 +85,14 @@ describe("actions de gestão de admins", () => {
     await expect(actions.changeOwnPasswordAction(password)).rejects.toThrow("REDIRECT:/admin/login?senha-alterada=1")
     expect(mocks.changeOwnPassword).toHaveBeenCalledWith({ senhaAtual: password.senhaAtual, novaSenha: password.novaSenha })
     expect(mocks.clearSession).toHaveBeenCalled()
+  })
+
+  it("trocar a própria senha funciona com a senha temporária (sessão permissiva)", async () => {
+    mocks.requireAdminSession.mockRejectedValue(new Error("REDIRECT:/admin/conta?troca-obrigatoria=1"))
+    mocks.getAdminSessionAllowingPasswordChange.mockResolvedValue({ id: 5, papel: ADMIN_ROLE.ADMIN, trocarSenha: true })
+    mocks.changeOwnPassword.mockResolvedValue(undefined)
+    await expect(actions.changeOwnPasswordAction(password)).rejects.toThrow("REDIRECT:/admin/login?senha-alterada=1")
+    expect(mocks.changeOwnPassword).toHaveBeenCalled()
   })
 
   it("trocar a própria senha: senha atual errada e regra do backend viram erro no campo", async () => {
