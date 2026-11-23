@@ -13,6 +13,7 @@ const ENTITY_LABELS: Partial<Record<string, string>> = {
   pagamento: "Pagamento",
   produto: "Produto",
   pedido_loja: "Pedido da loja",
+  solicitacao_titular: "Solicitação LGPD",
 }
 
 const VERB_LABELS: Partial<Record<string, string>> = {

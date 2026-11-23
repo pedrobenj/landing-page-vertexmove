@@ -29,6 +29,7 @@ describe("audit labels", () => {
     expect(getAuditEntityLabel("inscricao")).toBe("Inscrição")
     expect(getAuditEntityLabel("admin_sessao")).toBe("Sessão")
     expect(getAuditEntityLabel("pedido_loja")).toBe("Pedido da loja")
+    expect(getAuditEntityLabel("solicitacao_titular")).toBe("Solicitação LGPD")
   })
 
   it("outros formatos ficam como vieram", () => {
