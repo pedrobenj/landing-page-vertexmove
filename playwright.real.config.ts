@@ -30,6 +30,7 @@ export default defineConfig({
     "admin.spec.ts",
     "admin-events.spec.ts",
     "admin-partner-races.spec.ts",
+    "admin-admins.spec.ts",
     "real/**/*.spec.ts",
   ],
   grepInvert: /@mock/,

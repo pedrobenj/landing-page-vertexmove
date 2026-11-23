@@ -164,6 +164,8 @@ Mapear no tema do shadcn/ui (CSS variables em `globals.css`):
 | `/admin/inscricoes/[id]` | Atalho da fila de pagamentos (a origem não traz a corrida): lê a inscrição e redireciona ao detalhe | `GET /admin/inscricoes/:id` |
 | `/admin/pagamentos` | Fila por situação (estorno pendente, em análise, valor divergente) com Conciliar e Estornar (motivo + confirmação dupla) conforme `acoes` | `GET /admin/pagamentos?situacao`, `POST /admin/pagamentos/:id/conciliar\|estornar` |
 | `/admin/corridas-parceiras`, `/nova`, `/[id]` | Corridas parceiras: lista (ativar/desativar na linha), cadastro, edição (ordem, ativo) e exclusão com confirmação. Actions invalidam a tag `partner-races` | `GET\|POST /admin/corridas-parceiras`, `GET\|PATCH\|DELETE /admin/corridas-parceiras/:id` (fase 8) |
+| `/admin/admins` | Gestão de admins: lista (ativo/desativado, último acesso), novo admin e redefinir senha mostram a senha temporária **uma vez** (copiar), desativar com confirmação, reativar. Na própria linha só "Trocar minha senha" | `GET\|POST /admin/admins`, `POST /admin/admins/:id/desativar\|reativar\|redefinir-senha` (fase 8) |
+| `/admin/conta` | Minha conta: trocar a própria senha. O 204 derruba todas as sessões: a action limpa os cookies e leva a `/admin/login?senha-alterada=1` | `POST /admin/me/senha` |
 | `/admin/loja/produtos`, `/admin/loja/pedidos` | Produtos (estoque por diferença) e pedidos (filtro por status, pronto/retirado/cancelar) | `/admin/loja/produtos[/:id]`, `/admin/loja/pedidos[/:codigo]`, `POST .../pronto|retirado|cancelar` (fase 10) |
 
 Proteger `/admin/*` (exceto `/admin/login`) no `proxy.ts`, que também renova o access token (ver §8). Admin com `noindex`.

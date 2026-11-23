@@ -28,4 +28,6 @@ export const ADMIN_PANEL_NAV_ITEMS: readonly NavItem[] = [
   { label: "Auditoria", href: "/admin/auditoria" },
   { label: "Loja", href: "/admin/loja/produtos" },
   { label: "Pedidos", href: "/admin/loja/pedidos" },
+  { label: "Admins", href: "/admin/admins" },
+  { label: "Minha conta", href: "/admin/conta" },
 ]
