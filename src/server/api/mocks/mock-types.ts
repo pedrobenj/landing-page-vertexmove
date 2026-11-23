@@ -117,7 +117,12 @@ export interface MockDb {
   audit: AuditEntry[]
   partnerRaces: AdminPartnerRace[]
   /** `solicitacao_titular` (LGPD). */
-  lgpdRequests: AdminLgpdRequest[]
+  lgpdRequests: MockLgpdRequest[]
   /** Falhas de login seguidas por e-mail (lockout simplificado). */
   loginFailures: Record<string, number>
+}
+
+/** Linha de `solicitacao_titular`: o detalhe do admin + o CPF (no backend, hash e cifra; nunca exposto). */
+export interface MockLgpdRequest extends Omit<AdminLgpdRequest, "cpfMascarado" | "vencida" | "nomeMascarado"> {
+  cpf: string
 }

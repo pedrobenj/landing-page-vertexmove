@@ -24,7 +24,11 @@ export function LgpdRequestsTableRow({ request }: LgpdRequestsTableRowProps) {
       <TableCell>
         <LgpdStatusBadge status={request.status} />
       </TableCell>
-      <TableCell className="tabular-nums">{formatDateTimeSafe(request.prazoEm)}</TableCell>
+      <TableCell className="whitespace-normal tabular-nums">
+        <p>{formatDateTimeSafe(request.prazoEm)}</p>
+        {request.vencida && <p className="text-xs font-semibold text-destructive">Prazo vencido</p>}
+        {request.anonimizadaEm && <p className="text-xs text-muted-foreground">Anonimizado</p>}
+      </TableCell>
       <TableCell className="text-right">
         <Button asChild size="sm" variant="outline">
           <Link href={`/admin/lgpd/${request.id}`} aria-label={`Ver solicitação ${request.protocolo}`}>

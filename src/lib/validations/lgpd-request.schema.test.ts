@@ -6,7 +6,7 @@ import { lgpdRequestSchema, type LgpdRequestFormInput } from "./lgpd-request.sch
 
 const valid: LgpdRequestFormInput = {
   tipo: LGPD_REQUEST_TYPE.ACCESS,
-  nomeCompleto: "  Maria   da Silva ",
+  nome: "  Maria   da Silva ",
   cpf: "529.982.247-25",
   email: "maria@example.com",
   whatsapp: "(85) 99999-0000",
@@ -21,29 +21,32 @@ function issues(input: LgpdRequestFormInput): Record<string, string> {
 }
 
 describe("lgpdRequestSchema", () => {
-  it("normaliza para o corpo da API: CPF só dígitos, WhatsApp E.164, vazios como null, sem o aceite", () => {
+  it("normaliza para o corpo da API: nome, CPF só dígitos, WhatsApp E.164 e aceite literal", () => {
     const result = lgpdRequestSchema.parse(valid)
     expect(result).toEqual({
       tipo: "acesso",
-      nomeCompleto: "Maria da Silva",
+      nome: "Maria da Silva",
       cpf: "52998224725",
       email: "maria@example.com",
       whatsapp: "+5585999990000",
       mensagem: "Quero saber quais dados vocês têm.",
+      aceite: true,
     })
   })
 
-  it("aceita só e-mail ou só WhatsApp; mensagem vazia vira null", () => {
-    expect(lgpdRequestSchema.parse({ ...valid, whatsapp: "", mensagem: "" })).toMatchObject({ whatsapp: null, mensagem: null })
-    expect(lgpdRequestSchema.parse({ ...valid, email: "" })).toMatchObject({ email: null })
+  it("campos opcionais vazios ficam fora do corpo (o backend recusa null)", () => {
+    const onlyEmail = lgpdRequestSchema.parse({ ...valid, whatsapp: "", mensagem: "" })
+    expect(onlyEmail).not.toHaveProperty("whatsapp")
+    expect(onlyEmail).not.toHaveProperty("mensagem")
+    expect(lgpdRequestSchema.parse({ ...valid, email: "" })).not.toHaveProperty("email")
   })
 
   it("exige tipo, nome completo, CPF válido, um contato e o aceite", () => {
     expect(
-      issues({ ...valid, tipo: "" as LGPD_REQUEST_TYPE, nomeCompleto: "Maria", cpf: "111.111.111-11", email: "", whatsapp: "", aceite: false }),
+      issues({ ...valid, tipo: "" as LGPD_REQUEST_TYPE, nome: "Maria", cpf: "111.111.111-11", email: "", whatsapp: "", aceite: false }),
     ).toEqual({
       tipo: "Escolha o tipo de solicitação",
-      nomeCompleto: "Informe o nome completo",
+      nome: "Informe o nome completo",
       cpf: "CPF inválido",
       email: "Informe um e-mail ou um WhatsApp para a resposta",
       aceite: "Confirme que você é o titular dos dados ou o representante legal dele",
@@ -51,7 +54,7 @@ describe("lgpdRequestSchema", () => {
   })
 
   it("nome com até 120 caracteres (limite da tabela solicitacao_titular)", () => {
-    expect(issues({ ...valid, nomeCompleto: `Maria ${"a".repeat(115)}` })).toEqual({ nomeCompleto: "Nome muito longo" })
+    expect(issues({ ...valid, nome: `Maria ${"a".repeat(115)}` })).toEqual({ nome: "Nome muito longo" })
   })
 
   it("valida o formato do e-mail e do WhatsApp e limita a mensagem", () => {

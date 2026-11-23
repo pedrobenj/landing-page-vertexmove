@@ -6,7 +6,7 @@ import { formatDateTimeSafe } from "@/lib/utils/format-date"
 import type { LgpdRequestReceipt } from "@/types/api/lgpd-request.interface"
 
 interface LgpdRequestSuccessProps {
-  receipt: LgpdRequestReceipt
+  receipt: Pick<LgpdRequestReceipt, "protocolo" | "prazoEm">
 }
 
 /** Só protocolo e prazo: a mesma tela para qualquer CPF (não revela se há cadastro). */

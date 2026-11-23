@@ -4,7 +4,9 @@ import type { CursorPage } from "@/types/api/cursor-page.interface"
 import type {
   AdminLgpdRequest,
   AdminLgpdRequestFilters,
+  AdminLgpdRequestStatus,
   AdminLgpdRequestSummary,
+  LgpdAnonymizationResult,
   LgpdRequestStatusInput,
 } from "@/types/api/lgpd-request.interface"
 
@@ -18,22 +20,22 @@ export async function listAdminLgpdRequests(filters: AdminLgpdRequestFilters = {
   return adminFetch(BASE, { query: { status, tipo, cursor } })
 }
 
-/** `GET /admin/lgpd/solicitacoes/:id`: com os dados pessoais (o backend audita o acesso). */
+/** `GET /admin/lgpd/solicitacoes/:id`: dados do requerente, CPF mascarado (o backend audita o acesso). */
 export async function getAdminLgpdRequest(id: number): Promise<AdminLgpdRequest> {
   return adminFetch(`${BASE}/${id}`)
 }
 
-/** `POST /admin/lgpd/solicitacoes/:id/status`: concluída/recusada exigem a resposta ao titular. */
-export async function updateLgpdRequestStatus(id: number, input: LgpdRequestStatusInput): Promise<AdminLgpdRequest> {
-  return adminFetch(`${BASE}/${id}/status`, { method: "POST", body: input })
+/** `PATCH /admin/lgpd/solicitacoes/:id`: concluída/recusada exigem a resposta; finais não mudam (409). */
+export async function updateLgpdRequestStatus(id: number, input: LgpdRequestStatusInput): Promise<AdminLgpdRequestStatus> {
+  return adminFetch(`${BASE}/${id}`, { method: "PATCH", body: input })
 }
 
-/** `GET /admin/lgpd/solicitacoes/:id/exportacao`: JSON do titular, repassado em streaming (auditado). */
+/** `POST /admin/lgpd/solicitacoes/:id/exportar`: JSON do titular, repassado em streaming (auditado). */
 export async function streamLgpdExport(id: number): Promise<Response> {
-  return adminFetchStream(`${BASE}/${id}/exportacao`, { accept: "application/json" })
+  return adminFetchStream(`${BASE}/${id}/exportar`, { accept: "application/json", method: "POST" })
 }
 
-/** `POST /admin/lgpd/solicitacoes/:id/anonimizar` (204). Irreversível. */
-export async function anonymizeLgpdHolder(id: number): Promise<void> {
-  await adminFetch(`${BASE}/${id}/anonimizar`, { method: "POST" })
+/** `POST /admin/lgpd/solicitacoes/:id/anonimizar` com `{ confirmar: true }`. Irreversível e idempotente. */
+export async function anonymizeLgpdHolder(id: number): Promise<LgpdAnonymizationResult> {
+  return adminFetch(`${BASE}/${id}/anonimizar`, { method: "POST", body: { confirmar: true } })
 }

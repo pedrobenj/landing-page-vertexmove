@@ -41,7 +41,7 @@ describe("actions de LGPD do admin", () => {
   it("muda o status com a resposta e revalida a lista e o detalhe", async () => {
     mocks.updateLgpdRequestStatus.mockResolvedValue({ id: 7 })
     const response = await updateLgpdRequestStatusAction(7, { status: LGPD_REQUEST_STATUS.FULFILLED, resposta: " Dados enviados. " })
-    expect(response.status).toBe(200)
+    expect(response).toMatchObject({ status: 200, data: { id: 7 } })
     expect(mocks.updateLgpdRequestStatus).toHaveBeenCalledWith(7, { status: "concluida", resposta: "Dados enviados." })
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/lgpd")
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/lgpd/7")
@@ -53,15 +53,30 @@ describe("actions de LGPD do admin", () => {
     expect(mocks.updateLgpdRequestStatus).not.toHaveBeenCalled()
   })
 
-  it("anonimiza e revalida; 409 vira mensagem própria", async () => {
-    mocks.anonymizeLgpdHolder.mockResolvedValue(undefined)
-    expect((await anonymizeLgpdHolderAction(7)).status).toBe(204)
-    expect(mocks.anonymizeLgpdHolder).toHaveBeenCalledWith(7)
+  it("status que já mudou (409) → aviso para recarregar", async () => {
+    mocks.updateLgpdRequestStatus.mockRejectedValue(new ApiError(409, "CONFLITO_DE_ESTADO", "A solicitação não pode passar de concluida para recusada."))
+    const response = await updateLgpdRequestStatusAction(7, { status: LGPD_REQUEST_STATUS.REJECTED, resposta: "Não." })
+    expect(response).toMatchObject({ status: 409, error: "Esta solicitação já foi encerrada ou mudou de status. Recarregue a página." })
+  })
 
-    mocks.anonymizeLgpdHolder.mockRejectedValue(new ApiError(409, "CONFLITO_DE_ESTADO", "já anonimizado"))
-    const conflict = await anonymizeLgpdHolderAction(7)
-    expect(conflict).toMatchObject({ status: 409, error: "Os dados deste titular já foram anonimizados ou não há cadastro dele para anonimizar." })
+  it("anonimiza com confirmar: true, devolve as contagens e revalida", async () => {
+    const result = { protocolo: "LGPD-2026-ABCDEFGH", anonimizadaEm: "2026-11-23T13:00:00.000Z", atletas: 1, inscricoes: 2, pedidos: 0, notificacoes: 1 }
+    mocks.anonymizeLgpdHolder.mockResolvedValue(result)
+    const response = await anonymizeLgpdHolderAction(7)
+    expect(response).toMatchObject({ status: 200, data: result })
+    expect(mocks.anonymizeLgpdHolder).toHaveBeenCalledWith(7)
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/lgpd/7")
     expect((await anonymizeLgpdHolderAction(0)).status).toBe(422)
+  })
+
+  it("anonimização recusada (409/retenção legal) mostra o motivo do backend", async () => {
+    mocks.anonymizeLgpdHolder.mockRejectedValue(
+      new ApiError(409, "CONFLITO_DE_ESTADO", "O titular tem inscrição ou pedido aguardando pagamento. Aguarde a expiração ou cancele antes de anonimizar."),
+    )
+    expect(await anonymizeLgpdHolderAction(7)).toMatchObject({ status: 409, error: expect.stringContaining("aguardando pagamento") })
+
+    mocks.anonymizeLgpdHolder.mockRejectedValue(new ApiError(409, "RETENCAO_LEGAL_ATIVA", "O titular ainda está dentro do prazo de retenção legal."))
+    expect(await anonymizeLgpdHolderAction(7)).toMatchObject({ status: 409, error: "O titular ainda está dentro do prazo de retenção legal: os dados não podem ser apagados agora." })
   })
 
   it("sem sessão: o redirect do requireAdminSession sobe", async () => {

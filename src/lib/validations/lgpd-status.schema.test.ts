@@ -3,8 +3,8 @@ import { describe, expect, it } from "vitest"
 import { lgpdStatusFormSchema } from "./lgpd-status.schema"
 
 describe("lgpdStatusFormSchema", () => {
-  it("em andamento sem resposta: resposta vira null", () => {
-    expect(lgpdStatusFormSchema.parse({ status: "em_andamento", resposta: "  " })).toEqual({ status: "em_andamento", resposta: null })
+  it("em andamento sem resposta: a resposta fica fora do corpo (o backend recusa null)", () => {
+    expect(lgpdStatusFormSchema.parse({ status: "em_andamento", resposta: "  " })).toEqual({ status: "em_andamento" })
   })
 
   it("concluída e recusada exigem a resposta ao titular", () => {

@@ -7,15 +7,16 @@ import { toast } from "sonner"
 import { anonymizeLgpdHolderAction } from "@/app/actions/admin-lgpd"
 import { DoubleConfirmDialog } from "@/components/feedback"
 import { Button } from "@/components/ui/button"
+import { formatAnonymizationSummary } from "@/lib/utils/format-anonymization-summary"
 
 interface AnonymizeHolderButtonProps {
   requestId: number
   protocolo: string
-  nomeCompleto: string
+  nome: string
 }
 
 /** Anonimização com confirmação dupla: é irreversível e o aviso diz exatamente o que se perde. */
-export function AnonymizeHolderButton({ requestId, protocolo, nomeCompleto }: AnonymizeHolderButtonProps) {
+export function AnonymizeHolderButton({ requestId, protocolo, nome }: AnonymizeHolderButtonProps) {
   const router = useRouter()
   const [isPending, setIsPending] = useState(false)
 
@@ -27,7 +28,7 @@ export function AnonymizeHolderButton({ requestId, protocolo, nomeCompleto }: An
       toast.error(response.title, { description: response.error })
       return
     }
-    toast.success("Dados do titular anonimizados")
+    toast.success("Dados do titular anonimizados", { description: response.data ? formatAnonymizationSummary(response.data) : undefined })
     router.refresh()
   }
 
@@ -40,7 +41,7 @@ export function AnonymizeHolderButton({ requestId, protocolo, nomeCompleto }: An
       }
       first={{
         title: "Anonimizar os dados deste titular?",
-        description: `Nome, CPF, WhatsApp e e-mail de ${nomeCompleto} serão apagados de todas as inscrições. Depois disso não será possível consultar, exportar nem identificar as inscrições dele. Valores e pagamentos continuam guardados para a contabilidade.`,
+        description: `Nome, e-mail, WhatsApp, nascimento e CPF de ${nome} serão apagados do cadastro, das inscrições e dos pedidos. Depois disso não será possível identificar a pessoa nessas inscrições nem exportar os dados dela. Valores, pagamentos e aceites continuam guardados.`,
         confirmLabel: "Continuar",
       }}
       second={{

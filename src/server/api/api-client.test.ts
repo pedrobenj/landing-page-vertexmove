@@ -247,6 +247,16 @@ describe("apiFetchStream", () => {
     expect(headers.get("Authorization")).toBe("Bearer x")
   })
 
+  it("aceita POST sem corpo (ex.: exportação LGPD, que é uma ação auditada)", async () => {
+    transport.mockResolvedValue(jsonResponse(200, { protocolo: "LGPD-2026-ABCDEFGH" }))
+
+    await apiFetchStream("/admin/lgpd/solicitacoes/1/exportar", { accept: "application/json", method: "POST" })
+
+    const { init } = lastCall()
+    expect(init.method).toBe("POST")
+    expect(init.body).toBeUndefined()
+  })
+
   it("erro da API vira ApiError com o código", async () => {
     transport.mockResolvedValue(jsonResponse(404, { error: { codigo: "RECURSO_NAO_ENCONTRADO", mensagem: "x" } }))
 

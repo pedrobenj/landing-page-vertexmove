@@ -192,28 +192,35 @@ export const changePasswordSchema = z.strictObject({
   novaSenha: z.string().min(1).max(128),
 })
 
-/** `POST /lgpd/solicitacoes` (objeto estrito; um contato obrigatório). */
+/** `POST /lgpd/solicitacoes` (`abrirSolicitacaoSchema`: estrito, opcionais ausentes, aceite literal). */
 export const lgpdRequestSchema = z
   .strictObject({
     tipo: z.enum(LGPD_REQUEST_TYPE),
-    nomeCompleto: z.string().trim().min(2).max(120),
-    cpf,
-    email: z.email().max(254).nullable(),
-    whatsapp: e164.nullable(),
-    mensagem: z.string().trim().max(2000).nullable(),
+    nome: z.string().trim().min(3).max(120),
+    cpf: z.string().trim().max(20).refine(isValidCpf, "deve ser um CPF válido"),
+    email: z.email().max(254).optional(),
+    whatsapp: e164.optional(),
+    mensagem: z.string().trim().max(2000).optional(),
+    aceite: z.literal(true),
   })
-  .refine((value) => value.email !== null || value.whatsapp !== null, {
-    message: "Informe e-mail ou WhatsApp.",
+  .refine((value) => value.email !== undefined || value.whatsapp !== undefined, {
+    message: "informe e-mail ou WhatsApp para receber a resposta",
     path: ["email"],
   })
 
-/** `POST /admin/lgpd/solicitacoes/:id/status`: concluída/recusada exigem a resposta ao titular. */
-export const lgpdStatusSchema = z
-  .strictObject({
-    status: z.enum(LGPD_REQUEST_STATUS),
-    resposta: z.string().trim().max(4000).nullable(),
-  })
-  .refine(
-    (value) => ![LGPD_REQUEST_STATUS.FULFILLED, LGPD_REQUEST_STATUS.REJECTED].includes(value.status) || Boolean(value.resposta),
-    { message: "Informe a resposta ao titular.", path: ["resposta"] },
-  )
+/** `GET /admin/lgpd/solicitacoes` (estrito). */
+export const lgpdListQuerySchema = z.strictObject({
+  status: z.enum(LGPD_REQUEST_STATUS).optional(),
+  tipo: z.enum(LGPD_REQUEST_TYPE).optional(),
+  cursor: z.string().min(1).max(256).optional(),
+  limit: z.string().optional(),
+})
+
+/** `PATCH /admin/lgpd/solicitacoes/:id` (`atualizarSolicitacaoSchema`). */
+export const lgpdStatusSchema = z.strictObject({
+  status: z.enum(LGPD_REQUEST_STATUS),
+  resposta: z.string().trim().max(4000).optional(),
+})
+
+/** `POST /admin/lgpd/solicitacoes/:id/anonimizar`. */
+export const lgpdAnonymizeSchema = z.strictObject({ confirmar: z.literal(true) })

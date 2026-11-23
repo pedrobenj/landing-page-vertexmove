@@ -26,7 +26,7 @@ import { LgpdRequestSuccess } from "./lgpd-request-success"
 
 const DEFAULT_VALUES: LgpdRequestFormInput = {
   tipo: "" as LgpdRequestFormInput["tipo"],
-  nomeCompleto: "",
+  nome: "",
   cpf: "",
   email: "",
   whatsapp: "",
@@ -58,7 +58,7 @@ export function LgpdRequestForm() {
     },
   })
 
-  const receipt = mutation.data?.status === 202 ? mutation.data.data : undefined
+  const receipt = mutation.data?.status === 201 ? mutation.data.data : undefined
   if (receipt) return <LgpdRequestSuccess receipt={receipt} />
 
   const submitError = mutation.isError
@@ -104,12 +104,12 @@ export function LgpdRequestForm() {
       />
 
       <Controller
-        name="nomeCompleto"
+        name="nome"
         control={form.control}
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
             <FieldLabel htmlFor="lgpd-name">Nome completo</FieldLabel>
-            <Input {...field} id="lgpd-name" autoComplete="name" maxLength={150} aria-invalid={fieldState.invalid} className={INPUT_CLASS} />
+            <Input {...field} id="lgpd-name" autoComplete="name" maxLength={120} aria-invalid={fieldState.invalid} className={INPUT_CLASS} />
             <FieldError errors={[fieldState.error]} />
           </Field>
         )}

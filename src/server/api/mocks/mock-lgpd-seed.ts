@@ -2,21 +2,28 @@ import "server-only"
 
 import { LGPD_REQUEST_STATUS } from "@/enums/lgpd-request-status.enum"
 import { LGPD_REQUEST_TYPE } from "@/enums/lgpd-request-type.enum"
-import type { AdminLgpdRequest } from "@/types/api/lgpd-request.interface"
 
 import { addDays } from "./mock-time"
-import type { MockRegistration } from "./mock-types"
+import type { MockLgpdRequest, MockRegistration } from "./mock-types"
 
-/** Prazo de resposta ao titular (art. 19, II da LGPD: 15 dias). */
+/** `PRAZO_SOLICITACAO_DIAS` do backend. */
 export const LGPD_RESPONSE_DAYS = 15
+/** Alfabeto do `gerar-protocolo.ts` do backend (sem 0/O e 1/I). */
+const PROTOCOL_ALPHABET = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ"
 
-/** `LGPD-AAAA-XXXXXXXX` (8 alfanuméricos maiúsculos, `ck_solicitacao_titular_protocolo`); no backend é opaco. */
+/** `LGPD-AAAA-XXXXXXXX`. No backend é aleatório (opaco); aqui deriva do id, para os testes. */
 export function lgpdProtocol(id: number, now: Date): string {
-  return `LGPD-${now.getFullYear()}-${(id * 7_919 + 1_048_576).toString(36).toUpperCase().padStart(8, "0")}`
+  let value = id * 7_919 + 1_048_576
+  let suffix = ""
+  for (let index = 0; index < 8; index++) {
+    suffix = PROTOCOL_ALPHABET[value % PROTOCOL_ALPHABET.length] + suffix
+    value = Math.floor(value / PROTOCOL_ALPHABET.length)
+  }
+  return `LGPD-${now.getFullYear()}-${suffix}`
 }
 
-/** Duas solicitações de demonstração: uma aberta de um atleta cadastrado e uma concluída sem cadastro. */
-export function seedLgpdRequests(registrations: MockRegistration[], now: Date): AdminLgpdRequest[] {
+/** Duas solicitações de demonstração: uma aberta de um atleta do seed e uma concluída de quem não tem cadastro. */
+export function seedLgpdRequests(registrations: MockRegistration[], now: Date): MockLgpdRequest[] {
   const athlete = registrations.find((registration) => registration.cpf !== null && registration.email !== null)
   const openedAt = addDays(now, -2)
   const answeredAt = addDays(now, -5)
@@ -26,34 +33,38 @@ export function seedLgpdRequests(registrations: MockRegistration[], now: Date): 
       protocolo: lgpdProtocol(1, openedAt),
       tipo: LGPD_REQUEST_TYPE.ACCESS,
       status: LGPD_REQUEST_STATUS.OPEN,
-      nomeCompleto: athlete?.nomeCompleto ?? "Atleta de Demonstração",
+      nome: athlete?.nomeCompleto ?? "Atleta de Demonstração",
       cpf: athlete?.cpf ?? "52998224725",
       email: athlete?.email ?? "atleta@example.com",
       whatsapp: athlete?.whatsapp ?? null,
       mensagem: "Gostaria de receber uma cópia dos meus dados.",
       resposta: null,
-      titularEncontrado: athlete !== undefined,
-      criadoEm: openedAt.toISOString(),
+      aceiteEm: openedAt.toISOString(),
       prazoEm: addDays(openedAt, LGPD_RESPONSE_DAYS).toISOString(),
-      respondidoEm: null,
-      anonimizadoEm: null,
+      encerradaEm: null,
+      anonimizadaEm: null,
+      atualizadoPor: null,
+      criadoEm: openedAt.toISOString(),
+      atualizadoEm: openedAt.toISOString(),
     },
     {
       id: 2,
       protocolo: lgpdProtocol(2, answeredAt),
       tipo: LGPD_REQUEST_TYPE.INFORMATION,
       status: LGPD_REQUEST_STATUS.FULFILLED,
-      nomeCompleto: "Visitante Sem Cadastro",
+      nome: "Visitante Sem Cadastro",
       cpf: "11144477735",
       email: "visitante@example.com",
       whatsapp: null,
       mensagem: "Com quem vocês compartilham meus dados?",
       resposta: "Não encontramos dados seus. Explicamos por e-mail com quem compartilhamos dados de atletas.",
-      titularEncontrado: false,
-      criadoEm: answeredAt.toISOString(),
+      aceiteEm: answeredAt.toISOString(),
       prazoEm: addDays(answeredAt, LGPD_RESPONSE_DAYS).toISOString(),
-      respondidoEm: addDays(answeredAt, 1).toISOString(),
-      anonimizadoEm: null,
+      encerradaEm: addDays(answeredAt, 1).toISOString(),
+      anonimizadaEm: null,
+      atualizadoPor: 1,
+      criadoEm: answeredAt.toISOString(),
+      atualizadoEm: addDays(answeredAt, 1).toISOString(),
     },
   ]
 }

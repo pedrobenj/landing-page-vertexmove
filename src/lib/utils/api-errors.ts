@@ -42,6 +42,7 @@ const MESSAGES: Partial<Record<string, string>> = {
   [API_ERROR_CODE.LAST_ACTIVE_ADMIN]: "Não é possível desativar o último admin ativo.",
   [API_ERROR_CODE.OWN_ADMIN_OPERATION]: "Esta ação não pode ser feita na sua própria conta. Para trocar sua senha, use Minha conta.",
   [API_ERROR_CODE.WRONG_CURRENT_PASSWORD]: "A senha atual não confere.",
+  [API_ERROR_CODE.LEGAL_RETENTION]: "O titular ainda está dentro do prazo de retenção legal.",
   [API_ERROR_CODE.INVALID_CHECKOUT_URL]: "Não foi possível abrir o pagamento. Tente novamente em instantes.",
 }
 

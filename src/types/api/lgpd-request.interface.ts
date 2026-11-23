@@ -1,57 +1,73 @@
 import type { LGPD_REQUEST_STATUS } from "@/enums/lgpd-request-status.enum"
 import type { LGPD_REQUEST_TYPE } from "@/enums/lgpd-request-type.enum"
 
-/** Corpo de `POST /lgpd/solicitacoes` (público, sem login). */
+/**
+ * Corpo de `POST /lgpd/solicitacoes` (público, objeto estrito). Campos opcionais vão ausentes (o backend
+ * não aceita `null`); `aceite` é obrigatório e literal `true`.
+ */
 export interface LgpdRequestInput {
   tipo: LGPD_REQUEST_TYPE
-  nomeCompleto: string
+  nome: string
   cpf: string // só dígitos
-  email: string | null
-  whatsapp: string | null // E.164
-  mensagem: string | null
+  email?: string
+  whatsapp?: string // E.164
+  mensagem?: string
+  aceite: true
 }
 
-/** Resposta de `POST /lgpd/solicitacoes`: mesma resposta exista ou não o titular. */
+/** `201` de `POST /lgpd/solicitacoes`: a mesma resposta exista ou não o CPF na base. */
 export interface LgpdRequestReceipt {
-  protocolo: string
+  protocolo: string // LGPD-AAAA-XXXXXXXX
+  status: LGPD_REQUEST_STATUS
   prazoEm: string // ISO-8601
 }
 
-/** Item de `GET /admin/lgpd/solicitacoes` (sem PII além do nome mascarado). */
+/** Item de `GET /admin/lgpd/solicitacoes` (`presentSolicitacaoResumo`): sem PII além do nome mascarado. */
 export interface AdminLgpdRequestSummary {
   id: number
   protocolo: string
   tipo: LGPD_REQUEST_TYPE
   status: LGPD_REQUEST_STATUS
   nomeMascarado: string
-  titularEncontrado: boolean
-  criadoEm: string
   prazoEm: string
+  /** Prazo vencido sem resposta final. */
+  vencida: boolean
+  anonimizadaEm: string | null
+  criadoEm: string
+  atualizadoEm: string
 }
 
-/** `GET /admin/lgpd/solicitacoes/:id`: com os dados pessoais (o backend audita o acesso). */
-export interface AdminLgpdRequest {
-  id: number
-  protocolo: string
-  tipo: LGPD_REQUEST_TYPE
-  status: LGPD_REQUEST_STATUS
-  nomeCompleto: string
-  cpf: string
+/** Resposta de `PATCH /admin/lgpd/solicitacoes/:id`. */
+export interface AdminLgpdRequestStatus extends AdminLgpdRequestSummary {
+  resposta: string | null
+  encerradaEm: string | null
+}
+
+/** `GET /admin/lgpd/solicitacoes/:id`: dados do requerente (o backend grava `visualizar_pii`). */
+export interface AdminLgpdRequest extends AdminLgpdRequestStatus {
+  nome: string
+  cpfMascarado: string | null
   email: string | null
   whatsapp: string | null
   mensagem: string | null
-  resposta: string | null
-  titularEncontrado: boolean
-  criadoEm: string
-  prazoEm: string
-  respondidoEm: string | null
-  anonimizadoEm: string | null
+  aceiteEm: string
+  atualizadoPor: number | null
 }
 
-/** Corpo de `POST /admin/lgpd/solicitacoes/:id/status`. */
+/** Corpo de `PATCH /admin/lgpd/solicitacoes/:id` (concluída/recusada exigem `resposta`). */
 export interface LgpdRequestStatusInput {
   status: LGPD_REQUEST_STATUS
-  resposta: string | null
+  resposta?: string
+}
+
+/** Resposta de `POST /admin/lgpd/solicitacoes/:id/anonimizar` (contagens do que foi apagado). */
+export interface LgpdAnonymizationResult {
+  protocolo: string
+  anonimizadaEm: string
+  atletas: number
+  inscricoes: number
+  pedidos: number
+  notificacoes: number
 }
 
 /** Filtros de `GET /admin/lgpd/solicitacoes`. */

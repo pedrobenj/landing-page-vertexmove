@@ -49,7 +49,7 @@ export default async function AdminLgpdRequestPage({ params }: PageProps<"/admin
         id="admin-lgpd-request-title"
         eyebrow={getLgpdRequestTypeLabel(request.tipo)}
         title={request.protocolo}
-        description={request.nomeCompleto}
+        description={request.nome}
         before={backLink}
         badge={<LgpdStatusBadge status={request.status} />}
       />

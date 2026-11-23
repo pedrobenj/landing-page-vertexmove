@@ -115,7 +115,7 @@ export async function apiFetchRaw<T>(path: string, options: ApiFetchOptions = {}
 }
 
 /**
- * GET que devolve a `Response` da API sem ler o corpo (ex.: CSV repassado em streaming ao navegador).
+ * GET (ou POST sem corpo) que devolve a `Response` da API sem ler o corpo (ex.: CSV repassado em streaming ao navegador).
  * O timeout vale só até chegarem os headers: o download de uma lista grande pode demorar mais.
  * Resposta de erro → `ApiError`, como no `apiFetchRaw`.
  */
@@ -125,7 +125,7 @@ export async function apiFetchStream(path: string, options: ApiFetchOptions & { 
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(new DOMException("Timeout", "TimeoutError")), env.API_TIMEOUT_MS)
   try {
-    const res = await transport(buildUrl(path, options.query), { method: "GET", headers, cache: "no-store", signal: controller.signal })
+    const res = await transport(buildUrl(path, options.query), { method: options.method ?? "GET", headers, cache: "no-store", signal: controller.signal })
     if (!res.ok) throw await toApiError(res)
     return res
   } catch (error) {

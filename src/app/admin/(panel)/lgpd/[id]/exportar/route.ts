@@ -10,12 +10,12 @@ function textResponse(status: number, message: string): Response {
 }
 
 /**
- * Exporta os dados do titular (`GET /admin/lgpd/solicitacoes/:id/exportacao`) como download JSON: o
- * Bearer fica no servidor e o corpo é repassado em streaming. Sem sessão, o `adminFetchStream` leva ao
- * login. O backend audita a exportação.
+ * Exporta os dados do titular (`POST /admin/lgpd/solicitacoes/:id/exportar`) como download JSON. É POST
+ * (formulário do detalhe) porque a exportação é uma ação auditada; o Bearer fica no servidor e o corpo é
+ * repassado em streaming. Sem sessão, o `adminFetchStream` leva ao login.
  */
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  // Download disparado por outro site (link forjado): não exporta.
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  // Formulário enviado de outro site: não exporta (o cookie SameSite=Lax já não iria, isto é reforço).
   if (request.headers.get("sec-fetch-site") === "cross-site") return textResponse(403, "Acesso negado.")
   const id = parseIdParam((await params).id)
   if (id === null) return textResponse(404, "Solicitação não encontrada.")
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       status: 200,
       headers: {
         "Content-Type": "application/json; charset=utf-8",
-        "Content-Disposition": upstream.headers.get("Content-Disposition") ?? `attachment; filename="titular-solicitacao-${id}.json"`,
+        "Content-Disposition": upstream.headers.get("Content-Disposition") ?? `attachment; filename="lgpd-solicitacao-${id}.json"`,
         "Cache-Control": "no-store",
         "X-Content-Type-Options": "nosniff",
       },

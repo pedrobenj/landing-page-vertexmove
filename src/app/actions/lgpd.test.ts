@@ -12,7 +12,7 @@ const { getMockDb, resetMockDb } = await import("@/server/api/mocks/mock-db")
 
 const input: LgpdRequestFormInput = {
   tipo: LGPD_REQUEST_TYPE.DELETION,
-  nomeCompleto: "Maria da Silva",
+  nome: "Maria da Silva",
   cpf: "529.982.247-25",
   email: "maria@example.com",
   whatsapp: "",
@@ -23,9 +23,9 @@ const input: LgpdRequestFormInput = {
 describe("createLgpdRequestAction", () => {
   beforeEach(() => resetMockDb())
 
-  it("202 → devolve só o protocolo e o prazo, e grava o corpo normalizado", async () => {
+  it("201 → devolve só o protocolo e o prazo, e grava o corpo normalizado", async () => {
     const response = await createLgpdRequestAction(input)
-    expect(response.status).toBe(202)
+    expect(response.status).toBe(201)
     expect(response.data).toEqual({ protocolo: expect.stringMatching(/^LGPD-\d{4}-[0-9A-Z]{8}$/), prazoEm: expect.any(String) })
     expect(getMockDb().lgpdRequests.at(-1)).toMatchObject({ cpf: "52998224725", whatsapp: null, mensagem: null, tipo: "eliminacao" })
   })

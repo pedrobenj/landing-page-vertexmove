@@ -56,6 +56,14 @@ test.describe("LGPD — solicitação do titular", () => {
     await expect(page.getByText(/Confirme que você é o titular/)).toBeVisible()
   })
 
+  test("só eliminação pode ser anonimizada", async ({ page }) => {
+    const protocol = await submitRequest(page, { name: "Pessoa Pede Acesso", cpf: formatCpf(generateValidCpf()), type: "Acesso aos dados" })
+    await loginAsAdmin(page)
+    await openRequest(page, protocol)
+    await expect(page.getByText("A anonimização só vale para solicitações de eliminação dos dados.")).toBeVisible()
+    await expect(page.getByRole("button", { name: "Anonimizar titular" })).toHaveCount(0)
+  })
+
   test("envia e mostra só o protocolo, sem revelar se o CPF tem cadastro", async ({ page }) => {
     await submitRequest(page, { name: "Pessoa Sem Cadastro", cpf: formatCpf(generateValidCpf()), type: "Acesso aos dados" })
     await expect(page.getByText(/responder pelo contato informado até/)).toBeVisible()
@@ -66,7 +74,11 @@ test.describe("LGPD — solicitação do titular", () => {
     test.slow()
     const cpf = generateValidCpf()
     const name = `Titular Lgpd ${uniqueSuffix()}`
+    // Inscrição paga: a anonimização é recusada com pagamento pendente.
     await registerAthlete(page, { name, birthDate: "10/05/1990", cpf, whatsapp: generateWhatsapp() })
+    await page.getByRole("button", { name: "Ir para o pagamento" }).click()
+    await page.getByRole("button", { name: /Aprovar pagamento/ }).click()
+    await expect(page.getByRole("heading", { name: "Pagamento confirmado!" })).toBeVisible({ timeout: 30_000 })
     const protocol = await submitRequest(page, { name, cpf: formatCpf(cpf), type: "Eliminação dos dados" })
 
     await loginAsAdmin(page)
@@ -77,8 +89,9 @@ test.describe("LGPD — solicitação do titular", () => {
     await expect(page.getByRole("link", { name: `Ver solicitação ${protocol}` })).toBeVisible({ timeout: NAVIGATION_TIMEOUT })
 
     await openRequest(page, protocol)
-    await expect(page.getByText(formatCpf(cpf))).toBeVisible()
-    await expect(page.getByText("Há inscrições com este CPF.")).toBeVisible()
+    // CPF só mascarado, mesmo no admin.
+    await expect(page.getByText(`***.${cpf.slice(3, 6)}.${cpf.slice(6, 9)}-**`)).toBeVisible()
+    await expect(page.getByText(formatCpf(cpf))).toHaveCount(0)
 
     // Concluída sem resposta: o formulário recusa.
     await page.getByRole("combobox", { name: "Status" }).click()
@@ -90,22 +103,24 @@ test.describe("LGPD — solicitação do titular", () => {
     await expect(page.getByText("Solicitação atualizada")).toBeVisible({ timeout: NAVIGATION_TIMEOUT })
 
     const downloadPromise = page.waitForEvent("download")
-    await page.getByRole("link", { name: "Exportar dados (JSON)" }).click()
+    await page.getByRole("button", { name: "Exportar dados (JSON)" }).click()
     const download = await downloadPromise
-    expect(download.suggestedFilename()).toBe(`titular-${protocol}.json`)
+    expect(download.suggestedFilename()).toBe(`lgpd-${protocol}.json`)
     const content = await readFile((await download.path())!, "utf8")
-    const exported = JSON.parse(content) as { atletas: { nomeCompleto: string }[]; inscricoes: unknown[] }
-    expect(exported.atletas[0]?.nomeCompleto).toBe(name)
-    expect(exported.inscricoes.length).toBeGreaterThan(0)
+    const exported = JSON.parse(content) as { protocolo: string; titular: { atletas: { nomeCompleto: string }[]; inscricoes: unknown[] } }
+    expect(exported.protocolo).toBe(protocol)
+    expect(exported.titular.atletas[0]?.nomeCompleto).toBe(name)
+    expect(exported.titular.inscricoes.length).toBeGreaterThan(0)
     expect(content).not.toContain(cpf)
 
     await page.getByRole("button", { name: "Anonimizar titular" }).click()
     const first = page.getByRole("dialog", { name: "Anonimizar os dados deste titular?" })
-    await expect(first.getByText(/serão apagados de todas as inscrições/)).toBeVisible()
+    await expect(first.getByText(/serão apagados do cadastro, das inscrições e dos pedidos/)).toBeVisible()
     await first.getByRole("button", { name: "Continuar" }).click()
     const second = page.getByRole("dialog", { name: "Esta ação é irreversível" })
     await second.getByRole("button", { name: "Anonimizar definitivamente" }).click()
     await expect(page.getByText("Dados do titular anonimizados")).toBeVisible({ timeout: NAVIGATION_TIMEOUT })
+    await expect(page.getByText(/1 cadastro, 1 inscrição/)).toBeVisible()
     await expect(page.getByText("Os dados deste titular já foram anonimizados.")).toBeVisible({ timeout: NAVIGATION_TIMEOUT })
     await expect(page.getByRole("button", { name: "Anonimizar titular" })).toHaveCount(0)
   })
