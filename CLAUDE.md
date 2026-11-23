@@ -138,7 +138,8 @@ Mapear no tema do shadcn/ui (CSS variables em `globals.css`):
 | `/inscricao/confirmada` | Confirmação pós-criação com código e valores (dados vindos da resposta do `POST /inscricoes`, guardados em memória no store) | — |
 | `/inscricao/retorno` | Página de volta do Checkout Pro (`back_urls`): lê `external_reference` e consulta o status real no backend | **pendente** (status por código) |
 | `/inscricao/[code]` | Status da inscrição e botão "Pagar agora" (gera novo link do Checkout Pro se ainda pendente) | **pendente** (`GET` por código não existe) |
-| `/consulta` | Consulta por WhatsApp **ou** CPF → lista mascarada; cada item tem "Ver inscrição" (confirma a data de nascimento → detalhes + "Baixar comprovante (PDF)") | `POST /inscricoes/consulta`, `POST /inscricoes/comprovante`, `POST /inscricoes/comprovante/pagamento` |
+| `/consulta` | Consulta por WhatsApp **ou** CPF → lista mascarada; cada item tem "Ver inscrição" (confirma a data de nascimento → detalhes + "Baixar comprovante (PDF)"). Depois de qualquer resultado (inclusive vazio), "Receber link de acesso por e-mail" com mensagem sempre igual | `POST /inscricoes/consulta`, `POST /inscricoes/comprovante`, `POST /inscricoes/comprovante/pagamento`, `POST /inscricoes/acesso/link` |
+| `/inscricao/acesso` | Link mágico do e-mail (`?t=`, uso único, 30 min): a server action troca o token (POST disparado pelo navegador, então leitores de link não o gastam), grava `vm_insc_<codigo>` e redireciona com `replace` para `/inscricao/<codigo>`; inválido/usado/vencido → "Link inválido ou expirado" + "Pedir um novo link". `noindex`, `no-referrer`. No mock, os e-mails aparecem em `/dev/emails` | `POST /inscricoes/acesso` |
 | `/loja`, `/loja/[slug]`, `/loja/carrinho`, `/loja/checkout`, `/pedido/[code]` | Loja de camisas e acessórios; `/pedido/[code]` tem "Pagar agora" (Checkout Pro, token em cookie `vm_pedido_<codigo>`) e é a volta do pagamento (`?pagamento=`) | `GET /loja/produtos[/:slug]`, `POST /loja/carrinho/precificar`, `POST /loja/pedidos`, `GET /loja/pedidos/:codigo`, `POST /loja/pedidos/:codigo/pagamentos` (fase 10) |
 | `/corridas-parceiras` | Corridas de parceiros com cupom exclusivo e link externo (ativas, de hoje em diante, pela `ordem`) | `GET /corridas-parceiras` |
 | `/sobre` | Conheça o Vertex: história, missão, fotos, números | estático |
@@ -270,6 +271,11 @@ Papéis vistos no seed: organização (`admin@example.com`), operador (`operador
 - `cpfMascarado` vem `null` da API real (o backend não decifra CPF para exibição).
 
 **`POST /inscricoes/comprovante/pagamento`** — mesmo corpo + `Idempotency-Key`. Devolve o checkout (`checkoutUrl`) da inscrição pendente, reaproveitando a cobrança ativa. É o "Pagar agora" do comprovante (`startReceiptCheckoutAction`): funciona em qualquer aparelho, sem o cookie `vm_insc_<codigo>`. `RESERVA_EXPIRADA` → "faça uma nova inscrição".
+**`POST /inscricoes/acesso/link`** (fase 6, link mágico) — mesmo corpo da consulta (`{ cpf }` ou `{ whatsapp }`).
+- Sempre `202 { mensagem }`, exista ou não inscrição; `422` corpo inválido; `429 LIMITE_EXCEDIDO`. Envia um e-mail por inscrição confirmada ou pendente na reserva cujo atleta tem e-mail. A UI mostra o texto fixo `ACCESS_LINK_SENT_MESSAGE`.
+
+**`POST /inscricoes/acesso`** — `{ token }` (1–128). `200 { codigo, accessToken, status, expiraEm }`: o `accessToken` é **reemitido** (o cookie de outro aparelho passa a levar 401, e a tela pede um link novo). `expiraEm` é o prazo da reserva, não o do cookie (60 dias). Inexistente, usado, vencido ou inscrição inativa → sempre `404 RECURSO_NAO_ENCONTRADO` (a action devolve `LINK_ACESSO_INVALIDO`).
+
 - O PDF do comprovante é gerado no servidor do Next (`src/server/pdf/`, `pdf-lib`) e entregue por server action em base64 — nunca por URL com dados do atleta.
 
 ---
