@@ -12,6 +12,42 @@ import { paginate } from "../mock-pagination"
 import { adminEventSchema, validate, validatePatch } from "../mock-schemas"
 import { toFortalezaIso } from "../mock-time"
 import type { MockEvent } from "../mock-types"
+import type { ApiKitPickup } from "@/types/api/api-event-detail.interface"
+
+/** Colunas `retirada_kit_*` no corpo → chave em `retiradaKit` (formato de `retiradaDoEvento`). */
+const PICKUP_FIELDS = {
+  retiradaKitLocal: "local",
+  retiradaKitEndereco: "endereco",
+  retiradaKitInicio: "inicio",
+  retiradaKitFim: "fim",
+  retiradaKitInstrucoes: "instrucoes",
+} as const satisfies Record<string, keyof ApiKitPickup>
+const EMPTY_PICKUP: ApiKitPickup = { local: null, endereco: null, inicio: null, fim: null, instrucoes: null }
+
+/**
+ * Separa os campos de retirada do resto do corpo e aplica sobre a retirada atual (só as chaves enviadas;
+ * `null`/`""` limpam). Sem nenhum dado, `null`. Fim antes do início → 422 (`ck_evento_retirada_kit`).
+ */
+function splitPickup(
+  body: Record<string, unknown>,
+  current: ApiKitPickup | null,
+): { rest: Record<string, unknown>; pickup: ApiKitPickup | null } | Response {
+  const rest: Record<string, unknown> = {}
+  const pickup: ApiKitPickup = { ...(current ?? EMPTY_PICKUP) }
+  for (const [key, value] of Object.entries(body)) {
+    if (!(key in PICKUP_FIELDS)) {
+      rest[key] = value
+      continue
+    }
+    const field = PICKUP_FIELDS[key as keyof typeof PICKUP_FIELDS]
+    const text = typeof value === "string" && value !== "" ? value : null
+    pickup[field] = text !== null && (field === "inicio" || field === "fim") ? new Date(text).toISOString() : text
+  }
+  if (pickup.inicio && pickup.fim && Date.parse(pickup.fim) <= Date.parse(pickup.inicio)) {
+    return apiError(422, API_ERROR_CODE.INVALID_DATA, "retiradaKitFim: deve ser depois do início da retirada")
+  }
+  return { rest, pickup: Object.values(pickup).some((value) => value !== null) ? pickup : null }
+}
 
 const { DRAFT, PUBLISHED, CLOSED, CANCELLED } = EVENT_STATUS
 
@@ -65,8 +101,10 @@ export const adminEventRoutes: MockRoute[] = [
       if (input instanceof Response) return input
       if (slugTaken(input.slug)) return duplicateSlug()
 
+      const split = splitPickup(input, null)
+      if (split instanceof Response) return split
       const db = getMockDb()
-      const event: MockEvent = { ...input, id: nextId(db.events), status: DRAFT, deletedAt: null, retiradaKit: null }
+      const event = { ...split.rest, id: nextId(db.events), status: DRAFT, deletedAt: null, retiradaKit: split.pickup } as MockEvent
       db.events.push(event)
       recordAudit(admin, { acao: "evento.criado", entidade: "evento", entidadeId: event.id })
       return created(toAdminEvent(event), `/admin/eventos/${event.id}`)
@@ -89,8 +127,10 @@ export const adminEventRoutes: MockRoute[] = [
       const changes = validatePatch(adminEventSchema, ctx.body)
       if (changes instanceof Response) return changes
       if (typeof changes.slug === "string" && slugTaken(changes.slug, event.id)) return duplicateSlug()
+      const split = splitPickup(changes, event.retiradaKit)
+      if (split instanceof Response) return split
 
-      Object.assign(event, changes)
+      Object.assign(event, split.rest, { retiradaKit: split.pickup })
       recordAudit(admin, { acao: "evento.atualizado", entidade: "evento", entidadeId: event.id })
       return json(200, toAdminEvent(event))
     }),

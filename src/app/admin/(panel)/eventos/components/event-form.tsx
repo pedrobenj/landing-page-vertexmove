@@ -109,6 +109,31 @@ export function EventForm({ defaultValues, eventId, readOnly = false }: EventFor
           <FormTextField idPrefix="event" control={form.control} name="longitude" label="Longitude (opcional)" inputMode="decimal" placeholder="-38.4970" />
         </EventFormSection>
 
+        <EventFormSection legend="Retirada do kit (opcional)">
+          <FormTextField
+            idPrefix="event"
+            control={form.control}
+            name="retiradaKitLocal"
+            label="Local da retirada"
+            maxLength={200}
+            placeholder="Loja Vertex"
+            description="Aparece na página da corrida e na confirmação da inscrição."
+          />
+          <FormTextField idPrefix="event" control={form.control} name="retiradaKitEndereco" label="Endereço da retirada" maxLength={300} />
+          <FormTextField idPrefix="event" control={form.control} name="retiradaKitInicio" label="Início da retirada" type="datetime-local" />
+          <FormTextField idPrefix="event" control={form.control} name="retiradaKitFim" label="Fim da retirada" type="datetime-local" />
+          <FormTextField
+            idPrefix="event"
+            control={form.control}
+            name="retiradaKitInstrucoes"
+            label="Instruções da retirada"
+            multiline
+            maxLength={2000}
+            placeholder="Leve documento com foto e o código da inscrição."
+            className="md:col-span-2"
+          />
+        </EventFormSection>
+
         <EventFormSection legend="Imagens">
           <FormTextField
             idPrefix="event"

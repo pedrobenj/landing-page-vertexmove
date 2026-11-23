@@ -1,6 +1,7 @@
 import { isValid, parse } from "date-fns"
 import { z } from "zod"
 
+import { isFortalezaLocalInput, toFortalezaIso } from "@/lib/utils/fortaleza-datetime"
 import { onlyDigits } from "@/lib/utils/only-digits"
 
 import { REQUIRED_MESSAGE } from "./messages"
@@ -32,6 +33,22 @@ const optionalUrl = z
   .refine((value) => value === "" || isHttpUrl(value), "Informe uma URL válida, começando com https://")
   .transform((value) => value || null)
 
+/** Texto opcional com limite (os do DTO do backend): vazio vira `null`. */
+function optionalLimitedText(max: number) {
+  return z
+    .string()
+    .trim()
+    .max(max, `No máximo ${max} caracteres`)
+    .transform((value) => value || null)
+}
+
+/** `datetime-local` opcional (hora de Fortaleza) → instante ISO com `-03:00`; vazio vira `null`. */
+const optionalFortalezaDateTime = z
+  .string()
+  .trim()
+  .refine((value) => value === "" || isFortalezaLocalInput(value), "Informe data e hora válidas")
+  .transform((value) => (value ? toFortalezaIso(value) : null))
+
 /** Coordenada opcional digitada como texto (aceita vírgula decimal). Vazio vira `null`. */
 function optionalCoordinate(limit: number, label: string) {
   return z
@@ -53,7 +70,8 @@ function optionalCoordinate(limit: number, label: string) {
  * todos texto (inputs) e a saída já vem no formato da API: datas `YYYY-MM-DD`, horário `HH:mm`, CEP só
  * dígitos, coordenadas numéricas e opcionais em `null`.
  */
-export const adminEventFormSchema = z.object({
+export const adminEventFormSchema = z
+  .object({
   slug: z
     .string()
     .trim()
@@ -80,7 +98,17 @@ export const adminEventFormSchema = z.object({
   longitude: optionalCoordinate(180, "Longitude"),
   imagemCapaUrl: optionalUrl,
   galeriaUrl: optionalUrl,
+  retiradaKitLocal: optionalLimitedText(200),
+  retiradaKitEndereco: optionalLimitedText(300),
+  retiradaKitInicio: optionalFortalezaDateTime,
+  retiradaKitFim: optionalFortalezaDateTime,
+  retiradaKitInstrucoes: optionalLimitedText(2000),
 })
+  // `ck_evento_retirada_kit`: com as duas datas, o fim vem depois do início.
+  .refine(
+    ({ retiradaKitInicio: start, retiradaKitFim: end }) => !start || !end || Date.parse(end) > Date.parse(start),
+    { path: ["retiradaKitFim"], message: "O fim da retirada deve ser depois do início" },
+  )
 
 export type AdminEventFormInput = z.input<typeof adminEventFormSchema>
 export type AdminEventFormData = z.output<typeof adminEventFormSchema>

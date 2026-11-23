@@ -52,13 +52,21 @@ export function toPublicEvent(event: MockEvent): PublicEvent {
   }
 }
 
+/** `presentEventoAdminDetalhado`: local só em `localizacao`, retirada em `retiradaKit`. */
 export function toAdminEvent(event: MockEvent): AdminEvent {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- campo interno do mock
-  const { deletedAt, ...rest } = event
   return {
-    ...rest,
+    id: event.id,
+    status: event.status,
+    slug: event.slug,
+    nome: event.nome,
+    descricao: event.descricao,
+    dataEvento: event.dataEvento,
+    horarioLargada: event.horarioLargada,
     localizacao: toLocation(event),
     localizacaoResumo: toLocationSummary(event),
+    imagemCapaUrl: event.imagemCapaUrl,
+    galeriaUrl: event.galeriaUrl,
+    retiradaKit: event.retiradaKit,
   }
 }
 

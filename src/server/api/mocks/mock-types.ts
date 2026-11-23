@@ -15,11 +15,13 @@ import type { AdminPartnerRace } from "@/types/api/partner-race.interface"
 import type { PriceTier } from "@/types/api/price-tier.interface"
 import type { ShirtSize } from "@/types/api/shirt-size.interface"
 
-export interface MockEvent extends AdminEventInput {
+type KitPickupField = "retiradaKitLocal" | "retiradaKitEndereco" | "retiradaKitInicio" | "retiradaKitFim" | "retiradaKitInstrucoes"
+
+export interface MockEvent extends Omit<AdminEventInput, KitPickupField> {
   id: number
   status: EVENT_STATUS
   deletedAt: string | null
-  /** Colunas `retirada_kit_*` do evento (o admin do backend ainda não as edita). */
+  /** Colunas `retirada_kit_*` do evento, já no formato do presenter (`retiradaDoEvento`). */
   retiradaKit: ApiKitPickup | null
 }
 

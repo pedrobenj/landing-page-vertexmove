@@ -643,7 +643,11 @@ describe("mockFetch", () => {
 
       expect(res.status).toBe(201)
       expect(res.headers.get("Location")).toBe(`/api/v1/admin/eventos/${event.id}`)
-      expect(event).toMatchObject({ status: "rascunho", endereco: "Av. Dom Luís, s/n", localizacaoResumo: "Praça Portugal — Fortaleza/CE" })
+      expect(event).toMatchObject({ status: "rascunho", localizacaoResumo: "Praça Portugal — Fortaleza/CE", retiradaKit: null })
+      // `presentEventoAdminDetalhado`: o local vem só em `localizacao`.
+      expect(event.localizacao).toMatchObject({ localNome: "Praça Portugal", endereco: "Av. Dom Luís, s/n" })
+      expect(event).not.toHaveProperty("localNome")
+      expect(event).not.toHaveProperty("retiradaKitLocal")
       const reserved = await call("POST", "/admin/eventos", { body: { ...newEvent, slug: "encerrados" }, headers: auth })
       expect(reserved.status).toBe(422)
 
@@ -659,7 +663,40 @@ describe("mockFetch", () => {
 
       expect(res.status).toBe(200)
       expect(event.nome).toBe("Novo nome")
-      expect(event.endereco).toBe("Av. Almirante Tamandaré, s/n")
+      expect(event.localizacao.endereco).toBe("Av. Almirante Tamandaré, s/n")
+    })
+
+    it("grava a retirada do kit (criar e editar), devolve como `retiradaKit` e valida a janela", async () => {
+      const auth = await bearer()
+      const pickup = {
+        retiradaKitLocal: "Loja Vertex",
+        retiradaKitEndereco: "",
+        retiradaKitInicio: "2027-05-30T09:00:00-03:00",
+        retiradaKitFim: "2027-05-31T18:00:00-03:00",
+        retiradaKitInstrucoes: "Leve documento.",
+      }
+      const res = await call("POST", "/admin/eventos", { body: { ...newEvent, slug: "corrida-retirada", ...pickup }, headers: auth })
+      expect(res.status).toBe(201)
+      const event = (await res.json()) as AdminEvent
+      expect(event.retiradaKit).toEqual({
+        local: "Loja Vertex",
+        endereco: null,
+        inicio: "2027-05-30T12:00:00.000Z",
+        fim: "2027-05-31T21:00:00.000Z",
+        instrucoes: "Leve documento.",
+      })
+
+      const inverted = await call("PATCH", `/admin/eventos/${event.id}`, {
+        body: { retiradaKitInicio: "2027-05-31T18:00:00-03:00", retiradaKitFim: "2027-05-30T09:00:00-03:00" },
+        headers: auth,
+      })
+      expect(inverted.status).toBe(422)
+
+      const cleared = await call("PATCH", `/admin/eventos/${event.id}`, {
+        body: { retiradaKitLocal: null, retiradaKitInicio: null, retiradaKitFim: null, retiradaKitInstrucoes: null },
+        headers: auth,
+      })
+      expect(((await cleared.json()) as AdminEvent).retiradaKit).toBeNull()
     })
 
     it("recusa transição inválida com 409 e grava auditoria na válida", async () => {

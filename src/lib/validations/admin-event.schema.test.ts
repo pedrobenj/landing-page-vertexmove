@@ -19,6 +19,11 @@ const valid: AdminEventFormInput = {
   longitude: "-38.4970",
   imagemCapaUrl: "",
   galeriaUrl: "https://fotos.example.com/sol",
+  retiradaKitLocal: "",
+  retiradaKitEndereco: "",
+  retiradaKitInicio: "",
+  retiradaKitFim: "",
+  retiradaKitInstrucoes: "",
 }
 
 const errorPaths = (input: AdminEventFormInput) => {
@@ -45,7 +50,42 @@ describe("adminEventFormSchema", () => {
       longitude: -38.497,
       imagemCapaUrl: null,
       galeriaUrl: "https://fotos.example.com/sol",
+      retiradaKitLocal: null,
+      retiradaKitEndereco: null,
+      retiradaKitInicio: null,
+      retiradaKitFim: null,
+      retiradaKitInstrucoes: null,
     })
+  })
+
+  it("retirada do kit: horários de Fortaleza viram ISO com -03:00; textos limitados", () => {
+    expect(
+      adminEventFormSchema.parse({
+        ...valid,
+        retiradaKitLocal: " Loja Vertex ",
+        retiradaKitEndereco: "Av. Beira-Mar, 1000",
+        retiradaKitInicio: "2026-12-04T09:00",
+        retiradaKitFim: "2026-12-05T18:00",
+        retiradaKitInstrucoes: "Leve documento com foto.",
+      }),
+    ).toMatchObject({
+      retiradaKitLocal: "Loja Vertex",
+      retiradaKitEndereco: "Av. Beira-Mar, 1000",
+      retiradaKitInicio: "2026-12-04T09:00:00-03:00",
+      retiradaKitFim: "2026-12-05T18:00:00-03:00",
+      retiradaKitInstrucoes: "Leve documento com foto.",
+    })
+    expect(errorPaths({ ...valid, retiradaKitLocal: "a".repeat(201), retiradaKitEndereco: "a".repeat(301), retiradaKitInstrucoes: "a".repeat(2001) })).toEqual([
+      "retiradaKitLocal",
+      "retiradaKitEndereco",
+      "retiradaKitInstrucoes",
+    ])
+    expect(errorPaths({ ...valid, retiradaKitInicio: "amanhã" })).toEqual(["retiradaKitInicio"])
+  })
+
+  it("retirada do kit: o fim vem depois do início", () => {
+    expect(errorPaths({ ...valid, retiradaKitInicio: "2026-12-05T18:00", retiradaKitFim: "2026-12-05T09:00" })).toEqual(["retiradaKitFim"])
+    expect(errorPaths({ ...valid, retiradaKitInicio: "2026-12-05T18:00", retiradaKitFim: "" })).toEqual([])
   })
 
   it("slug em kebab-case", () => {

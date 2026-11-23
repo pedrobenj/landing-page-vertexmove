@@ -53,6 +53,11 @@ const form: AdminEventFormInput = {
   longitude: "",
   imagemCapaUrl: "",
   galeriaUrl: "",
+  retiradaKitLocal: "Loja Vertex",
+  retiradaKitEndereco: "",
+  retiradaKitInicio: "2026-12-04T09:00",
+  retiradaKitFim: "",
+  retiradaKitInstrucoes: "",
 }
 
 const revalidatedTags = () => mocks.updateTag.mock.calls.map(([tag]) => tag)
@@ -121,7 +126,17 @@ describe("admin events actions", () => {
       mocks.createAdminEvent.mockResolvedValue({ id: 9, slug: "corrida-nova" })
       const response = await createAdminEventAction(form)
       expect(response).toMatchObject({ status: 201, data: { id: 9 } })
-      expect(mocks.createAdminEvent).toHaveBeenCalledWith(expect.objectContaining({ complemento: null, latitude: null, uf: "CE" }))
+      expect(mocks.createAdminEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          complemento: null,
+          latitude: null,
+          uf: "CE",
+          retiradaKitLocal: "Loja Vertex",
+          retiradaKitEndereco: null,
+          retiradaKitInicio: "2026-12-04T09:00:00-03:00",
+          retiradaKitFim: null,
+        }),
+      )
     })
 
     it("entrada inválida → 422 com o campo", async () => {

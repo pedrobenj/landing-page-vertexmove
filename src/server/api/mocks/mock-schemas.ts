@@ -97,6 +97,11 @@ export const adminEventSchema = z.object({
   longitude: z.number().min(-180).max(180).nullable().default(null),
   imagemCapaUrl: z.url().nullable().default(null),
   galeriaUrl: z.url().nullable().default(null),
+  retiradaKitLocal: z.string().trim().max(200).nullable().default(null),
+  retiradaKitEndereco: z.string().trim().max(300).nullable().default(null),
+  retiradaKitInicio: z.union([z.literal(""), isoInstant]).nullable().default(null),
+  retiradaKitFim: z.union([z.literal(""), isoInstant]).nullable().default(null),
+  retiradaKitInstrucoes: z.string().trim().max(2000).nullable().default(null),
 })
 
 export const distanceSchema = z.object({
