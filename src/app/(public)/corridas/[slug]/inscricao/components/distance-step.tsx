@@ -50,7 +50,7 @@ export function DistanceStep({ event, defaultValues, onSubmit }: DistanceStepPro
   const firstAvailableDistanceId = distances.find((distance) => !distance.esgotado && distance.loteVigente !== null)?.id
 
   return (
-    <form onSubmit={(formEvent) => form.handleSubmit(onSubmit)(formEvent)} noValidate className="flex flex-col gap-8">
+    <form method="post" onSubmit={(formEvent) => form.handleSubmit(onSubmit)(formEvent)} noValidate className="flex flex-col gap-8">
       <StepHeading title="Distância e kit" description="Escolha a distância que você vai correr e o seu kit." />
 
       <Controller

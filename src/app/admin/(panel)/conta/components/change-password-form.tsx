@@ -8,6 +8,7 @@ import { toast } from "sonner"
 import { changeOwnPasswordAction } from "@/app/actions/admin-management"
 import { FormTextField } from "@/components/admin"
 import { Button } from "@/components/ui/button"
+import { useHydrated } from "@/hooks/use-hydrated"
 import { FieldGroup } from "@/components/ui/field"
 import { isFormField } from "@/lib/utils/is-form-field"
 import {
@@ -26,6 +27,7 @@ const ERROR_TITLE = "Não foi possível trocar a senha"
  */
 export function ChangePasswordForm() {
   const [isPending, startTransition] = useTransition()
+  const hydrated = useHydrated()
   const form = useForm<ChangeOwnPasswordFormInput, unknown, ChangeOwnPasswordFormData>({
     resolver: zodResolver(changeOwnPasswordFormSchema),
     defaultValues: DEFAULTS,
@@ -49,7 +51,7 @@ export function ChangePasswordForm() {
   })
 
   return (
-    <form onSubmit={onSubmit} noValidate className="flex flex-col gap-6" aria-label="Trocar senha">
+    <form method="post" onSubmit={onSubmit} noValidate className="flex flex-col gap-6" aria-label="Trocar senha">
       <FieldGroup>
         <FormTextField control={form.control} name="senhaAtual" label="Senha atual" type="password" idPrefix="password" />
         <FormTextField
@@ -62,7 +64,7 @@ export function ChangePasswordForm() {
         />
         <FormTextField control={form.control} name="confirmacao" label="Confirme a nova senha" type="password" idPrefix="password" />
       </FieldGroup>
-      <Button type="submit" disabled={isPending || form.formState.isSubmitting} className="w-fit">
+      <Button type="submit" disabled={!hydrated || isPending || form.formState.isSubmitting} className="w-fit">
         {isPending ? "Trocando..." : "Trocar senha"}
       </Button>
     </form>

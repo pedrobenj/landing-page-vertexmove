@@ -124,7 +124,7 @@ export function RegistrationReceiptPanel({ referencia, onBusyChange }: Registrat
   }
 
   return (
-    <form
+    <form method="post"
       noValidate
       aria-label="Confirmar data de nascimento"
       className="flex flex-col gap-4"

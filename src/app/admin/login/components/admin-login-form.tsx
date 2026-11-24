@@ -8,12 +8,14 @@ import { toast } from "sonner"
 
 import { loginAdmin } from "@/app/actions/admin-auth"
 import { Button } from "@/components/ui/button"
+import { useHydrated } from "@/hooks/use-hydrated"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { adminLoginSchema, type AdminLoginInput } from "@/lib/validations/admin-login.schema"
 
 export function AdminLoginForm() {
   const [isPending, startTransition] = useTransition()
+  const hydrated = useHydrated()
   const form = useForm<AdminLoginInput>({
     resolver: zodResolver(adminLoginSchema),
     defaultValues: { email: "", senha: "" },
@@ -31,7 +33,7 @@ export function AdminLoginForm() {
   }
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
+    <form method="post" onSubmit={form.handleSubmit(onSubmit)} noValidate>
       <FieldGroup>
         <Controller
           name="email"
@@ -70,7 +72,7 @@ export function AdminLoginForm() {
             </Field>
           )}
         />
-        <Button type="submit" variant="cta" size="xl" className="w-full normal-case tracking-normal" disabled={isPending}>
+        <Button type="submit" variant="cta" size="xl" className="w-full normal-case tracking-normal" disabled={!hydrated || isPending}>
           {isPending ? "Entrando..." : "Entrar"}
           {!isPending && <ArrowRight aria-hidden="true" />}
         </Button>

@@ -61,7 +61,7 @@ export function EventForm({ defaultValues, eventId, readOnly = false }: EventFor
   }
 
   return (
-    <form
+    <form method="post"
       onSubmit={onSubmit}
       noValidate
       aria-label="Dados da corrida"

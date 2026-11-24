@@ -35,7 +35,7 @@ export function DistanceForm({ eventId, distanceId, defaultValues, onSaved, onBu
   const idPrefix = `distance-${distanceId ?? "new"}`
 
   return (
-    <form onSubmit={onSubmit} noValidate aria-label="Distância" className="flex flex-col gap-4">
+    <form method="post" onSubmit={onSubmit} noValidate aria-label="Distância" className="flex flex-col gap-4">
       <fieldset disabled={isBusy} className="grid min-w-0 gap-4 sm:grid-cols-2">
         <FormTextField idPrefix={idPrefix} control={form.control} name="nome" label="Nome" placeholder="5 km" maxLength={80} />
         <FormTextField

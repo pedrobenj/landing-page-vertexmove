@@ -68,7 +68,7 @@ export function LgpdRequestForm() {
       : null
 
   return (
-    <form
+    <form method="post"
       onSubmit={(event) => form.handleSubmit(() => mutation.mutate(form.getValues()))(event)}
       noValidate
       aria-label="Solicitação sobre seus dados"

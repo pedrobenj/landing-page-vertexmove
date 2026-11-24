@@ -38,7 +38,7 @@ export function PriceTierForm({ eventId, distanceId, priceTierId, defaultValues,
   const idPrefix = `tier-${distanceId}-${priceTierId ?? "new"}`
 
   return (
-    <form onSubmit={onSubmit} noValidate aria-label="Lote" className="flex flex-col gap-4">
+    <form method="post" onSubmit={onSubmit} noValidate aria-label="Lote" className="flex flex-col gap-4">
       <fieldset disabled={isBusy} className="grid min-w-0 gap-4 sm:grid-cols-2">
         <FormTextField idPrefix={idPrefix} control={form.control} name="nome" label="Nome do lote" placeholder="1º lote" maxLength={80} />
         <FormTextField idPrefix={idPrefix} control={form.control} name="precoCentavos" label="Preço (R$)" inputMode="decimal" placeholder="89,90" />

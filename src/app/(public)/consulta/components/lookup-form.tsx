@@ -69,7 +69,7 @@ export function LookupForm() {
 
   return (
     <div className="flex flex-col gap-8">
-      <form
+      <form method="post"
         onSubmit={(formEvent) => form.handleSubmit((data) => mutation.mutate(data))(formEvent)}
         noValidate
         aria-label="Consultar inscrição"

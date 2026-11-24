@@ -56,7 +56,7 @@ export function AthleteStep({ eventDate, defaultValues, identityConflict, onBack
   }, [identityConflict, form])
 
   return (
-    <form onSubmit={(formEvent) => form.handleSubmit(onSubmit)(formEvent)} noValidate className="flex flex-col gap-8">
+    <form method="post" onSubmit={(formEvent) => form.handleSubmit(onSubmit)(formEvent)} noValidate className="flex flex-col gap-8">
       <StepHeading title="Seus dados" description="Os dados do atleta que vai correr." />
 
       <FieldGroup>

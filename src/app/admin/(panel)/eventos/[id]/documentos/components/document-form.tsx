@@ -38,7 +38,7 @@ export function DocumentForm({ eventId, defaultValues, onSaved, onBusyChange }: 
   const idPrefix = "document-new"
 
   return (
-    <form onSubmit={onSubmit} noValidate aria-label="Nova versão do documento" className="flex flex-col gap-4">
+    <form method="post" onSubmit={onSubmit} noValidate aria-label="Nova versão do documento" className="flex flex-col gap-4">
       <fieldset disabled={isBusy} className="grid min-w-0 gap-4 sm:grid-cols-2">
         <Controller
           name="tipo"

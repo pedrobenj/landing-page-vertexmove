@@ -75,7 +75,7 @@ export function CheckoutForm() {
   const isBusy = form.formState.isSubmitting || isPending || isRedirecting
 
   return (
-    <form
+    <form method="post"
       onSubmit={(event) => form.handleSubmit(onSubmit)(event)}
       noValidate
       aria-label="Dados do comprador"

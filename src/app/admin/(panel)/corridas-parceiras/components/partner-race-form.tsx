@@ -37,7 +37,7 @@ export function PartnerRaceForm({ defaultValues, raceId, canManage = true }: Par
   })
 
   return (
-    <form onSubmit={onSubmit} noValidate className="flex max-w-2xl flex-col gap-8" aria-label="Corrida parceira">
+    <form method="post" onSubmit={onSubmit} noValidate className="flex max-w-2xl flex-col gap-8" aria-label="Corrida parceira">
       <FieldGroup>
         <FormTextField control={form.control} name="nome" label="Nome da corrida" idPrefix={ID_PREFIX} maxLength={160} />
         <div className="grid gap-4 sm:grid-cols-2">

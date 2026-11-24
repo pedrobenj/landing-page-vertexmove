@@ -41,7 +41,7 @@ export function KitForm({ eventId, kitId, defaultValues, onSaved, onBusyChange }
   const photosError = form.formState.errors.fotos
 
   return (
-    <form onSubmit={onSubmit} noValidate aria-label="Kit" className="flex flex-col gap-4">
+    <form method="post" onSubmit={onSubmit} noValidate aria-label="Kit" className="flex flex-col gap-4">
       <fieldset disabled={isBusy} className="flex min-w-0 flex-col gap-4">
         <FormTextField idPrefix={idPrefix} control={form.control} name="nome" label="Nome do kit" placeholder="Kit completo" maxLength={80} />
         <FormTextField idPrefix={idPrefix} control={form.control} name="descricao" label="O que vem no kit (opcional)" multiline />

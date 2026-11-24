@@ -49,7 +49,7 @@ export function ProductForm({ defaultValues, productId, canManage = true }: Prod
   })
 
   return (
-    <form
+    <form method="post"
       onSubmit={onSubmit}
       noValidate
       className="flex max-w-2xl flex-col gap-8"

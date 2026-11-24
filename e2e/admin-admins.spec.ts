@@ -94,6 +94,8 @@ test.describe("Admin — gestão de admins", () => {
     await own.goto("/admin/eventos")
     await expect(own).toHaveURL("/admin/conta?troca-obrigatoria=1", NAVIGATION)
 
+    // O botão só habilita depois da hidratação: preencher antes disso perde o que foi digitado.
+    await expect(own.getByRole("button", { name: "Trocar senha" })).toBeEnabled(NAVIGATION)
     await own.getByLabel("Senha atual").fill("senha-errada-qualquer")
     await own.getByLabel("Nova senha", { exact: true }).fill(newPassword)
     await own.getByLabel("Confirme a nova senha").fill(newPassword)
@@ -122,6 +124,7 @@ test.describe("Admin — gestão de admins", () => {
     await loginAsAdmin(page)
     await page.goto("/admin/conta")
     await expect(page.getByRole("heading", { level: 1, name: "Minha conta" })).toBeVisible(NAVIGATION)
+    await expect(page.getByRole("button", { name: "Trocar senha" })).toBeEnabled(NAVIGATION)
     await page.getByLabel("Nova senha", { exact: true }).fill("curta")
     await page.getByLabel("Confirme a nova senha").fill("outra")
     await page.getByRole("button", { name: "Trocar senha" }).click()

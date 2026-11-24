@@ -44,6 +44,7 @@ test.describe("Área do admin", () => {
 
   test("valida o formulário de login em português", async ({ page }) => {
     await page.goto("/admin/login")
+    await expect(page.getByRole("button", { name: "Entrar" })).toBeEnabled({ timeout: 30_000 })
     await page.getByLabel("E-mail").fill("email-invalido")
     await page.getByRole("button", { name: "Entrar" }).click()
 

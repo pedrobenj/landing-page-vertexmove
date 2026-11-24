@@ -34,7 +34,7 @@ export function NewAdminForm({ onCreated, onBusyChange }: NewAdminFormProps) {
   })
 
   return (
-    <form onSubmit={onSubmit} noValidate className="flex flex-col gap-6" aria-label="Novo admin">
+    <form method="post" onSubmit={onSubmit} noValidate className="flex flex-col gap-6" aria-label="Novo admin">
       <FieldGroup>
         <FormTextField control={form.control} name="nome" label="Nome" idPrefix="new-admin" maxLength={160} />
         <FormTextField control={form.control} name="email" label="E-mail" type="email" idPrefix="new-admin" maxLength={254} />

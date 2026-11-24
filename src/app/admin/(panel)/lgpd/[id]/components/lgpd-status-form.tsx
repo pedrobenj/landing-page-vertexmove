@@ -48,7 +48,7 @@ export function LgpdStatusForm({ request }: LgpdStatusFormProps) {
           Solicitação encerrada como {getLgpdRequestStatusLabel(request.status).toLowerCase()}. O status não muda mais.
         </p>
       ) : (
-        <form onSubmit={onSubmit} noValidate aria-label="Atendimento da solicitação" className="flex flex-col gap-4">
+        <form method="post" onSubmit={onSubmit} noValidate aria-label="Atendimento da solicitação" className="flex flex-col gap-4">
           <Controller
             name="status"
             control={form.control}

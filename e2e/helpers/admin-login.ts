@@ -28,6 +28,8 @@ export function adminCredentials(): AdminCredentials {
 /** Preenche e envia o login (sem esperar o resultado). */
 export async function submitAdminLogin(page: Page, email: string, password: string) {
   await page.goto("/admin/login")
+  // "Entrar" só habilita depois da hidratação: preencher antes disso perde o que foi digitado.
+  await expect(page.getByRole("button", { name: "Entrar" })).toBeEnabled({ timeout: 30_000 })
   await page.getByLabel("E-mail").fill(email)
   await page.getByLabel("Senha").fill(password)
   await page.getByRole("button", { name: "Entrar" }).click()
