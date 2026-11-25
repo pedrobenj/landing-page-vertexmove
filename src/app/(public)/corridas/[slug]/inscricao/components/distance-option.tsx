@@ -19,7 +19,7 @@ export function DistanceOption({ distance, eventStartTime, inputRef }: DistanceO
   const unavailable = esgotado || loteVigente === null
 
   return (
-    <OptionCard id={`distance-${distance.id}`} value={String(distance.id)} disabled={unavailable} inputRef={inputRef} className="gap-3 p-5">
+    <OptionCard id={`distance-${distance.id}`} value={String(distance.id)} disabled={unavailable} inputRef={inputRef} size="large">
       <span className="flex flex-col gap-1 pr-6">
         <span className="font-heading text-2xl font-black text-brand-navy-deep">{distance.nome}</span>
         <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
