@@ -44,12 +44,13 @@ Vertex vem de vértice: o topo. Os textos falam de **topo, subida, degrau, larga
 ### Home, nesta ordem
 1. **Hero "Próximo topo"** (navy, pico gigante esmaecido): nome, data/largada e local da próxima corrida aberta (`getNextEvent` sobre `GET /eventos`), CTAs "Começar a subida" (página da corrida) e "Ver todas as provas" (`#corridas`), capa inclinada. Sem corrida aberta ou com a API fora → hero institucional "Todo corredor tem um topo. Qual é o seu?".
 2. **Próximos topos** (`#corridas`): grade de corridas abertas + selo com a contagem; link para as encerradas.
-3. **Do primeiro passo ao pódio**: seis degraus em escada (o 1º embaixo) + cartão "Já se inscreveu?" para `/consulta`.
-4. **Quem sobe junto** (navy): números da comunidade + quatro selos + CTA para `/sobre`. Sem números definidos, ficam só os selos.
-5. **Vista a subida** (loja): até 4 produtos (`pickHomeProducts`: destaques primeiro, esgotados por último) + CTA para `/loja`. Some com a loja desligada (`STORE_ENABLED=false`), sem produtos ou com a API fora.
-6. **Topos conquistados**: carrossel de edições passadas. Some se não houver dados.
-7. **Outras trilhas, com desconto**: até 3 corridas parceiras com cupom. Some se não houver dados.
-8. **Marcas na nossa subida**: logos dos parceiros. Some se não houver parceiros.
+3. **Conexões** (`#conexoes`, navy): os treinos de sábado, evento principal do grupo. Mosaico de fotos (`getConnectionPhotos` em `src/server/content/connections.ts`, arquivos em `public/conexoes/`; sem fotos, capas da marca), três destaques (quando, como, pra quem) e CTA "Quero participar" (WhatsApp com mensagem pronta, `getConnectionsContactHref`).
+4. **Do primeiro passo ao pódio**: seis degraus em escada (o 1º embaixo) + cartão "Já se inscreveu?" para `/consulta`.
+5. **Quem sobe junto** (navy): números da comunidade + quatro selos + CTA para `/sobre`. Sem números definidos, ficam só os selos.
+6. **Vista a subida** (loja): até 4 produtos (`pickHomeProducts`: destaques primeiro, esgotados por último) + CTA para `/loja`. Some com a loja desligada (`STORE_ENABLED=false`), sem produtos ou com a API fora.
+7. **Topos conquistados**: carrossel de edições passadas. Some se não houver dados.
+8. **Outras trilhas, com desconto**: até 3 corridas parceiras com cupom. Some se não houver dados.
+9. **Marcas na nossa subida**: logos dos parceiros. Some se não houver parceiros.
 
 **Header:** barra navy com a logo (placa branca), carrinho e menu lateral (hambúrguer) em todos os tamanhos.
 
@@ -131,7 +132,7 @@ Mapear no tema do shadcn/ui (CSS variables em `globals.css`):
 ### Públicas — `src/app/(public)/`
 | Rota | Conteúdo | API |
 |---|---|---|
-| `/` | Hero "próximo topo", próximos topos, como funciona em degraus, comunidade, loja, topos conquistados, provas parceiras, parceiros (ver §2) | `GET /eventos` |
+| `/` | Hero "próximo topo", próximos topos, Conexões (treinos de sábado), como funciona em degraus, comunidade, loja, topos conquistados, provas parceiras, parceiros (ver §2) | `GET /eventos` |
 | `/corridas/encerradas` | "Corridas que já vivemos": edições passadas (encerradas e publicadas com data passada, mais recente primeiro); 24 por página com "Carregar mais" (cursor) | `GET /eventos/encerrados` |
 | `/corridas/[slug]` | Página do evento: capa, data/largada, local (mapa por `latitude`/`longitude`), distâncias e preço do lote vigente, kits (fotos), percurso, regulamento, FAQ, CTA fixo "Inscrever-se" no mobile | `GET /eventos/:slug` |
 | `/corridas/[slug]/inscricao` | Formulário em etapas (ver §7) | `POST /inscricoes` |

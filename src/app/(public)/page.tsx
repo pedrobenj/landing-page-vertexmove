@@ -1,6 +1,7 @@
 import {
   ClimbStepsSection,
   CommunitySection,
+  ConnectionsSection,
   HeroSection,
   OpenEventsSection,
   PartnersStripSection,
@@ -15,6 +16,7 @@ export default function HomePage() {
     <>
       <HeroSection />
       <OpenEventsSection />
+      <ConnectionsSection />
       <ClimbStepsSection />
       <CommunitySection />
       <StoreSection />

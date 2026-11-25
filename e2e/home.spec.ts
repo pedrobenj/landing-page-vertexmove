@@ -6,6 +6,7 @@ const SEED_OPEN_EVENTS = ["Corrida Vertex Beira-Mar 2026", "Night Run Vertex", "
 
 const SECTION_HEADINGS = [
   "Próximos topos",
+  "Todo sábado, um degrau juntos",
   "Do primeiro passo ao pódio",
   "Quem sobe junto",
   "Vista a subida",
@@ -96,6 +97,13 @@ test.describe("Home", () => {
     const community = page.getByRole("region", { name: "Quem sobe junto" })
     await expect(community.getByRole("list", { name: "O que você encontra no Vertex" }).getByRole("listitem")).toHaveCount(4)
     await expect(community.getByRole("link", { name: "Conheça o Vertex" })).toHaveAttribute("href", "/sobre")
+  })
+
+  test("Conexões: treinos de sábado com destaques e CTA para participar", async ({ page }) => {
+    const section = page.getByRole("region", { name: "Todo sábado, um degrau juntos" })
+    await expect(section.getByRole("list", { name: "Como são as Conexões" }).getByRole("listitem")).toHaveCount(3)
+    await expect(section.getByText("Todo sábado", { exact: true })).toBeVisible()
+    await expect(section.getByRole("link", { name: "Quero participar" })).toHaveAttribute("href", /^(https:\/\/wa\.me\/|mailto:)/)
   })
 
   test("loja com até 4 produtos e link para /loja", async ({ page }) => {

@@ -23,3 +23,10 @@ describe("conteúdo estático", () => {
     ])
   })
 })
+
+describe("Conexões", () => {
+  it("sem fotos do cliente ainda: a galeria usa as capas provisórias", async () => {
+    const { getConnectionPhotos } = await import("./connections")
+    expect(getConnectionPhotos()).toEqual([])
+  })
+})

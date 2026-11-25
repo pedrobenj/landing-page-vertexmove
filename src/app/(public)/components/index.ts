@@ -1,5 +1,6 @@
 export * from "./hero-section"
 export * from "./open-events-section"
+export * from "./connections-section"
 export * from "./climb-steps-section"
 export * from "./community-section"
 export * from "./past-events-section"
