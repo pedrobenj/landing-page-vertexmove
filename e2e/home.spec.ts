@@ -80,7 +80,8 @@ test.describe("Home", () => {
 
   test("o card da corrida leva para a página do evento", async ({ page }) => {
     await page.locator("#corridas").getByRole("link", { name: /^Inscrever-se em Corrida Vertex Beira-Mar 2026/ }).click()
-    await expect(page).toHaveURL("/corridas/corrida-vertex-beira-mar-2026")
+    // A primeira visita compila a página da corrida no `next dev`: passa dos 5 s padrão.
+    await expect(page).toHaveURL("/corridas/corrida-vertex-beira-mar-2026", { timeout: 30_000 })
   })
 
   test("mostra os 6 degraus de \"Como funciona\" em ordem e o atalho da consulta", async ({ page }) => {
@@ -104,6 +105,28 @@ test.describe("Home", () => {
     await expect(section.getByRole("list", { name: "Como são as Conexões" }).getByRole("listitem")).toHaveCount(3)
     await expect(section.getByText("Todo sábado", { exact: true })).toBeVisible()
     await expect(section.getByRole("link", { name: "Quero participar" })).toHaveAttribute("href", /^(https:\/\/wa\.me\/|mailto:)/)
+  })
+
+  test("Conexões: a foto se expande no hover (e fica parada com movimento reduzido)", async ({ page, isMobile }) => {
+    test.skip(isMobile, "hover só existe com mouse")
+    const frame = page.locator("#conexoes").getByTestId("connection-photo-frame").first()
+    // Tailwind v4: `scale-*` usa a propriedade CSS `scale` ("none" ou "1.04").
+    const scaleX = () => frame.evaluate((el) => {
+      const value = getComputedStyle(el).scale
+      return value === "none" ? 1 : Number(value.split(" ")[0])
+    })
+
+    await page.emulateMedia({ reducedMotion: "no-preference" })
+    await frame.scrollIntoViewIfNeeded()
+    await frame.hover()
+    await expect.poll(scaleX).toBeGreaterThan(1.02)
+    await page.mouse.move(0, 0)
+    await expect.poll(scaleX).toBe(1)
+
+    await page.emulateMedia({ reducedMotion: "reduce" })
+    await frame.hover()
+    await page.waitForTimeout(700)
+    expect(await scaleX()).toBe(1)
   })
 
   test("loja com até 4 produtos e link para /loja", async ({ page }) => {
